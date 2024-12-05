@@ -1,0 +1,25 @@
+services:
+    # db:
+    #     image: mcr.microsoft.com/mssql/server:latest-ubuntu
+    #     environment:
+    #         - ACCEPT_EULA=Y
+    #         - SA_PASSWORD=${DB_PASSWORD}
+    #         - MSSQL_PID=Express
+    #     volumes:
+    #         - db_data:/var/opt/mssql
+    #     ports:
+    #         - '1433:1433'
+    #     # networks:
+    #     #   - app-network
+
+    discogs-player:
+        build:
+            context: ./app
+            dockerfile: Dockerfile
+        volumes:
+            - ./ts-todo:/app # maps the 'core' directory to '/app' in the container
+            - /app/node_modules # create a separate volume for node_modules
+        ports:
+            - '5000:5000'
+# volumes:
+#     db_data:
