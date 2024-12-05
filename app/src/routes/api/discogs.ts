@@ -45,4 +45,31 @@ router.get('/record/:releaseId', async (req: Request, res: Response) => {
     }
 });
 
+// Fetch records by genre
+router.get('/collection/genre', async (req: Request, res: Response) => {
+    const username = (req.query.username as string) || 'hubenschmidt'; // Default username
+    const folderId = parseInt(req.query.folderId as string, 10) || 0; // Default folder ID
+    const genre = (req.query.genre as string) || 'reggae';
+
+    if (!genre) {
+        res.status(400).json({ error: 'Missing genre parameter' });
+        return;
+    }
+
+    try {
+        // Fetch all records in the collection
+        const records = await fetchRecordCollection(username, folderId);
+
+        // Filter records by genre
+        const filteredRecords = records.filter(record =>
+            record.basic_information?.genres?.some((g: string) => g.toLowerCase() === genre.toLowerCase()),
+        );
+
+        res.json(filteredRecords);
+    } catch (error) {
+        console.error('Error fetching records by genre:', error);
+        res.status(500).json({ error: 'Failed to fetch records by genre' });
+    }
+});
+
 export default router;

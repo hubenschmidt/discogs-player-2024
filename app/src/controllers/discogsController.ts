@@ -50,3 +50,10 @@ export const fetchOneRecordWithLinkedVideos = async (releaseId: number): Promise
         throw error;
     }
 };
+
+// Define the query parameters interface
+interface FetchRecordsByGenreQuery {
+    username?: string;
+    folderId?: string;
+    genre?: string;
+}
