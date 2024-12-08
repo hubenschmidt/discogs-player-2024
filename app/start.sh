@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo ""
-echo "Starting... 🌐︎"
+echo "Starting... 🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎"
 
 if [ "$NODE_ENV" = "production" ]; then
     # Run production command

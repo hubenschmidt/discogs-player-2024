@@ -49,7 +49,7 @@ router.get('/record/:releaseId', async (req: Request, res: Response) => {
 router.get('/collection/genre', async (req: Request, res: Response) => {
     const username = (req.query.username as string) || 'hubenschmidt'; // Default username
     const folderId = parseInt(req.query.folderId as string, 10) || 0; // Default folder ID
-    const genre = (req.query.genre as string) || 'reggae';
+    const genre = req.query.genre as string;
 
     if (!genre) {
         res.status(400).json({ error: 'Missing genre parameter' });

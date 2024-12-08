@@ -1,6 +1,9 @@
 # Use a lightweight Node.js image as the base
 FROM node:18-alpine
 
+# Include bash with -alpine image
+RUN apk add --no-cache bash
+
 # Set the working directory inside the container
 WORKDIR /app
 

@@ -1,25 +1,32 @@
 services:
-    # db:
-    #     image: mcr.microsoft.com/mssql/server:latest-ubuntu
-    #     environment:
-    #         - ACCEPT_EULA=Y
-    #         - SA_PASSWORD=${DB_PASSWORD}
-    #         - MSSQL_PID=Express
-    #     volumes:
-    #         - db_data:/var/opt/mssql
-    #     ports:
-    #         - '1433:1433'
-    #     # networks:
-    #     #   - app-network
+    db:
+        image: postgres:latest
+        environment:
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+            - POSTGRES_DB=${DB_NAME}
+        volumes:
+            - db_data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
 
-    discogs-player:
+    app:
         build:
             context: ./app
             dockerfile: Dockerfile
         volumes:
-            - ./ts-todo:/app # maps the 'core' directory to '/app' in the container
+            - ./app:/app # maps the 'app' directory to '/app' in the container
             - /app/node_modules # create a separate volume for node_modules
         ports:
             - '5000:5000'
-# volumes:
-#     db_data:
+        environment:
+            - DB_HOST=db
+            - DB_PORT=5432
+            - DB_USER=${DB_USER}
+            - DB_PASSWORD=${DB_PASSWORD}
+            - DB_NAME=${DB_NAME}
+        depends_on:
+            - db
+
+volumes:
+    db_data:
