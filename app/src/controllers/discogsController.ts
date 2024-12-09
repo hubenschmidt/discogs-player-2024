@@ -39,7 +39,6 @@ export const getCollection = async (req: Request, res: Response, next: NextFunct
             allRecords = allRecords.concat(data.releases);
         });
 
-        console.log(`Fetched ${allRecords.length} records from collection.`);
         res.status(200).json(allRecords);
     } catch (error) {
         console.error('Error getting record collection:', error);

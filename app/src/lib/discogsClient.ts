@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios from 'axios';
 import 'dotenv/config';
 
 const discogsClient = async (endpoint: string, requestMethod: string, body: any) => {
