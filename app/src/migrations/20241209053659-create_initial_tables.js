@@ -2,7 +2,6 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        // Create User table
         await queryInterface.createTable('User', {
             User_Id: {
                 type: Sequelize.INTEGER,
@@ -22,7 +21,6 @@ module.exports = {
             },
         });
 
-        // Create Collection table
         await queryInterface.createTable('Collection', {
             Collection_Id: {
                 type: Sequelize.INTEGER,
@@ -48,7 +46,6 @@ module.exports = {
             },
         });
 
-        // Create Release table
         await queryInterface.createTable('Release', {
             Release_Id: {
                 type: Sequelize.INTEGER,
@@ -80,7 +77,39 @@ module.exports = {
             },
         });
 
-        // Create Artist table
+        await queryInterface.createTable('CollectionReleases', {
+            Collection_Id: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Collection',
+                    key: 'Collection_Id',
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'CASCADE',
+                allowNull: false,
+            },
+            Release_Id: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Release',
+                    key: 'Release_Id',
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'CASCADE',
+                allowNull: false,
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+        });
+
         await queryInterface.createTable('Artist', {
             Artist_Id: {
                 type: Sequelize.INTEGER,
@@ -112,7 +141,6 @@ module.exports = {
             },
         });
 
-        // Create Genre table
         await queryInterface.createTable('Genre', {
             Genre_Id: {
                 type: Sequelize.INTEGER,
@@ -142,7 +170,6 @@ module.exports = {
             },
         });
 
-        // Create Label table
         await queryInterface.createTable('Label', {
             Label_Id: {
                 type: Sequelize.INTEGER,
@@ -171,7 +198,6 @@ module.exports = {
             },
         });
 
-        // Create Style table
         await queryInterface.createTable('Style', {
             Style_Id: {
                 type: Sequelize.INTEGER,
