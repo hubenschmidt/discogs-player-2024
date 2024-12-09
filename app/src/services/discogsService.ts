@@ -5,14 +5,9 @@ import { createUser, createCollection, syncReleases, syncArtists, syncGenres, sy
 export const syncCollection = async (req: Request) => {
     const collection = await getCollection(req);
 
-    let userCreated = false;
-    let collectionCreated = false;
+    const [user, userCreated] = await createUser(req.params.username);
 
-    const [user, userWasCreated] = await createUser(req.params.username);
-    userCreated = userWasCreated;
-
-    const [userCollection, collectionWasCreated] = await createCollection(user.User_Id);
-    collectionCreated = collectionWasCreated;
+    const [userCollection, collectionCreated] = await createCollection(user.User_Id);
 
     const releases = collection.map((item: any) => ({
         Release_Id: item.id,
