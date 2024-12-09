@@ -1,3 +1,4 @@
+import { Request } from 'express';
 const db = require('../models');
 
 const syncEntities = async (model: any, entities: any[]) => {
@@ -25,7 +26,21 @@ export const createCollection = async (userId: number) => {
 };
 
 export const syncReleases = async (releases: any[]) => {
-    return syncEntities(db.Release, releases);
+    // Use bulkCreate with returning: true to ensure model instances are returned
+    const syncedReleases = await db.Release.bulkCreate(releases, {
+        ignoreDuplicates: true, // Prevents updating existing records
+        returning: true, // Ensures Sequelize model instances are returned
+    });
+
+    // Count new records (where isNewRecord is true)
+    const newRecords = syncedReleases.filter((release: any) => release.isNewRecord).length;
+
+    // Return total records and new records, along with model instances
+    return {
+        totalRecords: syncedReleases.length,
+        newRecords,
+        instances: syncedReleases, // Pass Sequelize instances for associations
+    };
 };
 
 export const syncArtists = async (artists: any[]) => {
@@ -41,6 +56,28 @@ export const syncStyles = async (styles: any[]) => {
 };
 
 export const getCollection = async (req: Request) => {
-    console.log(req);
-    // get collection
+    const userId = req.params.userId; // Assuming you have the user ID in the request params
+
+    try {
+        // Fetch the user's collection along with related releases and their associated data
+        const collections = await db.Collection.findAll({
+            where: { User_Id: userId },
+            include: [
+                {
+                    model: db.Release,
+                    through: { attributes: [] }, // Exclude junction table details
+                    include: [
+                        { model: db.Artist, attributes: ['Name'] },
+                        { model: db.Genre, attributes: ['Name'] },
+                        { model: db.Style, attributes: ['Name'] },
+                    ],
+                },
+            ],
+        });
+
+        return collections;
+    } catch (error) {
+        console.error('Error fetching collection:', error);
+        throw error;
+    }
 };

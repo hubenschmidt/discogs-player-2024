@@ -7,11 +7,6 @@ export const syncCollection = async (req: Request) => {
     const [user, userCreated] = await createUser(req.params.username);
     const [userCollection, collectionCreated] = await createCollection(user.User_Id);
 
-    const extractData = (key: string, transformFn: (data: any, item: any) => any) =>
-        collection.flatMap((item: any) =>
-            (item.basic_information[key] || []).map((data: any) => transformFn(data, item)),
-        );
-
     const releases = collection.map((item: any) => ({
         Release_Id: item.id,
         Title: item.basic_information.title,
@@ -20,29 +15,35 @@ export const syncCollection = async (req: Request) => {
         Cover_Image: item.basic_information.cover_image,
         Date_Added: item.date_added,
     }));
+    const releasesSynced = await syncReleases(releases);
 
-    const artists = extractData('artists', (artist: any, item: any) => ({
-        Artist_Id: artist.id,
-        Name: artist.name,
-        Release_Id: item.id,
-    }));
+    // Associate releases directly if syncReleases returns model instances
+    await userCollection.addReleases(releasesSynced);
 
-    const genres = extractData('genres', (genre: string, item: any) => ({
-        Name: genre,
-        Release_Id: item.id,
-    }));
+    const artists = collection.flatMap((item: any) =>
+        item.basic_information.artists.map((artist: any) => ({
+            Artist_Id: artist.id,
+            Name: artist.name,
+            Release_Id: item.id,
+        })),
+    );
+    const artistsSynced = await syncArtists(artists);
 
-    const styles = extractData('styles', (style: string, item: any) => ({
-        Name: style,
-        Release_Id: item.id,
-    }));
+    const genres = collection.flatMap((item: any) =>
+        item.basic_information.genres.map((genre: any) => ({
+            Name: genre,
+            Release_Id: item.id,
+        })),
+    );
+    const genresSynced = await syncGenres(genres);
 
-    const [releasesSynced, artistsSynced, genresSynced, stylesSynced] = await Promise.all([
-        syncReleases(releases),
-        syncArtists(artists),
-        syncGenres(genres),
-        syncStyles(styles),
-    ]);
+    const styles = collection.flatMap((item: any) =>
+        item.basic_information.styles.map((style: any) => ({
+            Name: style,
+            Release_Id: item.id,
+        })),
+    );
+    const stylesSynced = await syncStyles(styles);
 
     return {
         user: {
@@ -53,31 +54,48 @@ export const syncCollection = async (req: Request) => {
             created: collectionCreated,
         },
         synced: {
-            releases: releasesSynced,
-            artists: artistsSynced,
-            genres: genresSynced,
-            styles: stylesSynced,
+            releases: {
+                totalRecords: releasesSynced.totalRecords,
+                new: releasesSynced.newRecords,
+            },
+            artists: {
+                totalRecords: artistsSynced.totalRecords,
+                new: releasesSynced.newRecords,
+            },
+            genres: {
+                totalRecords: genresSynced.totalRecords,
+                new: genresSynced.newRecords,
+            },
+            styles: {
+                totalRecords: stylesSynced.totalRecords,
+                new: stylesSynced.newRecords,
+            },
         },
     };
 };
 
-const fetchCollection = async (req: Request) => {
+export const fetchCollection = async (req: Request) => {
     const folderId = 0; // Use default folder
     const perPage = 150;
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
 
+    // Fetch the first page to get total pages and initial data
     const firstResponse = await discogsClient(`${endpoint}?page=1&per_page=${perPage}`, 'get', null);
     const { pages: totalPages } = firstResponse.data.pagination;
 
+    // Start with the first page's releases
     let collection = firstResponse.data.releases;
 
+    // Generate promises for the remaining pages
     const pagePromises = [];
     for (let page = 2; page <= totalPages; page++) {
         pagePromises.push(discogsClient(`${endpoint}?page=${page}&per_page=${perPage}`, 'get', null));
     }
 
-    const responses = await Promise.all(pagePromises); // fetch all pages in parallel
+    // Fetch all pages in parallel
+    const responses = await Promise.all(pagePromises);
 
+    // Concatenate all releases from the responses
     responses.forEach(({ data }) => {
         collection = collection.concat(data.releases);
     });
