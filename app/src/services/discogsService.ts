@@ -1,31 +1,19 @@
 import { Request } from 'express';
 import discogsClient from '../lib/discogsClient';
-import {
-    createUserIfNotExists,
-    createCollectionIfNotExists,
-    bulkInsertReleases,
-    bulkInsertArtists,
-    bulkInsertGenres,
-    bulkInsertStyles,
-} from '../repositories';
+import { createUser, createCollection, syncReleases, syncArtists, syncGenres, syncStyles } from '../repositories';
 
 export const syncCollection = async (req: Request) => {
-    // Step 1: Get collection from Discogs
     const collection = await getCollection(req);
 
-    // Step 2: Sync data to the database and gather stats
     let userCreated = false;
     let collectionCreated = false;
 
-    // Create user if not exists
-    const [user, userWasCreated] = await createUserIfNotExists(req.params.username);
+    const [user, userWasCreated] = await createUser(req.params.username);
     userCreated = userWasCreated;
 
-    // Create collection if not exists
-    const [userCollection, collectionWasCreated] = await createCollectionIfNotExists(user.User_Id);
+    const [userCollection, collectionWasCreated] = await createCollection(user.User_Id);
     collectionCreated = collectionWasCreated;
 
-    // Prepare release data
     const releases = collection.map((item: any) => ({
         Release_Id: item.id,
         Title: item.basic_information.title,
@@ -34,9 +22,8 @@ export const syncCollection = async (req: Request) => {
         Cover_Image: item.basic_information.cover_image,
         Date_Added: item.date_added,
     }));
-    const releasesSynced = await bulkInsertReleases(releases);
+    const releasesSynced = await syncReleases(releases);
 
-    // Prepare artist data
     const artists = collection.flatMap((item: any) =>
         item.basic_information.artists.map((artist: any) => ({
             Artist_Id: artist.id,
@@ -44,27 +31,24 @@ export const syncCollection = async (req: Request) => {
             Release_Id: item.id,
         })),
     );
-    const artistsSynced = await bulkInsertArtists(artists);
+    const artistsSynced = await syncArtists(artists);
 
-    // Prepare genre data
     const genres = collection.flatMap((item: any) =>
         item.basic_information.genres.map((genre: any) => ({
             Name: genre,
             Release_Id: item.id,
         })),
     );
-    const genresSynced = await bulkInsertGenres(genres);
+    const genresSynced = await syncGenres(genres);
 
-    // Prepare style data
     const styles = collection.flatMap((item: any) =>
         item.basic_information.styles.map((style: any) => ({
             Name: style,
             Release_Id: item.id,
         })),
     );
-    const stylesSynced = await bulkInsertStyles(styles);
+    const stylesSynced = await syncStyles(styles);
 
-    // Return a summary of the sync operation
     return {
         user: {
             username: req.params.username,

@@ -3,7 +3,7 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         // Create User table
-        await queryInterface.createTable('Users', {
+        await queryInterface.createTable('User', {
             User_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -23,7 +23,7 @@ module.exports = {
         });
 
         // Create Collection table
-        await queryInterface.createTable('Collections', {
+        await queryInterface.createTable('Collection', {
             Collection_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -32,7 +32,7 @@ module.exports = {
             User_Id: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Users',
+                    model: 'User',
                     key: 'User_Id',
                 },
                 onUpdate: 'CASCADE',
@@ -49,7 +49,7 @@ module.exports = {
         });
 
         // Create Release table
-        await queryInterface.createTable('Releases', {
+        await queryInterface.createTable('Release', {
             Release_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -81,7 +81,7 @@ module.exports = {
         });
 
         // Create Artist table
-        await queryInterface.createTable('Artists', {
+        await queryInterface.createTable('Artist', {
             Artist_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -96,7 +96,7 @@ module.exports = {
             Release_Id: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Releases',
+                    model: 'Release',
                     key: 'Release_Id',
                 },
                 onUpdate: 'CASCADE',
@@ -113,7 +113,7 @@ module.exports = {
         });
 
         // Create Genre table
-        await queryInterface.createTable('Genres', {
+        await queryInterface.createTable('Genre', {
             Genre_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -126,7 +126,7 @@ module.exports = {
             Release_Id: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Releases',
+                    model: 'Release',
                     key: 'Release_Id',
                 },
                 onUpdate: 'CASCADE',
@@ -143,7 +143,7 @@ module.exports = {
         });
 
         // Create Label table
-        await queryInterface.createTable('Labels', {
+        await queryInterface.createTable('Label', {
             Label_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -155,7 +155,7 @@ module.exports = {
             Release_Id: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Releases',
+                    model: 'Release',
                     key: 'Release_Id',
                 },
                 onUpdate: 'CASCADE',
@@ -172,7 +172,7 @@ module.exports = {
         });
 
         // Create Style table
-        await queryInterface.createTable('Styles', {
+        await queryInterface.createTable('Style', {
             Style_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
@@ -185,7 +185,7 @@ module.exports = {
             Release_Id: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'Releases',
+                    model: 'Release',
                     key: 'Release_Id',
                 },
                 onUpdate: 'CASCADE',

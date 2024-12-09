@@ -1,15 +1,25 @@
 module.exports = (sequelize: any, DataTypes: any) => {
-    const Genre = sequelize.define('Genre', {
-        Genre_Id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
+    const Genre = sequelize.define(
+        'Genre',
+        {
+            Genre_Id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            Name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            Release_Id: {
+                type: DataTypes.INTEGER,
+            },
         },
-        Name: {
-            type: DataTypes.STRING,
-            allowNull: false,
+        {
+            tableName: 'Genre',
+            timestamps: true,
         },
-    });
+    );
 
     Genre.associate = (models: any) => {
         Genre.belongsTo(models.Release, {

@@ -1,42 +1,39 @@
 const db = require('../models');
 
-export const createUserIfNotExists = async (username: string) => {
-    console.log(db.User);
-
+export const createUser = async (username: string) => {
     const user = await db.User.findOrCreate({
         where: { Username: username },
         defaults: { Username: username },
     });
-
     return user;
 };
 
-export const createCollectionIfNotExists = async (userId: number) => {
+export const createCollection = async (userId: number) => {
     return db.Collection.findOrCreate({
         where: { User_Id: userId },
         defaults: { User_Id: userId },
     });
 };
 
-export const bulkInsertReleases = async (releases: any[]) => {
+export const syncReleases = async (releases: any[]) => {
     return db.Release.bulkCreate(releases, {
         ignoreDuplicates: true, // Prevents error for existing records
     });
 };
 
-export const bulkInsertArtists = async (artists: any[]) => {
+export const syncArtists = async (artists: any[]) => {
     return db.Artist.bulkCreate(artists, {
         ignoreDuplicates: true, // Prevents error for existing records
     });
 };
 
-export const bulkInsertGenres = async (genres: any[]) => {
+export const syncGenres = async (genres: any[]) => {
     return db.Genre.bulkCreate(genres, {
         ignoreDuplicates: true, // Prevents error for existing records
     });
 };
 
-export const bulkInsertStyles = async (styles: any[]) => {
+export const syncStyles = async (styles: any[]) => {
     return db.Style.bulkCreate(styles, {
         ignoreDuplicates: true, // Prevents error for existing records
     });

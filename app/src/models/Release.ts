@@ -1,25 +1,32 @@
 module.exports = (sequelize: any, DataTypes: any) => {
-    const Release = sequelize.define('Release', {
-        Release_Id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
+    const Release = sequelize.define(
+        'Release',
+        {
+            Release_Id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+            },
+            Date_Added: {
+                type: DataTypes.DATE,
+            },
+            Thumb: {
+                type: DataTypes.STRING,
+            },
+            Cover_Image: {
+                type: DataTypes.STRING,
+            },
+            Title: {
+                type: DataTypes.STRING,
+            },
+            Year: {
+                type: DataTypes.INTEGER,
+            },
         },
-        Date_Added: {
-            type: DataTypes.DATE,
+        {
+            tableName: 'Release',
+            timestamps: true,
         },
-        Thumb: {
-            type: DataTypes.STRING,
-        },
-        Cover_Image: {
-            type: DataTypes.STRING,
-        },
-        Title: {
-            type: DataTypes.STRING,
-        },
-        Year: {
-            type: DataTypes.INTEGER,
-        },
-    });
+    );
 
     Release.associate = (models: any) => {
         Release.hasMany(models.Artist, {

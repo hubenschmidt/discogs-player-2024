@@ -1,29 +1,31 @@
 module.exports = (sequelize: any, DataTypes: any) => {
-    const Label = sequelize.define(
-        'Label',
+    const Style = sequelize.define(
+        'Style',
         {
-            Label_Id: {
+            Style_Id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
+                autoIncrement: true,
             },
             Name: {
                 type: DataTypes.STRING,
+                allowNull: false,
             },
             Release_Id: {
                 type: DataTypes.INTEGER,
             },
         },
         {
-            tableName: 'Label',
+            tableName: 'Style',
             timestamps: true,
         },
     );
 
-    Label.associate = (models: any) => {
-        Label.belongsTo(models.Release, {
+    Style.associate = (models: any) => {
+        Style.belongsTo(models.Release, {
             foreignKey: 'Release_Id',
         });
     };
 
-    return Label;
+    return Style;
 };
