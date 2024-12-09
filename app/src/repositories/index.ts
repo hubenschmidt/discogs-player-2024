@@ -2,13 +2,7 @@ import { Request } from 'express';
 const db = require('../models');
 
 const syncData = async (model: any, data: any[]) => {
-    const synced = await model.bulkCreate(data, { ignoreDuplicates: true });
-    const newRecords = synced.filter((entity: any) => entity.isNewRecord).length;
-
-    return {
-        totalRecords: synced.length,
-        newRecords,
-    };
+    return await model.bulkCreate(data, { ignoreDuplicates: true });
 };
 
 export const createUser = async (username: string) => {

@@ -17,9 +17,6 @@ export const syncCollection = async (req: Request) => {
     }));
     const releasesSynced = await syncReleases(releases);
 
-    // Associate releases directly if syncReleases returns model instances
-    await userCollection.addReleases(releasesSynced);
-
     const artists = collection.flatMap((item: any) =>
         item.basic_information.artists.map((artist: any) => ({
             Artist_Id: artist.id,
@@ -54,22 +51,10 @@ export const syncCollection = async (req: Request) => {
             created: collectionCreated,
         },
         synced: {
-            releases: {
-                totalRecords: releasesSynced.totalRecords,
-                new: releasesSynced.newRecords,
-            },
-            artists: {
-                totalRecords: artistsSynced.totalRecords,
-                new: releasesSynced.newRecords,
-            },
-            genres: {
-                totalRecords: genresSynced.totalRecords,
-                new: genresSynced.newRecords,
-            },
-            styles: {
-                totalRecords: stylesSynced.totalRecords,
-                new: stylesSynced.newRecords,
-            },
+            releases: releasesSynced.length,
+            artists: artistsSynced.length,
+            genres: genresSynced.length,
+            styles: stylesSynced.length,
         },
     };
 };
