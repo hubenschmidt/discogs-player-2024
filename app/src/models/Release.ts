@@ -1,5 +1,3 @@
-import { generateKey } from 'crypto';
-
 module.exports = (sequelize: any, DataTypes: any) => {
     const Release = sequelize.define('Release', {
         Release_Id: {
@@ -29,6 +27,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         });
 
         Release.hasMany(models.Genre, {
+            foreignKey: 'Release_Id',
+        });
+
+        Release.hasMany(models.Style, {
             foreignKey: 'Release_Id',
         });
     };

@@ -23,16 +23,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// Sync Sequelize models with the database
-db.sequelize
-    .sync({ alter: true }) // Use { force: true } for dropping/recreating tables in dev
-    .then(() => {
-        console.log('Database syncronized');
-        // Then start the server
-        app.listen(process.env.PORT, () => {
-            console.log(`Server running on port ${process.env.PORT}`);
-        });
-    })
-    .catch((error: Error) => {
-        console.error('Unable to sync database:', error);
-    });
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+});
