@@ -39,3 +39,8 @@ export const syncGenres = async (genres: any[]) => {
 export const syncStyles = async (styles: any[]) => {
     return syncEntities(db.Style, styles);
 };
+
+export const getCollection = async (req: Request) => {
+    console.log(req);
+    // get collection
+};

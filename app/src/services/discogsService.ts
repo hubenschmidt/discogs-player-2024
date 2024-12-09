@@ -3,7 +3,7 @@ import discogsClient from '../lib/discogsClient';
 import { createUser, createCollection, syncReleases, syncArtists, syncGenres, syncStyles } from '../repositories';
 
 export const syncCollection = async (req: Request) => {
-    const collection = await getCollection(req);
+    const collection = await fetchCollection(req);
     const [user, userCreated] = await createUser(req.params.username);
     const [userCollection, collectionCreated] = await createCollection(user.User_Id);
 
@@ -61,7 +61,7 @@ export const syncCollection = async (req: Request) => {
     };
 };
 
-export const getCollection = async (req: Request) => {
+const fetchCollection = async (req: Request) => {
     const folderId = 0; // Use default folder
     const perPage = 150;
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
@@ -85,13 +85,13 @@ export const getCollection = async (req: Request) => {
     return collection;
 };
 
-export const getUser = async (req: Request) => {
+export const fetchUser = async (req: Request) => {
     const endpoint = `users/${req.params.username}`;
     const user = await discogsClient(endpoint, 'get', null);
     return user;
 };
 
-export const getRelease = async (req: Request) => {
+export const fetchRelease = async (req: Request) => {
     const endpoint = `releases/${req.params.release_id}`;
     const release = await discogsClient(endpoint, 'get', null);
     return release;
