@@ -4,9 +4,7 @@ import { createUser, createCollection, syncReleases, syncArtists, syncGenres, sy
 
 export const syncCollection = async (req: Request) => {
     const collection = await getCollection(req);
-
     const [user, userCreated] = await createUser(req.params.username);
-
     const [userCollection, collectionCreated] = await createCollection(user.User_Id);
 
     const releases = collection.map((item: any) => ({
@@ -53,10 +51,22 @@ export const syncCollection = async (req: Request) => {
             created: collectionCreated,
         },
         synced: {
-            releases: releasesSynced.length,
-            artists: artistsSynced.length,
-            genres: genresSynced.length,
-            styles: stylesSynced.length,
+            releases: {
+                totalRecords: releasesSynced.totalRecords,
+                new: releasesSynced.newRecords,
+            },
+            artists: {
+                totalRecords: artistsSynced.totalRecords,
+                new: releasesSynced.newRecords,
+            },
+            genres: {
+                totalRecords: genresSynced.totalRecords,
+                new: genresSynced.newRecords,
+            },
+            styles: {
+                totalRecords: stylesSynced.totalRecords,
+                new: stylesSynced.newRecords,
+            },
         },
     };
 };

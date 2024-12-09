@@ -16,27 +16,55 @@ export const createCollection = async (userId: number) => {
 };
 
 export const syncReleases = async (releases: any[]) => {
-    return db.Release.bulkCreate(releases, {
-        ignoreDuplicates: true, // Prevents error for existing records
+    const syncedReleases = await db.Release.bulkCreate(releases, {
+        ignoreDuplicates: true, // Prevent updating existing records
     });
+
+    // Count new records (where isNewRecord is true)
+    const newRecords = syncedReleases.filter((release: any) => release.isNewRecord).length;
+
+    return {
+        totalRecords: syncedReleases.length,
+        newRecords,
+    };
 };
 
 export const syncArtists = async (artists: any[]) => {
-    return db.Artist.bulkCreate(artists, {
-        ignoreDuplicates: true, // Prevents error for existing records
+    const syncedArtists = await db.Artist.bulkCreate(artists, {
+        ignoreDuplicates: true,
     });
-};
 
+    const newRecords = syncedArtists.filter((artist: any) => artist.isNewRecord).length;
+
+    return {
+        totalRecords: syncedArtists.length,
+        newRecords,
+    };
+};
 export const syncGenres = async (genres: any[]) => {
-    return db.Genre.bulkCreate(genres, {
-        ignoreDuplicates: true, // Prevents error for existing records
+    const syncedGenres = await db.Genre.bulkCreate(genres, {
+        ignoreDuplicates: true,
     });
+
+    const newRecords = syncedGenres.filter((artist: any) => artist.isNewRecord).length;
+
+    return {
+        totalRecords: syncedGenres.length,
+        newRecords,
+    };
 };
 
 export const syncStyles = async (styles: any[]) => {
-    return db.Style.bulkCreate(styles, {
+    const syncedStyles = await db.Style.bulkCreate(styles, {
         ignoreDuplicates: true, // Prevents error for existing records
     });
+
+    const newRecords = syncedStyles.filter((artist: any) => artist.isNewRecord).length;
+
+    return {
+        totalRecords: syncedStyles.length,
+        newRecords,
+    };
 };
 
 // create User if not exists
