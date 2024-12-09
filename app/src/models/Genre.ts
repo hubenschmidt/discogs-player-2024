@@ -1,22 +1,21 @@
 module.exports = (sequelize: any, DataTypes: any) => {
-    const Artist = sequelize.define('Artist', {
-        Artist_Id: {
+    const Genre = sequelize.define('Genre', {
+        Genre_Id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
         },
         Name: {
             type: DataTypes.STRING,
-        },
-        Date_Added: {
-            type: DataTypes.DATE,
+            allowNull: false,
         },
     });
 
-    Artist.associate = (models: any) => {
-        Artist.belongsTo(models.Release, {
+    Genre.associate = (models: any) => {
+        Genre.belongsTo(models.Release, {
             foreignKey: 'Release_Id',
         });
     };
 
-    return Artist;
+    return Genre;
 };
