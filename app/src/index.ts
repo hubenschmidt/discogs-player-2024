@@ -2,7 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import router from './routes';
 import 'dotenv/config';
 import 'cors';
-const { db } = require('./models'); // Import your Sequelize instance
+const db = require('./models'); // Import your Sequelize instance
 const morgan = require('morgan');
 
 // Create the Express application
@@ -24,19 +24,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Sync Sequelize models with the database
-db.sync({ alter: true }) // Use { force: true } for dropping/recreating tables in dev
+db.sequelize
+    .sync({ alter: true }) // Use { force: true } for dropping/recreating tables in dev
     .then(() => {
-        console.log('Database synchronized');
-        // Start the server only after the database is ready
+        console.log('Database syncronized');
+        // Then start the server
         app.listen(process.env.PORT, () => {
             console.log(`Server running on port ${process.env.PORT}`);
         });
     })
-    .catch((error: any) => {
+    .catch((error: Error) => {
         console.error('Unable to sync database:', error);
     });
-
-// Start the server
-app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
-});

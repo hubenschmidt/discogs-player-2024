@@ -1,19 +1,20 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import 'dotenv/config';
 
-// Discogs API Base URL
-const BASE_URL = 'https://api.discogs.com';
+const discogsClient = async (endpoint: string, requestMethod: string, body: any) => {
+    const BASE_URL = 'https://api.discogs.com';
 
-// Discogs Personal Access Token (Store securely in environment variables)
-const PERSONAL_ACCESS_TOKEN = process.env.DISCOGS_TOKEN;
-
-// Create an Axios instance with the token preconfigured
-const discogsClient: AxiosInstance = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-        Authorization: `Discogs token=${PERSONAL_ACCESS_TOKEN}`,
-        'User-Agent': 'YourAppName/1.0 +http://yourwebsite.com',
-    },
-});
+    const PERSONAL_ACCESS_TOKEN = process.env.DISCOGS_TOKEN;
+    const response = await axios.request({
+        method: requestMethod,
+        url: `${BASE_URL}/${endpoint}`,
+        headers: {
+            Authorization: `Discogs token=${PERSONAL_ACCESS_TOKEN}`,
+            'User-Agent': 'Williams99CentDream/1.0',
+        },
+        data: body,
+    });
+    return response;
+};
 
 export default discogsClient;
