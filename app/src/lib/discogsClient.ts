@@ -3,9 +3,8 @@ import 'dotenv/config';
 
 const discogsClient = async (endpoint: string, requestMethod: string, body: any) => {
     const BASE_URL = 'https://api.discogs.com';
-    console.log(`${BASE_URL}/${endpoint}`);
-
     const PERSONAL_ACCESS_TOKEN = process.env.DISCOGS_TOKEN;
+
     const response = await axios.request({
         method: requestMethod,
         url: `${BASE_URL}/${endpoint}`,

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getUser, getCollection, getRelease } from '../../controllers/discogsController';
+import { getUser, getCollection, getRelease, syncCollection } from '../../controllers/discogsController';
 
 export const router: Router = Router();
 
@@ -9,5 +9,6 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/user/:username', getUser);
 router.get('/collection/:username', getCollection);
 router.get('/release/:release_id', getRelease);
+router.get('/sync-collection/:username', syncCollection);
 
 export default router;

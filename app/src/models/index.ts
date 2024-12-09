@@ -11,18 +11,31 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
     ...config,
 });
 
+console.trace('begin DB sync....');
+
 fs.readdirSync(__dirname)
     .filter((file: string) => {
         return (
-            file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js' && file.indexOf('.test.js') === -1
+            file.indexOf('.') !== 0 &&
+            file !== basename &&
+            (file.endsWith('.ts') || file.endsWith('.js')) &&
+            !file.endsWith('.test.ts')
         );
     })
     .forEach((file: string) => {
+        console.log('Loading model:', file);
+
+        // Use require directly for `module.exports`
         const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+        console.log('debug model', model);
         db[model.name] = model;
+        console.log('debug model', db[model.name]);
     });
 
+console.trace('check DB sync', db);
+
 Object.keys(db).forEach(modelName => {
+    console.trace('Associating model:', modelName);
     if (db[modelName].associate) {
         db[modelName].associate(db);
     }
