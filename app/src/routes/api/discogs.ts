@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getUser, getCollection, getRelease } from '../../controllers/discogsController'; // Update the path as needed
+import { getUser, getCollection, getRelease } from '../../controllers/discogsController';
 
 export const router: Router = Router();
 
