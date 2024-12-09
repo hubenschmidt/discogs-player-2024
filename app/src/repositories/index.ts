@@ -1,8 +1,8 @@
 import { Request } from 'express';
 const db = require('../models');
 
-const syncEntities = async (model: any, entities: any[]) => {
-    const synced = await model.bulkCreate(entities, { ignoreDuplicates: true });
+const syncData = async (model: any, data: any[]) => {
+    const synced = await model.bulkCreate(data, { ignoreDuplicates: true });
     const newRecords = synced.filter((entity: any) => entity.isNewRecord).length;
 
     return {
@@ -26,33 +26,19 @@ export const createCollection = async (userId: number) => {
 };
 
 export const syncReleases = async (releases: any[]) => {
-    // Use bulkCreate with returning: true to ensure model instances are returned
-    const syncedReleases = await db.Release.bulkCreate(releases, {
-        ignoreDuplicates: true, // Prevents updating existing records
-        returning: true, // Ensures Sequelize model instances are returned
-    });
-
-    // Count new records (where isNewRecord is true)
-    const newRecords = syncedReleases.filter((release: any) => release.isNewRecord).length;
-
-    // Return total records and new records, along with model instances
-    return {
-        totalRecords: syncedReleases.length,
-        newRecords,
-        instances: syncedReleases, // Pass Sequelize instances for associations
-    };
+    return syncData(db.Release, releases);
 };
 
 export const syncArtists = async (artists: any[]) => {
-    return syncEntities(db.Artist, artists);
+    return syncData(db.Artist, artists);
 };
 
 export const syncGenres = async (genres: any[]) => {
-    return syncEntities(db.Genre, genres);
+    return syncData(db.Genre, genres);
 };
 
 export const syncStyles = async (styles: any[]) => {
-    return syncEntities(db.Style, styles);
+    return syncData(db.Style, styles);
 };
 
 export const getCollection = async (req: Request) => {

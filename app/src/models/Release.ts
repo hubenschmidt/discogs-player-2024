@@ -29,12 +29,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Release.associate = (models: any) => {
-        Release.belongsToMany(models.Collection, {
-            through: 'CollectionReleases', // Name of the junction table
-            foreignKey: 'Release_Id',
-            otherKey: 'Collection_Id',
-        });
-
         Release.hasMany(models.Artist, {
             foreignKey: 'Release_Id',
         });

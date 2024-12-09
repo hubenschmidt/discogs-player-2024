@@ -77,39 +77,6 @@ module.exports = {
             },
         });
 
-        await queryInterface.createTable('CollectionReleases', {
-            Collection_Id: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'Collection',
-                    key: 'Collection_Id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
-                allowNull: false,
-            },
-            Release_Id: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'Release',
-                    key: 'Release_Id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-                defaultValue: Sequelize.NOW,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-                defaultValue: Sequelize.NOW,
-            },
-        });
-
         await queryInterface.createTable('Artist', {
             Artist_Id: {
                 type: Sequelize.INTEGER,
