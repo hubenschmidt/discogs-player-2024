@@ -22,6 +22,8 @@ export const syncData = async (model: string, data: any[]) => {
 export const getCollection = async (req: Request) => {
     try {
         const { username, genre, style } = req.params;
+        // this is fine for searching for a single genre but we will need to search for an array
+
         const resolvedGenre = genre && genre !== ':genre' ? genre : null;
         const resolvedStyle = style && style !== ':style' ? style : null;
         const page = parseInt(req.query.page as string) || 1;
@@ -54,7 +56,7 @@ export const getCollection = async (req: Request) => {
                 {
                     model: db.Collection,
                     where: { Collection_Id: user.Collection.Collection_Id }, // Filter by user's collection
-                    through: { attributes: [] }, // Exclude join table attributes
+                    through: { attributes: [] },
                 },
                 {
                     model: db.Genre,
@@ -64,7 +66,7 @@ export const getCollection = async (req: Request) => {
                         },
                         required: true, // Include only releases with the specified genre
                     }),
-                    through: { attributes: [] }, // Exclude join table attributes
+                    through: { attributes: [] },
                 },
                 {
                     model: db.Style,
@@ -74,7 +76,7 @@ export const getCollection = async (req: Request) => {
                         },
                         required: true, // Include only releases with the specified genre
                     }),
-                    through: { attributes: [] }, // Exclude join table attributes
+                    through: { attributes: [] },
                 },
                 {
                     model: db.Artist,
