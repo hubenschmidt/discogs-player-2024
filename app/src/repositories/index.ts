@@ -27,6 +27,10 @@ export const syncArtists = async (artists: any[]) => {
     return syncData(db.Artist, artists);
 };
 
+export const syncReleaseArtists = async (releaseArtists: any[]) => {
+    return syncData(db.ReleaseArtist, releaseArtists);
+};
+
 export const syncLabels = async (labels: any[]) => {
     return syncData(db.Label, labels);
 };
@@ -76,19 +80,7 @@ export const getCollection = async (req: Request) => {
             include: [
                 {
                     model: db.Artist,
-                    order: [['Name', 'DESC']],
-                },
-                {
-                    model: db.Label,
-                    order: [['Name', 'DESC']],
-                },
-                {
-                    model: db.Genre,
-                    order: [['Name', 'DESC']],
-                },
-                {
-                    model: db.Style,
-                    order: [['Name', 'DESC']],
+                    // order: [['Name', 'DESC']],
                 },
             ],
         });

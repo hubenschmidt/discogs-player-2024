@@ -5,6 +5,7 @@ import {
     createCollection,
     syncReleases,
     syncArtists,
+    syncReleaseArtists,
     syncLabels,
     syncGenres,
     syncStyles,
@@ -31,16 +32,29 @@ export const syncCollection = async (req: Request) => {
     // Sync releases first (other tasks depend on this)
     const releasesSynced = await syncReleases(releases);
 
-    // Define promises for parallel tasks
-    const artistsPromise = syncArtists(
-        discogsCol.flatMap((el: any) =>
-            el.basic_information.artists.map((artist: any) => ({
-                Artist_Id: artist.id,
-                Name: artist.name,
-            })),
-        ),
+    // Prepare artist data
+    const artists = discogsCol.flatMap((el: any) =>
+        el.basic_information.artists.map((artist: any) => ({
+            Artist_Id: artist.id,
+            Name: artist.name,
+        })),
     );
 
+    // Sync artists
+    const artistsPromise = syncArtists(artists);
+
+    // Prepare Release-Artist associations
+    const releaseArtists = discogsCol.flatMap((el: any) =>
+        el.basic_information.artists.map((artist: any) => ({
+            Release_Id: el.id,
+            Artist_Id: artist.id,
+        })),
+    );
+
+    // Sync Release-Artist associations
+    const releaseArtistsPromise = syncReleaseArtists(releaseArtists);
+
+    // Prepare and sync other data
     const labelsPromise = syncLabels(
         discogsCol.flatMap((el: any) =>
             el.basic_information.labels.map((label: any) => ({
@@ -68,8 +82,9 @@ export const syncCollection = async (req: Request) => {
     );
 
     // Await all dependent tasks to complete
-    const [artistsSynced, labelsSynced, genresSynced, stylesSynced] = await Promise.all([
+    const [artistsSynced, releaseArtistsSynced, labelsSynced, genresSynced, stylesSynced] = await Promise.all([
         artistsPromise,
+        releaseArtistsPromise,
         labelsPromise,
         genresPromise,
         stylesPromise,
@@ -86,6 +101,7 @@ export const syncCollection = async (req: Request) => {
         synced: {
             releases: releasesSynced.length,
             artists: artistsSynced.length,
+            releaseArtists: releaseArtistsSynced.length,
             labels: labelsSynced.length,
             genres: genresSynced.length,
             styles: stylesSynced.length,
