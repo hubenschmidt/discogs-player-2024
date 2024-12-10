@@ -1,5 +1,4 @@
 const db = require('../models');
-import { Op } from 'sequelize';
 import { Request } from 'express';
 
 export const createUser = async (username: string) => {
@@ -22,7 +21,9 @@ export const syncData = async (model: string, data: any[]) => {
 
 export const getCollection = async (req: Request) => {
     try {
-        const { username, genre } = req.params;
+        const { username, genre, style } = req.params;
+        const resolvedGenre = genre && genre !== ':genre' ? genre : null;
+        const resolvedStyle = style && style !== ':style' ? style : null;
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 25;
         const offset = (page - 1) * limit;
@@ -46,18 +47,6 @@ export const getCollection = async (req: Request) => {
             include: [{ model: db.Collection }],
         });
 
-        // Determine genre filter
-        const genreInclude = {
-            model: db.Genre,
-            ...(genre && {
-                where: {
-                    Name: genre ? genre : genre === ':genre' ? null : null,
-                },
-                required: true, // Include only releases with the specified genre
-            }),
-            through: { attributes: [] }, // Exclude join table attributes
-        };
-
         // Fetch releases with pagination and optional genre filtering
         const releases = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
@@ -67,22 +56,33 @@ export const getCollection = async (req: Request) => {
                     where: { Collection_Id: user.Collection.Collection_Id }, // Filter by user's collection
                     through: { attributes: [] }, // Exclude join table attributes
                 },
-                // genreInclude, // Include genre filter if provided
                 {
                     model: db.Genre,
-                    through: { attributes: [] },
-                },
-                {
-                    model: db.Artist,
-                    through: { attributes: [] }, // Exclude join table attributes
-                },
-                {
-                    model: db.Label,
+                    ...(resolvedGenre && {
+                        where: {
+                            Name: genre,
+                        },
+                        required: true, // Include only releases with the specified genre
+                    }),
                     through: { attributes: [] }, // Exclude join table attributes
                 },
                 {
                     model: db.Style,
+                    ...(resolvedStyle && {
+                        where: {
+                            Name: style,
+                        },
+                        required: true, // Include only releases with the specified genre
+                    }),
                     through: { attributes: [] }, // Exclude join table attributes
+                },
+                {
+                    model: db.Artist,
+                    through: { attributes: [] },
+                },
+                {
+                    model: db.Label,
+                    through: { attributes: [] },
                 },
             ],
             offset: offset,

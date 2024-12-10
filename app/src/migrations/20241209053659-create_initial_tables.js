@@ -127,18 +127,6 @@ module.exports = {
             Name: {
                 type: Sequelize.STRING,
             },
-            Date_Added: {
-                type: Sequelize.DATE,
-            },
-            Release_Id: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'Release',
-                    key: 'Release_Id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
-            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

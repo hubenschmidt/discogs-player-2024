@@ -9,9 +9,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Name: {
                 type: DataTypes.STRING,
             },
-            Date_Added: {
-                type: DataTypes.DATE,
-            },
         },
         {
             tableName: 'Artist',
