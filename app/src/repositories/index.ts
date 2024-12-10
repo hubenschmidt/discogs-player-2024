@@ -15,16 +15,8 @@ export const createCollection = async (userId: number) => {
     });
 };
 
-const syncData = async (model: any, data: any[]) => {
+export const syncData = async (model: any, data: any[]) => {
     return await model.bulkCreate(data, { ignoreDuplicates: true });
-};
-
-export const syncReleases = async (releases: any[]) => {
-    return syncData(db.Release, releases);
-};
-
-export const syncArtists = async (artists: any[]) => {
-    return syncData(db.Artist, artists);
 };
 
 export const syncReleaseArtists = async (releaseArtists: any[]) => {
@@ -35,8 +27,16 @@ export const syncLabels = async (labels: any[]) => {
     return syncData(db.Label, labels);
 };
 
+export const syncReleaseLabels = async (releaseLabels: any[]) => {
+    return syncData(db.ReleaseLabel, releaseLabels);
+};
+
 export const syncGenres = async (genres: any[]) => {
     return syncData(db.Genre, genres);
+};
+
+export const syncReleaseGenres = async (releaseGenres: any[]) => {
+    return syncData(db.ReleaseGenre, releaseGenres);
 };
 
 export const syncStyles = async (styles: any[]) => {
@@ -51,7 +51,10 @@ export const getCollection = async (req: Request) => {
         const offset = (page - 1) * limit;
 
         // Extract order query parameters and sanitize them
-        const order = (req.query.order as string)?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const order =
+            (req.query.order as string)?.toUpperCase() === 'ASC'
+                ? 'ASC'
+                : 'DESC';
         const orderBy = (req.query.orderBy as string) || 'Release_Id';
 
         // Validate that `orderBy` is a valid column in the Release table

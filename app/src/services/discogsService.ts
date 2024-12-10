@@ -3,56 +3,57 @@ import discogsClient from '../lib/discogsClient';
 import {
     createUser,
     createCollection,
-    syncReleases,
-    syncArtists,
     syncReleaseArtists,
     syncLabels,
+    syncReleaseLabels,
     syncGenres,
     syncStyles,
+    syncData,
 } from '../repositories';
+const db = require('../models');
 
 export const syncCollection = async (req: Request) => {
     const discogsCol = await fetchCollection(req);
 
     // Fetch or create user and collection
     const [user, userCreated] = await createUser(req.params.username);
-    const [collection, collectionCreated] = await createCollection(user.User_Id);
+    const [collection, collectionCreated] = await createCollection(
+        user.User_Id,
+    );
 
-    // Prepare release data
-    const releases = discogsCol.map((el: any) => ({
-        Release_Id: el.id,
-        Title: el.basic_information.title,
-        Year: el.basic_information.year,
-        Thumb: el.basic_information.thumb,
-        Cover_Image: el.basic_information.cover_image,
-        Date_Added: el.date_added,
-        Collection_Id: collection.Collection_Id,
-    }));
-
-    // Sync releases first (other tasks depend on this)
-    const releasesSynced = await syncReleases(releases);
-
-    // Prepare artist data
-    const artists = discogsCol.flatMap((el: any) =>
-        el.basic_information.artists.map((artist: any) => ({
-            Artist_Id: artist.id,
-            Name: artist.name,
+    const releasesSynced = await syncData(
+        db.Release,
+        discogsCol.map((el: any) => ({
+            Release_Id: el.id,
+            Title: el.basic_information.title,
+            Year: el.basic_information.year,
+            Thumb: el.basic_information.thumb,
+            Cover_Image: el.basic_information.cover_image,
+            Date_Added: el.date_added,
+            Collection_Id: collection.Collection_Id,
         })),
     );
 
     // Sync artists
-    const artistsPromise = syncArtists(artists);
-
-    // Prepare Release-Artist associations
-    const releaseArtists = discogsCol.flatMap((el: any) =>
-        el.basic_information.artists.map((artist: any) => ({
-            Release_Id: el.id,
-            Artist_Id: artist.id,
-        })),
+    const artistsPromise = syncData(
+        db.Artist,
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.artists.map((artist: any) => ({
+                Artist_Id: artist.id,
+                Name: artist.name,
+            })),
+        ),
     );
 
     // Sync Release-Artist associations
-    const releaseArtistsPromise = syncReleaseArtists(releaseArtists);
+    const releaseArtistsPromise = syncReleaseArtists(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.artists.map((artist: any) => ({
+                Release_Id: el.id,
+                Artist_Id: artist.id,
+            })),
+        ),
+    );
 
     // Prepare and sync other data
     const labelsPromise = syncLabels(
@@ -61,6 +62,15 @@ export const syncCollection = async (req: Request) => {
                 Label_Id: label.id,
                 Name: label.name,
                 Cat_No: label.catno,
+            })),
+        ),
+    );
+
+    const releaselabelsPromise = syncReleaseLabels(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.labels.map((label: any) => ({
+                Release_Id: el.id,
+                Label_Id: label.id,
             })),
         ),
     );
@@ -82,10 +92,18 @@ export const syncCollection = async (req: Request) => {
     );
 
     // Await all dependent tasks to complete
-    const [artistsSynced, releaseArtistsSynced, labelsSynced, genresSynced, stylesSynced] = await Promise.all([
+    const [
+        artistsSynced,
+        releaseArtistsSynced,
+        labelsSynced,
+        releaseLabelsSynced,
+        genresSynced,
+        stylesSynced,
+    ] = await Promise.all([
         artistsPromise,
         releaseArtistsPromise,
         labelsPromise,
+        releaselabelsPromise,
         genresPromise,
         stylesPromise,
     ]);
@@ -103,6 +121,7 @@ export const syncCollection = async (req: Request) => {
             artists: artistsSynced.length,
             releaseArtists: releaseArtistsSynced.length,
             labels: labelsSynced.length,
+            releaseLabels: releaseLabelsSynced.length,
             genres: genresSynced.length,
             styles: stylesSynced.length,
         },
@@ -115,7 +134,11 @@ export const fetchCollection = async (req: Request) => {
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
 
     // Fetch the first page to get total pages and initial data
-    const firstResponse = await discogsClient(`${endpoint}?page=1&per_page=${perPage}`, 'get', null);
+    const firstResponse = await discogsClient(
+        `${endpoint}?page=1&per_page=${perPage}`,
+        'get',
+        null,
+    );
     const { pages: totalPages } = firstResponse.data.pagination;
 
     // Start with the first page's releases
@@ -124,7 +147,13 @@ export const fetchCollection = async (req: Request) => {
     // Generate promises for the remaining pages
     const pagePromises = [];
     for (let page = 2; page <= totalPages; page++) {
-        pagePromises.push(discogsClient(`${endpoint}?page=${page}&per_page=${perPage}`, 'get', null));
+        pagePromises.push(
+            discogsClient(
+                `${endpoint}?page=${page}&per_page=${perPage}`,
+                'get',
+                null,
+            ),
+        );
     }
 
     // Fetch all pages in parallel

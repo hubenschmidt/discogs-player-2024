@@ -1,6 +1,6 @@
 module.exports = (sequelize: any, DataTypes: any) => {
-    const ReleaseArtist = sequelize.define(
-        'ReleaseArtist',
+    const ReleaseLabel = sequelize.define(
+        'ReleaseLabel',
         {
             Release_Id: {
                 type: DataTypes.INTEGER,
@@ -12,22 +12,22 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
-            Artist_Id: {
+            Label_Id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'Artist',
-                    key: 'Artist_Id',
+                    model: 'Label',
+                    key: 'Label_Id',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
         },
         {
-            tableName: 'ReleaseArtist',
+            tableName: 'ReleaseLabel',
             timestamps: true,
         },
     );
 
-    return ReleaseArtist;
+    return ReleaseLabel;
 };
