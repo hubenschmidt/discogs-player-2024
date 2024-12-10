@@ -19,8 +19,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
             foreignKey: 'User_Id',
         });
 
-        Collection.hasMany(models.Release, {
+        Collection.belongsToMany(models.Release, {
+            through: 'ReleaseCollection',
             foreignKey: 'Collection_Id',
+            otherKey: 'Release_Id',
         });
     };
 

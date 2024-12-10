@@ -21,9 +21,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Year: {
                 type: DataTypes.INTEGER,
             },
-            Collection_Id: {
-                type: DataTypes.INTEGER,
-            },
         },
         {
             tableName: 'Release',

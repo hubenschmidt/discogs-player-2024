@@ -68,9 +68,6 @@ module.exports = {
             Year: {
                 type: Sequelize.INTEGER,
             },
-            Collection_Id: {
-                type: Sequelize.INTEGER,
-            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

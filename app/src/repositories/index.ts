@@ -1,5 +1,5 @@
-import { Request } from 'express';
 const db = require('../models');
+import { Request } from 'express';
 
 export const createUser = async (username: string) => {
     return await db.User.findOrCreate({
@@ -15,32 +15,8 @@ export const createCollection = async (userId: number) => {
     });
 };
 
-export const syncData = async (model: any, data: any[]) => {
-    return await model.bulkCreate(data, { ignoreDuplicates: true });
-};
-
-export const syncReleaseArtists = async (releaseArtists: any[]) => {
-    return syncData(db.ReleaseArtist, releaseArtists);
-};
-
-export const syncLabels = async (labels: any[]) => {
-    return syncData(db.Label, labels);
-};
-
-export const syncReleaseLabels = async (releaseLabels: any[]) => {
-    return syncData(db.ReleaseLabel, releaseLabels);
-};
-
-export const syncGenres = async (genres: any[]) => {
-    return syncData(db.Genre, genres);
-};
-
-export const syncReleaseGenres = async (releaseGenres: any[]) => {
-    return syncData(db.ReleaseGenre, releaseGenres);
-};
-
-export const syncStyles = async (styles: any[]) => {
-    return syncData(db.Style, styles);
+export const syncData = async (model: string, data: any[]) => {
+    return await db[model].bulkCreate(data, { ignoreDuplicates: true });
 };
 
 export const getCollection = async (req: Request) => {
