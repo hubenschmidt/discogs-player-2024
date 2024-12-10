@@ -39,29 +39,48 @@ export const getCollection = async (req: Request) => {
             throw new Error(`Invalid orderBy column: ${orderBy}`);
         }
 
+        // Find the user and their collections
         const user = await db.User.findOne({
             where: { Username: username },
             include: [
                 {
                     model: db.Collection,
+                    include: [
+                        {
+                            model: db.Release, // Include releases through the join table
+                        },
+                    ],
                 },
             ],
         });
 
-        // Find releases with pagination and ordering
+        // Find releases with pagination and ordering through ReleaseCollection
         const releases = await db.Release.findAndCountAll({
-            where: {
-                Collection_Id: user.Collection.Collection_Id,
-            },
+            distinct: true,
+            include: [
+                {
+                    model: db.Collection,
+                    where: {
+                        Collection_Id: user.Collection.Collection_Id,
+                    },
+                    through: { attributes: [] }, // Exclude attributes from the join table
+                },
+                {
+                    model: db.Artist,
+                },
+                {
+                    model: db.Label,
+                },
+                {
+                    model: db.Genre,
+                },
+                {
+                    model: db.Style,
+                },
+            ],
             offset: offset,
             limit: limit,
             order: [[orderBy, order]],
-            include: [
-                {
-                    model: db.Artist,
-                    // order: [['Name', 'DESC']],
-                },
-            ],
         });
 
         return {
@@ -71,7 +90,7 @@ export const getCollection = async (req: Request) => {
             totalReleases: releases.count,
             currentPage: page,
             totalPages: Math.ceil(releases.count / limit),
-            releases: releases,
+            releases: releases.rows,
         };
     } catch (error) {
         console.error('Error fetching collection:', error);
