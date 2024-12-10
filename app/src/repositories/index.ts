@@ -1,5 +1,6 @@
 const db = require('../models');
 import { Request } from 'express';
+import { Op } from 'sequelize';
 
 export const createUser = async (username: string) => {
     return await db.User.findOrCreate({
@@ -22,10 +23,13 @@ export const syncData = async (model: string, data: any[]) => {
 export const getCollection = async (req: Request) => {
     try {
         const { username, genre, style } = req.params;
-        // this is fine for searching for a single genre but we will need to search for an array
 
-        const resolvedGenre = genre && genre !== ':genre' ? genre : null;
-        const resolvedStyle = style && style !== ':style' ? style : null;
+        // Resolve single or multiple genres and styles
+        const resolvedGenres =
+            genre && genre !== ':genre' ? genre.split(',') : null;
+        const resolvedStyles =
+            style && style !== ':style' ? style.split(',') : null;
+
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 25;
         const offset = (page - 1) * limit;
@@ -49,32 +53,34 @@ export const getCollection = async (req: Request) => {
             include: [{ model: db.Collection }],
         });
 
-        // Fetch releases with pagination and optional genre filtering
+        // Fetch releases with pagination and optional genre and style filtering
         const releases = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
             include: [
                 {
                     model: db.Collection,
-                    where: { Collection_Id: user.Collection.Collection_Id }, // Filter by user's collection
+                    where: {
+                        Collection_Id: user.Collection.Collection_Id,
+                    },
                     through: { attributes: [] },
                 },
                 {
                     model: db.Genre,
-                    ...(resolvedGenre && {
+                    ...(resolvedGenres && {
                         where: {
-                            Name: genre,
+                            Name: { [Op.in]: resolvedGenres }, // Filter by an array of genres
                         },
-                        required: true, // Include only releases with the specified genre
+                        required: true,
                     }),
                     through: { attributes: [] },
                 },
                 {
                     model: db.Style,
-                    ...(resolvedStyle && {
+                    ...(resolvedStyles && {
                         where: {
-                            Name: style,
+                            Name: { [Op.in]: resolvedStyles }, // Filter by an array of styles
                         },
-                        required: true, // Include only releases with the specified genre
+                        required: true,
                     }),
                     through: { attributes: [] },
                 },
@@ -101,6 +107,38 @@ export const getCollection = async (req: Request) => {
         };
     } catch (error) {
         console.error('Error fetching collection:', error);
+        throw error;
+    }
+};
+
+export const getStylesByGenre = async (req: Request) => {
+    try {
+        const { genre } = req.params;
+        // Ensure the genre name is provided
+        if (!genre) {
+            throw new Error('Genre name is required');
+        }
+
+        // Query styles linked to the given genre
+        const styles = await db.Style.findAll({
+            include: [
+                {
+                    model: db.Release, // Link through releases
+                    include: [
+                        {
+                            model: db.Genre,
+                            where: { Name: genre }, // Filter by genre name
+                            through: { attributes: [] }, // Exclude join table attributes
+                        },
+                    ],
+                    through: { attributes: [] }, // Exclude join table attributes
+                },
+            ],
+        });
+
+        return styles;
+    } catch (error) {
+        console.error('Error fetching styles by genre:', error);
         throw error;
     }
 };
