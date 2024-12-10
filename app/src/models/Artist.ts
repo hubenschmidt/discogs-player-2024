@@ -12,9 +12,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Date_Added: {
                 type: DataTypes.DATE,
             },
-            Release_Id: {
-                type: DataTypes.INTEGER,
-            },
         },
         {
             tableName: 'Artist',
@@ -23,8 +20,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Artist.associate = (models: any) => {
-        Artist.belongsTo(models.Release, {
-            foreignKey: 'Release_Id',
+        Artist.belongsToMany(models.Release, {
+            through: 'ReleaseArtist',
+            foreignKey: 'Artist_Id',
+            otherKey: 'Release_Id',
         });
     };
 

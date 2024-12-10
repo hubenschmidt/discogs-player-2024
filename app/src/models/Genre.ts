@@ -2,17 +2,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     const Genre = sequelize.define(
         'Genre',
         {
-            Genre_Id: {
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true,
-            },
             Name: {
                 type: DataTypes.STRING,
                 allowNull: false,
-            },
-            Release_Id: {
-                type: DataTypes.INTEGER,
+                primaryKey: true,
             },
         },
         {
@@ -22,8 +15,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Genre.associate = (models: any) => {
-        Genre.belongsTo(models.Release, {
-            foreignKey: 'Release_Id',
+        Genre.belongsToMany(models.Release, {
+            through: 'ReleaseGenre',
+            foreignKey: 'Genre_Name',
+            otherKey: 'Release_Id',
         });
     };
 

@@ -11,6 +11,16 @@ export const syncCollection = async (req: Request, res: Response, next: NextFunc
     }
 };
 
+export const fetchCollection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const collection = await discogsService.fetchCollection(req);
+        res.status(200).json(collection);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const fetchUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { data } = await discogsService.fetchUser(req);

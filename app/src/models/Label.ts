@@ -9,8 +9,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Name: {
                 type: DataTypes.STRING,
             },
-            Release_Id: {
-                type: DataTypes.INTEGER,
+            Cat_No: {
+                type: DataTypes.STRING,
             },
         },
         {
@@ -20,8 +20,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Label.associate = (models: any) => {
-        Label.belongsTo(models.Release, {
-            foreignKey: 'Release_Id',
+        Label.belongsToMany(models.Release, {
+            through: 'ReleaseLabel',
+            foreignKey: 'Label_Id',
+            otherKey: 'Release_Id',
         });
     };
 

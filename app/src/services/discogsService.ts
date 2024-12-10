@@ -1,46 +1,79 @@
 import { Request } from 'express';
 import discogsClient from '../lib/discogsClient';
-import { createUser, createCollection, syncReleases, syncArtists, syncGenres, syncStyles } from '../repositories';
+import {
+    createUser,
+    createCollection,
+    syncReleases,
+    syncArtists,
+    syncLabels,
+    syncGenres,
+    syncStyles,
+} from '../repositories';
 
 export const syncCollection = async (req: Request) => {
-    const collection = await fetchCollection(req);
-    const [user, userCreated] = await createUser(req.params.username);
-    const [userCollection, collectionCreated] = await createCollection(user.User_Id);
+    const discogsCol = await fetchCollection(req);
 
-    const releases = collection.map((item: any) => ({
-        Release_Id: item.id,
-        Title: item.basic_information.title,
-        Year: item.basic_information.year,
-        Thumb: item.basic_information.thumb,
-        Cover_Image: item.basic_information.cover_image,
-        Date_Added: item.date_added,
+    // Fetch or create user and collection
+    const [user, userCreated] = await createUser(req.params.username);
+    const [collection, collectionCreated] = await createCollection(user.User_Id);
+
+    // Prepare release data
+    const releases = discogsCol.map((el: any) => ({
+        Release_Id: el.id,
+        Title: el.basic_information.title,
+        Year: el.basic_information.year,
+        Thumb: el.basic_information.thumb,
+        Cover_Image: el.basic_information.cover_image,
+        Date_Added: el.date_added,
+        Collection_Id: collection.Collection_Id,
     }));
+
+    // Sync releases first (other tasks depend on this)
     const releasesSynced = await syncReleases(releases);
 
-    const artists = collection.flatMap((item: any) =>
-        item.basic_information.artists.map((artist: any) => ({
-            Artist_Id: artist.id,
-            Name: artist.name,
-            Release_Id: item.id,
-        })),
+    // Define promises for parallel tasks
+    const artistsPromise = syncArtists(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.artists.map((artist: any) => ({
+                Artist_Id: artist.id,
+                Name: artist.name,
+            })),
+        ),
     );
-    const artistsSynced = await syncArtists(artists);
 
-    const genres = collection.flatMap((item: any) =>
-        item.basic_information.genres.map((genre: any) => ({
-            Name: genre,
-            Release_Id: item.id,
-        })),
+    const labelsPromise = syncLabels(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.labels.map((label: any) => ({
+                Label_Id: label.id,
+                Name: label.name,
+                Cat_No: label.catno,
+            })),
+        ),
     );
-    const genresSynced = await syncGenres(genres);
 
-    const styles = collection.flatMap((item: any) =>
-        item.basic_information.styles.map((style: any) => ({
-            Name: style,
-            Release_Id: item.id,
-        })),
+    const genresPromise = syncGenres(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.genres.map((genre: any) => ({
+                Name: genre,
+            })),
+        ),
     );
-    const stylesSynced = await syncStyles(styles);
+
+    const stylesPromise = syncStyles(
+        discogsCol.flatMap((el: any) =>
+            el.basic_information.styles.map((style: any) => ({
+                Name: style,
+            })),
+        ),
+    );
+
+    // Await all dependent tasks to complete
+    const [artistsSynced, labelsSynced, genresSynced, stylesSynced] = await Promise.all([
+        artistsPromise,
+        labelsPromise,
+        genresPromise,
+        stylesPromise,
+    ]);
 
     return {
         user: {
@@ -53,6 +86,7 @@ export const syncCollection = async (req: Request) => {
         synced: {
             releases: releasesSynced.length,
             artists: artistsSynced.length,
+            labels: labelsSynced.length,
             genres: genresSynced.length,
             styles: stylesSynced.length,
         },

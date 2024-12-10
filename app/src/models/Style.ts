@@ -2,17 +2,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     const Style = sequelize.define(
         'Style',
         {
-            Style_Id: {
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true,
-            },
             Name: {
                 type: DataTypes.STRING,
+                primaryKey: true,
                 allowNull: false,
-            },
-            Release_Id: {
-                type: DataTypes.INTEGER,
             },
         },
         {
@@ -22,8 +15,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Style.associate = (models: any) => {
-        Style.belongsTo(models.Release, {
-            foreignKey: 'Release_Id',
+        Style.belongsToMany(models.Release, {
+            through: 'ReleaseStyle',
+            foreignKey: 'Style_Name',
+            otherKey: 'Release_Id',
         });
     };
 

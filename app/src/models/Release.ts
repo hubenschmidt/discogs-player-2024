@@ -21,6 +21,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Year: {
                 type: DataTypes.INTEGER,
             },
+            Collection_Id: {
+                type: DataTypes.INTEGER,
+            },
         },
         {
             tableName: 'Release',
@@ -29,16 +32,34 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     Release.associate = (models: any) => {
-        Release.hasMany(models.Artist, {
+        Release.belongsToMany(models.Artist, {
+            through: 'ReleaseArtist',
             foreignKey: 'Release_Id',
+            otherKey: 'Artist_Id',
         });
 
-        Release.hasMany(models.Genre, {
+        Release.belongsToMany(models.Label, {
+            through: 'ReleaseLabel',
             foreignKey: 'Release_Id',
+            otherKey: 'Label_Id',
         });
 
-        Release.hasMany(models.Style, {
+        Release.belongsToMany(models.Genre, {
+            through: 'ReleaseGenre',
             foreignKey: 'Release_Id',
+            otherKey: 'Genre_Name',
+        });
+
+        Release.belongsToMany(models.Style, {
+            through: 'ReleaseStyle',
+            foreignKey: 'Release_Id',
+            otherKey: 'Style_Name',
+        });
+
+        Release.belongsToMany(models.Collection, {
+            through: 'ReleaseCollection',
+            foreignKey: 'Release_Id',
+            otherKey: 'Collection_Id',
         });
     };
 

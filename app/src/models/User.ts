@@ -18,7 +18,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     );
 
     User.associate = (models: any) => {
-        User.hasOne(models.User, {
+        User.hasOne(models.Collection, {
             foreignKey: 'User_Id',
         });
     };
