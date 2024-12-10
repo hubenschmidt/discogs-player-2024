@@ -42,13 +42,13 @@ export const syncStyles = async (styles: any[]) => {
 export const getCollection = async (req: Request) => {
     try {
         const username = req.params.username;
-        const page = parseInt(req.query.page as string) || 1; // Default to page 1
-        const limit = parseInt(req.query.limit as string) || 10; // Default to 10 items per page
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 25;
         const offset = (page - 1) * limit;
 
         // Extract order query parameters and sanitize them
-        const order = (req.query.order as string)?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'; // Default to DESC
-        const orderBy = (req.query.orderBy as string) || 'Release_Id'; // Default column is 'Release_Id'
+        const order = (req.query.order as string)?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const orderBy = (req.query.orderBy as string) || 'Release_Id';
 
         // Validate that `orderBy` is a valid column in the Release table
         const validOrderColumns = ['Release_Id', 'Date_Added', 'Title', 'Year'];
@@ -56,7 +56,6 @@ export const getCollection = async (req: Request) => {
             throw new Error(`Invalid orderBy column: ${orderBy}`);
         }
 
-        // Find user and their collection
         const user = await db.User.findOne({
             where: { Username: username },
             include: [
@@ -66,11 +65,7 @@ export const getCollection = async (req: Request) => {
             ],
         });
 
-        if (!user || !user.Collection) {
-            throw new Error(`User or Collection not found for username: ${username}`);
-        }
-
-        // Find releases with pagination and ordering, including genres and styles
+        // Find releases with pagination and ordering
         const releases = await db.Release.findAndCountAll({
             where: {
                 Collection_Id: user.Collection.Collection_Id,
