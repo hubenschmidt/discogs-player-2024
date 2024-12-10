@@ -1,4 +1,5 @@
 const db = require('../models');
+import { Op } from 'sequelize';
 import { Request } from 'express';
 
 export const createUser = async (username: string) => {
@@ -21,61 +22,67 @@ export const syncData = async (model: string, data: any[]) => {
 
 export const getCollection = async (req: Request) => {
     try {
-        const username = req.params.username;
+        const { username, genre } = req.params;
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 25;
         const offset = (page - 1) * limit;
 
-        // Extract order query parameters and sanitize them
+        // Extract and sanitize order query parameters
         const order =
             (req.query.order as string)?.toUpperCase() === 'ASC'
                 ? 'ASC'
                 : 'DESC';
         const orderBy = (req.query.orderBy as string) || 'Release_Id';
 
-        // Validate that `orderBy` is a valid column in the Release table
+        // Validate the `orderBy` column
         const validOrderColumns = ['Release_Id', 'Date_Added', 'Title', 'Year'];
         if (!validOrderColumns.includes(orderBy)) {
             throw new Error(`Invalid orderBy column: ${orderBy}`);
         }
 
-        // Find the user and their collections
+        // Fetch the user and their collections
         const user = await db.User.findOne({
             where: { Username: username },
-            include: [
-                {
-                    model: db.Collection,
-                    include: [
-                        {
-                            model: db.Release, // Include releases through the join table
-                        },
-                    ],
-                },
-            ],
+            include: [{ model: db.Collection }],
         });
 
-        // Find releases with pagination and ordering through ReleaseCollection
+        // Determine genre filter
+        const genreInclude = {
+            model: db.Genre,
+            ...(genre && {
+                where: {
+                    Name: genre ? genre : genre === ':genre' ? null : null,
+                },
+                required: true, // Include only releases with the specified genre
+            }),
+            through: { attributes: [] }, // Exclude join table attributes
+        };
+
+        // Fetch releases with pagination and optional genre filtering
         const releases = await db.Release.findAndCountAll({
-            distinct: true,
+            distinct: true, // Prevent duplicates
             include: [
                 {
                     model: db.Collection,
-                    where: {
-                        Collection_Id: user.Collection.Collection_Id,
-                    },
-                    through: { attributes: [] }, // Exclude attributes from the join table
+                    where: { Collection_Id: user.Collection.Collection_Id }, // Filter by user's collection
+                    through: { attributes: [] }, // Exclude join table attributes
+                },
+                // genreInclude, // Include genre filter if provided
+                {
+                    model: db.Genre,
+                    through: { attributes: [] },
                 },
                 {
                     model: db.Artist,
+                    through: { attributes: [] }, // Exclude join table attributes
                 },
                 {
                     model: db.Label,
-                },
-                {
-                    model: db.Genre,
+                    through: { attributes: [] }, // Exclude join table attributes
                 },
                 {
                     model: db.Style,
+                    through: { attributes: [] }, // Exclude join table attributes
                 },
             ],
             offset: offset,
@@ -84,9 +91,7 @@ export const getCollection = async (req: Request) => {
         });
 
         return {
-            user: {
-                username: user.Username,
-            },
+            user: { username },
             totalReleases: releases.count,
             currentPage: page,
             totalPages: Math.ceil(releases.count / limit),
