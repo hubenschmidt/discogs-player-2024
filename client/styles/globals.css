@@ -23,45 +23,26 @@ header {
         0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Header Navigation */
+header nav {
+    display: flex;
+    justify-content: space-between; /* Push left and right elements apart */
+    align-items: center;
+    padding: 10px 20px;
+    width: 100%;
+}
+
 header nav a {
     text-decoration: none;
     color: #333;
     margin-right: 20px;
     font-size: 13px;
     font-weight: bold;
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
     transition: color 0.2s ease;
 }
 
 header nav a:hover {
-    color: #005faa; /* Darker blue hover */
-}
-
-/* Volume slider (iTunes 5 refined version) */
-.volume-slider {
-    margin-left: auto;
-    background: linear-gradient(to bottom, #d0d0d0, #b0b0b0);
-    border: 1px solid #8b8b8b;
-    border-radius: 5px;
-    width: 100px;
-    height: 12px;
-    position: relative;
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2),
-        0px 1px 1px rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-}
-
-.volume-slider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 10%;
-    width: 40%;
-    height: 100%;
-    background: linear-gradient(to bottom, #0078d7, #0056b3);
-    transform: translateY(-50%);
-    border-radius: 5px;
-    box-shadow: inset 0px 1px 1px rgba(255, 255, 255, 0.6);
+    color: #ffffff;
 }
 
 /* Main layout structure */
@@ -202,27 +183,9 @@ body.dark-mode .dark-mode-button {
     border-color: #555; /* Darker border for Dark Mode */
 }
 
-/* Dark Mode Button */
-.dark-mode-button {
-    background: transparent;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    color: #333;
-    font-weight: bold;
-    transition: color 0.3s ease, border-color 0.3s ease;
-}
-
 /* Show menu on hover */
 .dropdown:hover .dropdown-menu {
     display: block;
-}
-
-/* Dropdown Items */
-.dropdown-item:hover {
-    background-color: #0078d7;
-    color: #fff;
 }
 
 /* Dark Mode Styles */
@@ -339,9 +302,9 @@ body.blue-mode .sidebar ul li:hover {
 
 /* Dropdown General Styling */
 .dropdown {
-    position: relative;
-    display: inline-block;
-    margin-left: auto;
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
 .dark-mode-button {
@@ -364,7 +327,7 @@ body.blue-mode .sidebar ul li:hover {
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-    width: auto;
+    white-space: nowrap;
     z-index: 1000;
 }
 

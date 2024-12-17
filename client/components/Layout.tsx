@@ -31,38 +31,36 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
             <header>
                 <nav style={{ display: 'flex', width: '100%' }}>
                     <div>
-                        <Link href="/">Home</Link> |{' '}
                         <Link href="/board">Message Board</Link>
-                    </div>
-                    {/* Dropdown */}
-                    <div className="dropdown">
-                        <button className="dark-mode-button">
-                            {theme.charAt(0).toUpperCase() + theme.slice(1)}{' '}
-                        </button>
-                        <div className="dropdown-menu">
-                            <div
-                                onClick={() => setTheme('light')}
-                                className="dropdown-item"
-                            >
-                                Light
-                            </div>
-                            <div
-                                onClick={() => setTheme('dark')}
-                                className="dropdown-item"
-                            >
-                                Night
-                            </div>
-                            <div
-                                onClick={() => setTheme('red')}
-                                className="dropdown-item"
-                            >
-                                Red
-                            </div>
-                            <div
-                                onClick={() => setTheme('blue')}
-                                className="dropdown-item"
-                            >
-                                Blue
+                        <div className="dropdown">
+                            <button className="dark-mode-button">
+                                {theme.charAt(0).toUpperCase() + theme.slice(1)}{' '}
+                            </button>
+                            <div className="dropdown-menu">
+                                <div
+                                    onClick={() => setTheme('light')}
+                                    className="dropdown-item"
+                                >
+                                    Light
+                                </div>
+                                <div
+                                    onClick={() => setTheme('dark')}
+                                    className="dropdown-item"
+                                >
+                                    Night
+                                </div>
+                                <div
+                                    onClick={() => setTheme('red')}
+                                    className="dropdown-item"
+                                >
+                                    Red
+                                </div>
+                                <div
+                                    onClick={() => setTheme('blue')}
+                                    className="dropdown-item"
+                                >
+                                    Blue
+                                </div>
                             </div>
                         </div>
                     </div>
