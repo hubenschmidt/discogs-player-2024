@@ -8,16 +8,15 @@ type Props = {
 };
 
 const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [theme, setTheme] = useState<'light' | 'dark' | 'red' | 'blue'>(
+        'light',
+    );
 
-    // Toggle dark mode class on the body
+    // Apply theme to body
     useEffect(() => {
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-    }, [isDarkMode]);
+        document.body.className = ''; // Clear previous theme classes
+        document.body.classList.add(`${theme}-mode`);
+    }, [theme]);
 
     return (
         <div>
@@ -33,32 +32,37 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
                 <nav style={{ display: 'flex', width: '100%' }}>
                     <div>
                         <Link href="/">Home</Link> |{' '}
-                        <Link href="/about">About</Link> |{' '}
-                        <Link href="/users">Users List</Link> |{' '}
                         <Link href="/board">Message Board</Link>
                     </div>
-                    {/* Dropdown Parent */}
+                    {/* Dropdown */}
                     <div className="dropdown">
-                        <button
-                            className={`dark-mode-button ${
-                                isDarkMode ? 'dark' : ''
-                            }`}
-                        >
-                            {isDarkMode ? 'Light Mode' : 'Night Mode'}
+                        <button className="dark-mode-button">
+                            {theme.charAt(0).toUpperCase() + theme.slice(1)}{' '}
                         </button>
-                        {/* Dropdown Menu */}
                         <div className="dropdown-menu">
                             <div
-                                onClick={() => setIsDarkMode(false)}
+                                onClick={() => setTheme('light')}
                                 className="dropdown-item"
                             >
-                                Light Mode
+                                Light
                             </div>
                             <div
-                                onClick={() => setIsDarkMode(true)}
+                                onClick={() => setTheme('dark')}
                                 className="dropdown-item"
                             >
-                                Dark Mode
+                                Night
+                            </div>
+                            <div
+                                onClick={() => setTheme('red')}
+                                className="dropdown-item"
+                            >
+                                Red
+                            </div>
+                            <div
+                                onClick={() => setTheme('blue')}
+                                className="dropdown-item"
+                            >
+                                Blue
                             </div>
                         </div>
                     </div>
@@ -69,14 +73,14 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
                     <p>Library</p>
                     <ul>
                         <li>Music</li>
-                        <li>Movies</li>
-                        <li>Podcasts</li>
+                        {/* <li>Movies</li>
+                        <li>Podcasts</li> */}
                     </ul>
                 </aside>
                 <main className="content">{children}</main>
             </div>
             <footer>
-                <span>iTunes Clone Footer</span>
+                <span>Ⓒopywr0ng™ WiLliⒶMr0y</span>
             </footer>
         </div>
     );
