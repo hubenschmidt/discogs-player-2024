@@ -8,6 +8,13 @@ type Props = {
     title?: string;
 };
 
+// Mock TrackDetail Component
+const TrackDetail = () => (
+    <div className="track-detail">
+        <p>Now Playing: "Mock Artist - Mock Track" - 01:23 / 03:45</p>
+    </div>
+);
+
 const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
     const [theme, setTheme] = useState<'light' | 'dark' | 'red' | 'blue'>(
         'light',
@@ -36,8 +43,12 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
                 <nav className="nav-container">
                     {/* Music Player Centered */}
 
-                    <div className="nav-center">
+                    <div className="nav-left">
                         <MusicPlayer />
+                    </div>
+
+                    <div className="nav-center">
+                        <TrackDetail />
                     </div>
 
                     {/* Theme Dropdown */}
