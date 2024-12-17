@@ -30,13 +30,12 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
                 />
             </Head>
 
-            {/* TuneCrook Title */}
-
             {/* Header with Nav and Music Player */}
             <header>
                 <div className="app-title">TuneCrook</div>
                 <nav className="nav-container">
                     {/* Music Player Centered */}
+
                     <div className="nav-center">
                         <MusicPlayer />
                     </div>
