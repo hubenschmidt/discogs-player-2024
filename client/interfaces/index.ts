@@ -4,7 +4,22 @@
 //
 // import { User } from 'path/to/interfaces';
 
-export type User = {
-    id: number;
-    name: string;
-};
+import React, { Dispatch } from 'react';
+
+export interface ThemeContextProps {
+    themeState: ThemeState;
+    dispatchTheme: Dispatch<Action>;
+}
+
+export interface ThemeState {
+    theme: string;
+}
+
+export interface Action {
+    type: string;
+    payload: any;
+}
+
+export interface ThemeAction extends Action {
+    type: 'SET_THEME';
+}

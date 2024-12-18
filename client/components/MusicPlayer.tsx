@@ -2,7 +2,7 @@ import React from 'react';
 
 const MusicPlayer = () => {
     return (
-        <div className="music-player">
+        <div>
             <button className="player-button">⏮</button>
             <button className="player-button">⏯</button>
             <button className="player-button">⏭</button>

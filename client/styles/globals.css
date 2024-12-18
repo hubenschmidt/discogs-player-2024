@@ -3,202 +3,26 @@ body {
     font-family: 'Lucida Grande', Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #c9c9c9; /* Slightly darker gray background */
+    background-color: #c9c9c9; /* Slightly nighter gray background */
     color: #333; /* Text for readability */
 }
-
-/* Header styling */
-header {
-    background: linear-gradient(
-        to bottom,
-        #e6e6e6,
-        #bdbdbd
-    ); /* Darker gray gradient */
-    border-bottom: 1px solid #8b8b8b; /* Sharper bottom border */
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: inset 0px 1px 2px rgba(255, 255, 255, 0.8),
-        0px 2px 4px rgba(0, 0, 0, 0.2);
+[class*='col'] {
+    border: 1px solid #ccc !important;
+    padding: 10px !important;
+    background-color: #f8f9fa; /* Light gray for better visibility */
 }
 
-/* Header Navigation */
-header nav {
-    display: flex;
-    justify-content: space-between; /* Push left and right elements apart */
-    align-items: center;
-    padding: 10px 20px;
-    width: 100%;
-}
-
-header nav a {
-    text-decoration: none;
-    color: #333;
-    margin-right: 20px;
-    font-size: 13px;
-    font-weight: bold;
-    transition: color 0.2s ease;
-}
-
-header nav a:hover {
-    color: #ffffff;
-}
-
-/* Main layout structure */
-.main-content {
-    display: flex;
-    min-height: 80vh;
-    background: #f6f6f6; /* Slightly off-white */
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar {
-    width: 200px;
-    background: linear-gradient(to bottom, #e0e0e0, #bdbdbd);
-    border-right: 1px solid #8b8b8b;
-    padding: 15px;
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2),
-        1px 0px 2px rgba(255, 255, 255, 0.5);
-}
-
-.sidebar p {
-    margin: 0;
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-}
-
-.sidebar ul li {
-    padding: 5px 0;
-    font-size: 13px;
-    color: #444;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.sidebar ul li:hover {
-    color: #005faa;
-    text-decoration: underline;
-}
-
-/* Main content area */
-.content {
-    flex: 1;
-    padding: 20px;
-    background: linear-gradient(to bottom, #fafafa, #ededed);
-    border-left: 1px solid #d0d0d0;
-    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Footer styling */
-footer {
-    background: linear-gradient(to bottom, #e6e6e6, #bdbdbd);
-    border-top: 1px solid #8b8b8b;
-    padding: 10px;
-    text-align: center;
-    font-size: 11px;
-    color: #666;
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1),
-        0px -1px 1px rgba(255, 255, 255, 0.5);
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
-}
-
-/* Dark mode styles */
-body.dark-mode {
-    background-color: #333;
-    color: #e0e0e0;
-}
-
-/* Ensure all child elements inherit the light text color */
-body.dark-mode * {
-    color: inherit;
-}
-
-body.dark-mode header {
-    background: linear-gradient(to bottom, #444, #222);
-    border-bottom: 1px solid #000;
-}
-
-body.dark-mode nav a {
-    color: #e0e0e0;
-}
-
-body.dark-mode nav a:hover {
-    color: #0078d7;
-}
-
-body.dark-mode .sidebar {
-    background: linear-gradient(to bottom, #555, #333);
-    border-right: 1px solid #000;
-}
-
-body.dark-mode .content {
-    background: linear-gradient(to bottom, #444, #333);
-    border-left: 1px solid #222;
-}
-
-body.dark-mode footer {
-    background: #222;
-    color: #e0e0e0;
-    border-top: 1px solid #000;
-}
-
-/* Dark mode styles for sidebar text */
-body.dark-mode .sidebar p {
-    color: #e0e0e0;
-    text-shadow: none;
-}
-
-body.dark-mode .sidebar ul li {
-    color: #cccccc;
-}
-
-body.dark-mode .sidebar ul li:hover {
-    color: #0078d7; /* Keep hover consistent */
-    text-decoration: underline;
-}
-
-/* Button styling */
-.dark-mode-button {
-    margin-left: auto;
-    background: transparent;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    color: #333;
-    font-weight: bold;
-    transition: color 0.3s ease, border-color 0.3s ease;
-}
-
-body.dark-mode .dark-mode-button {
-    color: #e0e0e0; /* Light text color */
-    border-color: #555; /* Darker border for Dark Mode */
-}
-
-/* Show menu on hover */
-.dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-/* Dark Mode Styles */
-body.dark-mode .dropdown-menu {
+/* night Mode Styles */
+body.night-mode .dropdown-menu {
     background-color: #333;
     border-color: #555;
 }
 
-body.dark-mode .dropdown-item {
+body.night-mode .dropdown-item {
     color: #e0e0e0;
 }
 
-body.dark-mode .dropdown-item:hover {
+body.night-mode .dropdown-item:hover {
     background-color: #555;
     color: #fff;
 }
@@ -214,8 +38,8 @@ body.light-mode {
     color: #333;
 }
 
-/* Dark Mode */
-body.dark-mode {
+/* night Mode */
+body.night-mode {
     background-color: #333;
     color: #e0e0e0;
 }
@@ -307,7 +131,7 @@ body.blue-mode .sidebar ul li:hover {
     right: 10px;
 }
 
-.dark-mode-button {
+.night-mode-button {
     background: transparent;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -349,13 +173,13 @@ body.blue-mode .sidebar ul li:hover {
 }
 
 /* Red Mode - Dropdown Styling */
-body.red-mode .dark-mode-button {
+body.red-mode .night-mode-button {
     color: #ffffff; /* White text for button */
     border-color: #770000; /* Red border */
 }
 
 body.red-mode .dropdown-menu {
-    background-color: #660000; /* Dark red dropdown background */
+    background-color: #660000; /* night red dropdown background */
     border-color: #550000;
 }
 
@@ -369,13 +193,13 @@ body.red-mode .dropdown-item:hover {
 }
 
 /* Blue Mode - Dropdown Styling */
-body.blue-mode .dark-mode-button {
+body.blue-mode .night-mode-button {
     color: #ffffff; /* White text for button */
     border-color: #002b77; /* Blue border */
 }
 
 body.blue-mode .dropdown-menu {
-    background-color: #003366; /* Dark blue dropdown background */
+    background-color: #003366; /* night blue dropdown background */
     border-color: #002244;
 }
 
@@ -386,195 +210,4 @@ body.blue-mode .dropdown-item {
 body.blue-mode .dropdown-item:hover {
     background-color: #0044aa; /* Lighter blue hover */
     color: #ffffff;
-}
-
-/* Media Queries for Responsive Design */
-@media (max-width: 768px) {
-    /* Header adjustments */
-    header {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    nav {
-        flex-direction: column;
-    }
-
-    nav > div {
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    /* Ensure Light Mode button stays at the top-right */
-    .dropdown {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        margin-top: 0; /* Override default margin */
-    }
-
-    .dark-mode-button {
-        width: 100%;
-    }
-
-    /* Sidebar adjustments */
-    .sidebar {
-        width: 100%;
-        text-align: center;
-        border-right: none;
-        border-bottom: 1px solid #ccc;
-    }
-
-    .sidebar ul {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    /* Content adjustments */
-    .main-content {
-        flex-direction: column;
-    }
-
-    .content {
-        padding: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    nav > div {
-        text-align: center;
-        font-size: 14px;
-    }
-
-    .sidebar p {
-        font-size: 14px;
-    }
-
-    .sidebar ul li {
-        font-size: 12px;
-    }
-
-    .dropdown-menu {
-        position: static;
-        margin-top: 5px;
-        box-shadow: none;
-    }
-
-    .dark-mode-button {
-        font-size: 12px;
-        padding: 8px;
-    }
-}
-
-/* App Title Styling */
-.app-title {
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 10px;
-    color: #333;
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
-}
-
-/* Nav Container */
-.nav-container {
-    display: flex;
-    justify-content: space-between; /* Space out left and right nav sections */
-    align-items: center; /* Vertically center items */
-    position: relative; /* Allow absolute positioning for nav-center */
-    padding: 0 10px; /* Add some padding for aesthetics */
-    width: 100%; /* Ensure full width */
-    padding: 40px 0px;
-}
-
-/* Music Player */
-/* App Title Styling */
-.app-title {
-    position: absolute;
-    top: 5px; /* Adjust spacing from the top */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 13px; /* Match the text size */
-    font-weight: bold;
-    color: #333; /* Same as other header text */
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
-    margin: 0; /* Remove default margin */
-    white-space: nowrap; /* Prevent wrapping */
-}
-
-/* Music Player - Centered */
-.music-player {
-    position: absolute;
-    left: 50%; /* Move to center horizontally */
-    transform: translateX(-50%); /* Adjust for perfect centering */
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Player Buttons */
-.player-button {
-    background: transparent;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    padding: 5px 8px;
-    cursor: pointer;
-    font-size: 16px;
-    color: #333;
-    transition: background 0.3s ease;
-}
-
-.player-button:hover {
-    background-color: #e0e0e0;
-}
-
-.player-slider {
-    -webkit-appearance: none;
-    width: 120px;
-    height: 6px;
-    background: #ddd;
-    border-radius: 5px;
-    outline: none;
-}
-
-.player-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #0078d7;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-/* Music Player Upper Left */
-.nav-left {
-    position: relative;
-    left: 200px; /* Align to the right edge */
-    top: 50%;
-    transform: translateY(-50%); /* Vertically center */
-}
-
-/* Track Detail Centered */
-.nav-center {
-    position: absolute; /* Center this absolutely within nav-container */
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #f4f1e8;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    border-radius: 5px;
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.2);
-    font-size: 13px;
-    color: #333;
-    white-space: nowrap;
-}
-
-/* Theme Dropdown Upper Right */
-.nav-right {
-    position: absolute;
-    right: 10px; /* Align to the right edge */
-    top: 50%;
-    transform: translateY(-50%); /* Vertically center */
 }

@@ -1,7 +1,9 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import MusicPlayer from './MusicPlayer';
+import ThemePicker from './Dropdown';
+import { ThemeContext } from '../context/themeContext';
 
 type Props = {
     children?: ReactNode;
@@ -15,16 +17,14 @@ const TrackDetail = () => (
     </div>
 );
 
-const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
-    const [theme, setTheme] = useState<'light' | 'dark' | 'red' | 'blue'>(
-        'light',
-    );
+const Layout = ({ children, title = 'TuneCrook' }: Props) => {
+    const { themeState } = useContext(ThemeContext);
 
     // Apply theme to body
     useEffect(() => {
         document.body.className = ''; // Clear previous theme classes
-        document.body.classList.add(`${theme}-mode`);
-    }, [theme]);
+        document.body.classList.add(`${themeState.theme}-mode`);
+    }, [themeState.theme]);
 
     return (
         <div>
@@ -35,70 +35,55 @@ const Layout = ({ children, title = '2004 iTunes Clone' }: Props) => {
                     name="viewport"
                     content="initial-scale=1.0, width=device-width"
                 />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet"
+                />
             </Head>
 
-            {/* Header with Nav and Music Player */}
-            <header>
-                <div className="app-title">TuneCrook</div>
-                <nav className="nav-container">
-                    {/* Music Player Centered */}
+            <body>
+                <div className="container-fluid">
+                    <div className="row">
+                        <div className="col"></div>
+                        <div className="col">
+                            <p className="text-center">TuneCrook</p>
+                        </div>
 
-                    <div className="nav-left">
-                        <MusicPlayer />
+                        <div className="col"></div>
                     </div>
+                    <div className="row">
+                        <div className="col-1"></div>
 
-                    <div className="nav-center">
-                        <TrackDetail />
-                    </div>
+                        <div className="col-3">
+                            <MusicPlayer />
+                        </div>
 
-                    {/* Theme Dropdown */}
-                    <div className="nav-right dropdown">
-                        <button className="dark-mode-button">
-                            {theme.charAt(0).toUpperCase() + theme.slice(1)}{' '}
-                        </button>
-                        <div className="dropdown-menu">
-                            <div
-                                onClick={() => setTheme('light')}
-                                className="dropdown-item"
-                            >
-                                Light
-                            </div>
-                            <div
-                                onClick={() => setTheme('dark')}
-                                className="dropdown-item"
-                            >
-                                Night
-                            </div>
-                            <div
-                                onClick={() => setTheme('red')}
-                                className="dropdown-item"
-                            >
-                                Red
-                            </div>
-                            <div
-                                onClick={() => setTheme('blue')}
-                                className="dropdown-item"
-                            >
-                                Blue
-                            </div>
+                        <div className="col-4">
+                            <TrackDetail />
+                        </div>
+
+                        <div className="col">
+                            <p className="text-center">Column 5</p>
+                        </div>
+                        <div className="col">
+                            <ThemePicker />
                         </div>
                     </div>
-                </nav>
-            </header>
+                </div>
+                <div className="main-content">
+                    <aside className="sidebar">
+                        <p>Library</p>
+                        <ul>
+                            <li>Music</li>
+                        </ul>
+                    </aside>
+                    <main className="content">{children}</main>
+                </div>
 
-            <div className="main-content">
-                <aside className="sidebar">
-                    <p>Library</p>
-                    <ul>
-                        <li>Music</li>
-                    </ul>
-                </aside>
-                <main className="content">{children}</main>
-            </div>
-
-            <footer>
-                <span>Ⓒopywr0ng™ WiLliⒶMr0y</span>
-            </footer>
+                <footer>
+                    <span>Ⓒopywr0ng™ WiLliⒶMr0y</span>
+                </footer>
+            </body>
         </div>
     );
 };
