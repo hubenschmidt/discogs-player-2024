@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, FC } from 'react';
-import { getCollection, getRelease } from '../api';
+import React, { useState, useEffect, useContext, useRef, FC } from 'react';
+import { getCollection } from '../api';
 import { Release, CollectionResponse } from '../interfaces'; // your local types
-
 import {
     ChevronLeft,
     ChevronRight,
@@ -10,6 +9,7 @@ import {
     List,
 } from 'lucide-react';
 import VideoPlaylist from './VideoPlaylist';
+import { CollectionContext } from '../context/collectionContext';
 
 // Mantine components
 import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
@@ -45,80 +45,77 @@ function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
 }
 
 const VinylShelf: FC = () => {
-    const [records, setRecords] = useState<Release[]>([]);
+    const { collectionState, dispatchCollection } =
+        useContext(CollectionContext);
+    const { releases, totalPages } = collectionState;
     const [selectedRecord, setSelectedRecord] = useState<Release>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
 
     // Items per page (limit)
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
-
-    // For “Go to Page” input
-    const [goToPage, setGoToPage] = useState<string>('');
-
     // Reference to the shelf container so we can reset scrollLeft
     const shelfRef = useRef<HTMLDivElement>(null);
 
     // Fetch data from server whenever currentPage or itemsPerPage changes
     useEffect(() => {
-        setRecords([]); // Clear existing while fetching
         getCollection({
             username: 'hubenschmidt',
             page: currentPage,
             limit: itemsPerPage,
         })
-            .then((collection: CollectionResponse) => {
-                setRecords(collection.releases || []);
-                setTotalPages(collection.totalPages || 1);
+            .then(collection => {
+                dispatchCollection({
+                    type: 'SET_COLLECTION',
+                    payload: collection,
+                });
             })
             .catch(error => console.error(error));
     }, [currentPage, itemsPerPage]);
 
-    // Click a record => reorder so that record is center, then reset scroll
+    // Click a record => reorder so that record is center, then reset scroll, and set selectedRecord
     const handleRecordClick = (record: Release, index: number) => {
-        setRecords(prevRecords => {
-            const reordered = reorderRecords(prevRecords, index);
-            if (shelfRef.current) {
-                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-            }
-            return reordered;
+        const newReleases = reorderRecords(releases, index);
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { releases: newReleases },
         });
-
         setSelectedRecord(record);
 
-        // getRelease(record.Release_Id)
-        //     .then(release => console.log(release))
-        //     .catch(error => console.log(error));
+        if (shelfRef.current) {
+            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        }
     };
 
     // LOCAL "SHELF" PAGING
     const handleShelfPrev = () => {
-        setRecords(prev => {
-            if (prev.length < 2) return prev;
-            const n = prev.length;
-            const mid = Math.floor((n - 1) / 2);
-            const newIndex = (mid - 1 + n) % n;
-            const reordered = reorderRecords(prev, newIndex);
-            if (shelfRef.current) {
-                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-            }
-            return reordered;
+        if (releases.length < 2) return;
+        const n = releases.length;
+        const mid = Math.floor((n - 1) / 2);
+        const newIndex = (mid - 1 + n) % n;
+        const newReleases = reorderRecords(releases, newIndex);
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { releases: newReleases },
         });
+        if (shelfRef.current) {
+            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        }
     };
 
     const handleShelfNext = () => {
-        setRecords(prev => {
-            if (prev.length < 2) return prev;
-            const n = prev.length;
-            const mid = Math.floor((n - 1) / 2);
-            const newIndex = (mid + 1) % n;
-            const reordered = reorderRecords(prev, newIndex);
-            if (shelfRef.current) {
-                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-            }
-            return reordered;
+        if (releases.length < 2) return;
+        const n = releases.length;
+        const mid = Math.floor((n - 1) / 2);
+        const newIndex = (mid + 1) % n;
+        const newReleases = reorderRecords(releases, newIndex);
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { releases: newReleases },
         });
+        if (shelfRef.current) {
+            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        }
     };
 
     // SERVER PAGING CONTROLS
@@ -153,13 +150,13 @@ const VinylShelf: FC = () => {
                     <Group className="shelf-pagination" mb="md">
                         <ActionIcon
                             onClick={handleShelfPrev}
-                            disabled={records.length < 2}
+                            disabled={releases?.length < 2}
                         >
                             <ChevronLeft size={16} />
                         </ActionIcon>
                         <ActionIcon
                             onClick={handleShelfNext}
-                            disabled={records.length < 2}
+                            disabled={releases?.length < 2}
                         >
                             <ChevronRight size={16} />
                         </ActionIcon>
@@ -167,8 +164,9 @@ const VinylShelf: FC = () => {
 
                     {/* The shelf itself, with ref */}
                     <div className="vinyl-shelf" ref={shelfRef}>
-                        {records.map((record, i) => {
-                            const n = records.length;
+                        {releases?.map((release, i) => {
+                            console.log('release', release.Thumb);
+                            const n = releases?.length;
                             let angle = 0;
                             if (n > 1) {
                                 angle = -90 + 180 * (i / (n - 1));
@@ -176,26 +174,28 @@ const VinylShelf: FC = () => {
 
                             return (
                                 <Box
-                                    key={record.Release_Id}
+                                    key={release.Release_Id}
                                     className="vinyl-record"
                                     style={{
                                         transform: `rotateY(${angle.toFixed(
                                             2,
                                         )}deg)`,
                                     }}
-                                    onClick={() => handleRecordClick(record, i)}
+                                    onClick={() =>
+                                        handleRecordClick(release, i)
+                                    }
                                 >
                                     <Box
                                         className="record-cover"
                                         style={{
                                             backgroundImage: `url(${
-                                                record.Thumb ||
+                                                release.Thumb ||
                                                 '/default-img.jpg'
                                             })`,
                                         }}
                                     />
                                     <Text className="record-title">
-                                        {record.Title}
+                                        {release.Title}
                                     </Text>
                                 </Box>
                             );

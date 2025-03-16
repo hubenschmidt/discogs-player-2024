@@ -9,7 +9,8 @@ const extractYouTubeVideoId = (url: string): string | null => {
         const parsedUrl = new URL(url);
         if (parsedUrl.hostname.includes('youtube.com')) {
             return parsedUrl.searchParams.get('v');
-        } else if (parsedUrl.hostname === 'youtu.be') {
+        }
+        if (parsedUrl.hostname === 'youtu.be') {
             return parsedUrl.pathname.slice(1);
         }
         return null;

@@ -10,12 +10,21 @@ export interface ThemeState {
 }
 
 export interface Action {
-    type: string;
+    type: any;
     payload: any;
 }
 
 export interface ThemeAction extends Action {
     type: 'SET_THEME';
+}
+
+export interface CollectionContextProps {
+    collectionState: CollectionState;
+    dispatchCollection: Dispatch<Action>;
+}
+
+export interface CollectionState {
+    collection: any;
 }
 
 export interface Video {
