@@ -1,8 +1,18 @@
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect, useRef, FC } from 'react';
 import { getCollection } from '../api';
-import { Release, CollectionResponse } from '../types'; // Or wherever you keep them
+import { Release, CollectionResponse } from '../interfaces'; // your local types
 
-// Helper to reorder records around the selected item
+// Import Lucide icons you plan to use
+import {
+    ChevronLeft,
+    ChevronRight,
+    SkipBack,
+    SkipForward,
+    List,
+    Search,
+    ArrowRightCircle,
+} from 'lucide-react';
+
 function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
     const n = records.length;
     if (n < 2) return records;
@@ -38,58 +48,95 @@ const VinylShelf: FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
 
-    // Fetch from server whenever `currentPage` changes
+    // Items per page (limit)
+    const [itemsPerPage, setItemsPerPage] = useState<number>(25);
+
+    // For “Go to Page” input
+    const [goToPage, setGoToPage] = useState<string>('');
+
+    // Reference to the shelf container so we can reset scrollLeft
+    const shelfRef = useRef<HTMLDivElement>(null);
+
+    // Fetch data from server whenever currentPage or itemsPerPage changes
     useEffect(() => {
-        setRecords([]);
+        setRecords([]); // Clear existing while fetching
         getCollection({
             username: 'hubenschmidt',
             page: currentPage,
+            limit: itemsPerPage,
         })
             .then((data: CollectionResponse) => {
                 setRecords(data.releases || []);
                 setTotalPages(data.totalPages || 1);
             })
-            .catch((error: any) => console.error(error));
-    }, [currentPage]);
+            .catch(error => console.error(error));
+    }, [currentPage, itemsPerPage]);
 
-    // Click a record to make it the center
+    // Click a record => reorder so that record is center, then reset scroll
     const handleRecordClick = (index: number) => {
-        setRecords(prev => reorderRecords(prev, index));
-    };
-
-    // ========== SERVER PAGING ==========
-    const handlePrevPage = () => {
-        setCurrentPage(p => Math.max(1, p - 1));
-    };
-    const handleNextPage = () => {
-        setCurrentPage(p => Math.min(totalPages, p + 1));
-    };
-
-    // ========== LOCAL “SHELF” PAGING (within the current array) ==========
-
-    const handleShelfPrev = () => {
         setRecords(prevRecords => {
-            const n = prevRecords.length;
-            if (n < 2) return prevRecords;
+            const reordered = reorderRecords(prevRecords, index);
+            if (shelfRef.current) {
+                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+            return reordered;
+        });
+    };
 
-            const middleIndex = Math.floor((n - 1) / 2);
-            // The item *currently* at middleIndex is the center.
-            // The item “before” it is (middleIndex - 1) mod n – that becomes our new center.
-            const newIndex = (middleIndex - 1 + n) % n;
-            return reorderRecords(prevRecords, newIndex);
+    // LOCAL "SHELF" PAGING
+    const handleShelfPrev = () => {
+        setRecords(prev => {
+            if (prev.length < 2) return prev;
+            const n = prev.length;
+            const mid = Math.floor((n - 1) / 2);
+            const newIndex = (mid - 1 + n) % n;
+            const reordered = reorderRecords(prev, newIndex);
+            if (shelfRef.current) {
+                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+            return reordered;
         });
     };
 
     const handleShelfNext = () => {
-        setRecords(prevRecords => {
-            const n = prevRecords.length;
-            if (n < 2) return prevRecords;
-
-            const middleIndex = Math.floor((n - 1) / 2);
-            // The item “after” it is (middleIndex + 1) mod n – that becomes the new center.
-            const newIndex = (middleIndex + 1) % n;
-            return reorderRecords(prevRecords, newIndex);
+        setRecords(prev => {
+            if (prev.length < 2) return prev;
+            const n = prev.length;
+            const mid = Math.floor((n - 1) / 2);
+            const newIndex = (mid + 1) % n;
+            const reordered = reorderRecords(prev, newIndex);
+            if (shelfRef.current) {
+                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+            return reordered;
         });
+    };
+
+    // SERVER PAGING CONTROLS
+    const handleFirstPage = () => setCurrentPage(1);
+    const handlePrevPage = () => setCurrentPage(p => Math.max(1, p - 1));
+    const handleNextPage = () =>
+        setCurrentPage(p => Math.min(totalPages, p + 1));
+    const handleLastPage = () => setCurrentPage(totalPages);
+
+    // “Go to Page”
+    const handleGoToPage = () => {
+        if (!goToPage) return;
+        let target = parseInt(goToPage, 10);
+        if (isNaN(target)) return;
+        if (target < 1) target = 1;
+        if (target > totalPages) target = totalPages;
+        setCurrentPage(target);
+        setGoToPage('');
+    };
+
+    // Items Per Page
+    const handleItemsPerPageChange = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const newLimit = parseInt(e.target.value, 10);
+        setItemsPerPage(newLimit);
+        setCurrentPage(1);
     };
 
     return (
@@ -97,19 +144,21 @@ const VinylShelf: FC = () => {
             {/* Local Shelf Paging Buttons */}
             <div className="shelf-pagination">
                 <button onClick={handleShelfPrev} disabled={records.length < 2}>
-                    Shelf Prev
+                    <ChevronLeft size={16} />
                 </button>
                 <button onClick={handleShelfNext} disabled={records.length < 2}>
-                    Shelf Next
+                    <ChevronRight size={16} />
                 </button>
             </div>
-            <div className="vinyl-shelf">
+
+            {/* The shelf itself, with ref */}
+            <div className="vinyl-shelf" ref={shelfRef}>
                 {records.map((record, i) => {
                     const n = records.length;
                     let angle = 0;
 
-                    // Interpolate from +90° (at i=0) to -90° (at i=n-1)
                     if (n > 1) {
+                        // Interpolate from +90° (i=0) to -90° (i=n-1)
                         angle = -90 + 180 * (i / (n - 1));
                     }
 
@@ -133,17 +182,60 @@ const VinylShelf: FC = () => {
                 })}
             </div>
 
+            {/* Items Per Page */}
+            <div className="shelf-pagination">
+                <label>
+                    <List size={16} /> Items Per Page:{' '}
+                    <select
+                        value={itemsPerPage}
+                        onChange={handleItemsPerPageChange}
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                    </select>
+                </label>
+            </div>
+
+            {/* Go To Page */}
+            <div className="shelf-pagination">
+                <label>
+                    <Search size={16} /> Go To Page:{' '}
+                    <input
+                        type="text"
+                        value={goToPage}
+                        onChange={e => setGoToPage(e.target.value)}
+                        style={{ width: '60px', textAlign: 'center' }}
+                    />
+                </label>
+                <button onClick={handleGoToPage}>
+                    <ArrowRightCircle size={16} />
+                </button>
+            </div>
+
             {/* Server Pagination Controls */}
             <div className="shelf-pagination">
-                <button onClick={handlePrevPage} disabled={currentPage <= 1}>
-                    Prev Page
+                <button onClick={handleFirstPage} disabled={currentPage <= 1}>
+                    <SkipBack size={16} />
                 </button>
-                <span>{`Page ${currentPage} of ${totalPages}`}</span>
+                <button onClick={handlePrevPage} disabled={currentPage <= 1}>
+                    <ChevronLeft size={16} />
+                </button>
+
+                <span>{` Page ${currentPage} of ${totalPages} `}</span>
+
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage >= totalPages}
                 >
-                    Next Page
+                    <ChevronRight size={16} />
+                </button>
+                <button
+                    onClick={handleLastPage}
+                    disabled={currentPage >= totalPages}
+                >
+                    <SkipForward size={16} />
                 </button>
             </div>
         </div>

@@ -1,10 +1,4 @@
-// You can include shared interfaces/types in a separate file
-// and then use them in any component by importing them. For
-// example, to import the interface below do:
-//
-// import { User } from 'path/to/interfaces';
-
-import React, { Dispatch } from 'react';
+import { Dispatch } from 'react';
 
 export interface ThemeContextProps {
     themeState: ThemeState;
@@ -22,4 +16,22 @@ export interface Action {
 
 export interface ThemeAction extends Action {
     type: 'SET_THEME';
+}
+
+// types.ts (or wherever you keep your types)
+export interface Release {
+    Release_Id: number;
+    Title: string;
+    Cover_Image?: string;
+    // ... etc
+}
+
+export interface CollectionResponse {
+    user: {
+        username: string;
+    };
+    totalReleases: number;
+    currentPage: number;
+    totalPages: number;
+    releases: Release[];
 }

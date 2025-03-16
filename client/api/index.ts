@@ -1,6 +1,6 @@
 import { requestHandler } from '../lib/request-handler';
 import { AxiosResponse } from 'axios';
-import { CollectionResponse } from '../types';
+import { CollectionResponse } from '../interfaces';
 
 interface CollectionParams {
     username: string;

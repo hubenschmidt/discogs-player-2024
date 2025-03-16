@@ -48,12 +48,12 @@
 }
 
 .shelf-pagination {
-    margin-top: 20px;
+    margin-top: px;
 }
 
 .shelf-pagination button {
     padding: 6px 12px;
-    margin: 0 8px;
+    margin: 0px 10px 10px 10px;
     background-color: #555;
     color: #fff;
     border: none;
@@ -68,4 +68,10 @@
 .shelf-pagination span {
     color: #fff;
     font-weight: bold;
+}
+
+.shelf-pagination select,
+.shelf-pagination input {
+    margin-left: 5px;
+    padding: 3px 6px;
 }
