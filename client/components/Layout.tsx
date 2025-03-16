@@ -5,6 +5,7 @@ import ThemePicker from './Dropdown';
 import { ThemeContext } from '../context/themeContext';
 import { getCollection } from '../api';
 import VinylShelf from './VinylShelf';
+import VideoPlaylist from './VideoPlaylist';
 
 type Props = {
     children?: ReactNode;
@@ -60,7 +61,8 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                     <div className="col-12 col-sm-2"></div>
                 </div>
             </div>
-            {/* Vinyl Shelf component integrated into the layout */}
+
+            {/* VideoPlaylist */}
             <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
                 <div className="col-12">
                     <VinylShelf />

@@ -18,13 +18,23 @@ export interface ThemeAction extends Action {
     type: 'SET_THEME';
 }
 
-// types.ts (or wherever you keep your types)
+export interface Video {
+    uri: string;
+    title: string;
+    description?: string;
+    duration: number;
+    embed: boolean;
+}
+
 export interface Release {
     Release_Id: number;
     Title: string;
     Cover_Image?: string;
     Thumb?: string;
-    // ... etc
+}
+
+export interface DiscogsRelease {
+    videos?: Video[];
 }
 
 export interface CollectionResponse {

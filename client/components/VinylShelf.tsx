@@ -9,6 +9,7 @@ import {
     SkipForward,
     List,
 } from 'lucide-react';
+import VideoPlaylist from './VideoPlaylist';
 
 // Mantine components
 import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
@@ -45,6 +46,7 @@ function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
 
 const VinylShelf: FC = () => {
     const [records, setRecords] = useState<Release[]>([]);
+    const [selectedRecord, setSelectedRecord] = useState<Release>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
@@ -83,9 +85,11 @@ const VinylShelf: FC = () => {
             return reordered;
         });
 
-        getRelease(record.Release_Id)
-            .then(release => console.log(release))
-            .catch(error => console.log(error));
+        setSelectedRecord(record);
+
+        // getRelease(record.Release_Id)
+        //     .then(release => console.log(release))
+        //     .catch(error => console.log(error));
     };
 
     // LOCAL "SHELF" PAGING
@@ -124,17 +128,6 @@ const VinylShelf: FC = () => {
         setCurrentPage(p => Math.min(totalPages, p + 1));
     const handleLastPage = () => setCurrentPage(totalPages);
 
-    // “Go to Page”
-    const handleGoToPage = () => {
-        if (!goToPage) return;
-        let target = parseInt(goToPage, 10);
-        if (isNaN(target)) return;
-        if (target < 1) target = 1;
-        if (target > totalPages) target = totalPages;
-        setCurrentPage(target);
-        setGoToPage('');
-    };
-
     // Items Per Page
     const handleItemsPerPageChange = (
         e: React.ChangeEvent<HTMLSelectElement>,
@@ -145,106 +138,116 @@ const VinylShelf: FC = () => {
     };
 
     return (
-        <Container className="vinyl-shelf-container">
-            <Paper shadow="sm" p="md" withBorder>
-                {/* Local Shelf Paging Buttons */}
-                <Group className="shelf-pagination" mb="md">
-                    <ActionIcon
-                        onClick={handleShelfPrev}
-                        disabled={records.length < 2}
-                    >
-                        <ChevronLeft size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        onClick={handleShelfNext}
-                        disabled={records.length < 2}
-                    >
-                        <ChevronRight size={16} />
-                    </ActionIcon>
-                </Group>
-
-                {/* The shelf itself, with ref */}
-                <div className="vinyl-shelf" ref={shelfRef}>
-                    {records.map((record, i) => {
-                        const n = records.length;
-                        let angle = 0;
-                        if (n > 1) {
-                            angle = -90 + 180 * (i / (n - 1));
-                        }
-
-                        return (
-                            <Box
-                                key={record.Release_Id}
-                                className="vinyl-record"
-                                style={{
-                                    transform: `rotateY(${angle.toFixed(
-                                        2,
-                                    )}deg)`,
-                                }}
-                                onClick={() => handleRecordClick(record, i)}
-                            >
-                                <Box
-                                    className="record-cover"
-                                    style={{
-                                        backgroundImage: `url(${
-                                            record.Thumb || '/default-img.jpg'
-                                        })`,
-                                    }}
-                                />
-                                <Text className="record-title">
-                                    {record.Title}
-                                </Text>
-                            </Box>
-                        );
-                    })}
+        <>
+            {/* VideoPlaylist */}
+            <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
+                <div className="col-12">
+                    <VideoPlaylist releaseId={selectedRecord.Release_Id} />
                 </div>
+            </div>
 
-                {/* Server Pagination Controls */}
-                <Group className="shelf-pagination">
-                    <ActionIcon
-                        onClick={handleFirstPage}
-                        disabled={currentPage <= 1}
-                    >
-                        <SkipBack size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        onClick={handlePrevPage}
-                        disabled={currentPage <= 1}
-                    >
-                        <ChevronLeft size={16} />
-                    </ActionIcon>
-                    <Text>
-                        {currentPage} of {totalPages}
-                    </Text>
-                    <ActionIcon
-                        onClick={handleNextPage}
-                        disabled={currentPage >= totalPages}
-                    >
-                        <ChevronRight size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                        onClick={handleLastPage}
-                        disabled={currentPage >= totalPages}
-                    >
-                        <SkipForward size={16} />
-                    </ActionIcon>
-                </Group>
+            <Container className="vinyl-shelf-container">
+                <Paper shadow="sm" p="md" withBorder>
+                    {/* Local Shelf Paging Buttons */}
+                    <Group className="shelf-pagination" mb="md">
+                        <ActionIcon
+                            onClick={handleShelfPrev}
+                            disabled={records.length < 2}
+                        >
+                            <ChevronLeft size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                            onClick={handleShelfNext}
+                            disabled={records.length < 2}
+                        >
+                            <ChevronRight size={16} />
+                        </ActionIcon>
+                    </Group>
 
-                {/* Items Per Page */}
-                <Group className="shelf-pagination">
-                    <List size={16} />
-                    <select
-                        value={itemsPerPage}
-                        onChange={handleItemsPerPageChange}
-                    >
-                        <option value={5}>5</option>
-                        <option value={10 + offset}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50 + offset}>50</option>
-                    </select>
-                </Group>
-            </Paper>
-        </Container>
+                    {/* The shelf itself, with ref */}
+                    <div className="vinyl-shelf" ref={shelfRef}>
+                        {records.map((record, i) => {
+                            const n = records.length;
+                            let angle = 0;
+                            if (n > 1) {
+                                angle = -90 + 180 * (i / (n - 1));
+                            }
+
+                            return (
+                                <Box
+                                    key={record.Release_Id}
+                                    className="vinyl-record"
+                                    style={{
+                                        transform: `rotateY(${angle.toFixed(
+                                            2,
+                                        )}deg)`,
+                                    }}
+                                    onClick={() => handleRecordClick(record, i)}
+                                >
+                                    <Box
+                                        className="record-cover"
+                                        style={{
+                                            backgroundImage: `url(${
+                                                record.Thumb ||
+                                                '/default-img.jpg'
+                                            })`,
+                                        }}
+                                    />
+                                    <Text className="record-title">
+                                        {record.Title}
+                                    </Text>
+                                </Box>
+                            );
+                        })}
+                    </div>
+
+                    {/* Server Pagination Controls */}
+                    <Group className="shelf-pagination">
+                        <ActionIcon
+                            onClick={handleFirstPage}
+                            disabled={currentPage <= 1}
+                        >
+                            <SkipBack size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                            onClick={handlePrevPage}
+                            disabled={currentPage <= 1}
+                        >
+                            <ChevronLeft size={16} />
+                        </ActionIcon>
+                        <Text>
+                            {currentPage} of {totalPages}
+                        </Text>
+                        <ActionIcon
+                            onClick={handleNextPage}
+                            disabled={currentPage >= totalPages}
+                        >
+                            <ChevronRight size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                            onClick={handleLastPage}
+                            disabled={currentPage >= totalPages}
+                        >
+                            <SkipForward size={16} />
+                        </ActionIcon>
+                    </Group>
+
+                    {/* Items Per Page */}
+                    <Group className="shelf-pagination">
+                        <List size={16} />
+                        <select
+                            value={itemsPerPage}
+                            onChange={handleItemsPerPageChange}
+                        >
+                            <option value={5}>5</option>
+                            <option value={10 + offset}>10</option>
+                            <option value={25}>25</option>
+                            <option value={50 + offset}>50</option>
+                        </select>
+                    </Group>
+                </Paper>
+            </Container>
+        </>
     );
 };
 
