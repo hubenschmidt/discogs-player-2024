@@ -49,7 +49,7 @@ export const getCollection = async (
     return response.data;
 };
 
-export const getRelease = async (releaseId: number): Promise<any> => {
+export const getDiscogsRelease = async (releaseId: number): Promise<any> => {
     let uri = `/api/discogs/release/${releaseId}`;
 
     const response: AxiosResponse<any> = await requestHandler(

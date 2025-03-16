@@ -1,11 +1,12 @@
-import React, { ReactNode, useContext, useEffect } from 'react';
+import React, { ReactNode, useContext } from 'react';
 import Head from 'next/head';
 import MusicPlayer from './MusicPlayer';
 import ThemePicker from './Dropdown';
-import { ThemeContext } from '../context/themeContext';
-import { getCollection } from '../api';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
+import { ReleaseContext } from '../context/releaseContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { Group, Text } from '@mantine/core';
 
 type Props = {
     children?: ReactNode;
@@ -13,13 +14,29 @@ type Props = {
 };
 
 // Mock TrackDetail Component
-const TrackDetail = () => (
-    <div className="track-detail">
-        <p>Now Playing: "Mock Artist - Mock Track" - 01:23 / 03:45</p>
-    </div>
-);
+const TrackDetail = ({ selectedDiscogsRelease }) => {
+    return (
+        <div className="track-detail">
+            {' '}
+            <Text>
+                {selectedDiscogsRelease?.artists_sort} -{' '}
+                {selectedDiscogsRelease?.title}
+                {' ('}
+                {selectedDiscogsRelease?.year}
+                {')'}
+            </Text>{' '}
+        </div>
+    );
+};
 
 const Layout = ({ children, title = 'TuneCrook' }: Props) => {
+    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
+        DiscogsReleaseContext,
+    );
+    const { selectedRelease } = releaseState;
+    const { selectedDiscogsRelease } = discogsReleaseState;
+
     return (
         <div>
             <Head>
@@ -53,7 +70,11 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                         <MusicPlayer />
                     </div>
                     <div className="col-12 col-sm-4">
-                        <TrackDetail />
+                        {selectedDiscogsRelease && (
+                            <TrackDetail
+                                selectedDiscogsRelease={selectedDiscogsRelease}
+                            />
+                        )}
                     </div>
                     <div className="col-12 col-sm-2">
                         <p className="text-center">Column 5</p>
@@ -63,6 +84,18 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
             </div>
 
             {/* VideoPlaylist */}
+            {selectedRelease && (
+                <Group
+                    className="row"
+                    style={{ height: 'calc(100vh - 150px)' }}
+                >
+                    <div className="col-12">
+                        <VideoPlaylist
+                            releaseId={selectedRelease?.Release_Id}
+                        />
+                    </div>
+                </Group>
+            )}
             <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
                 <div className="col-12">
                     <VinylShelf />

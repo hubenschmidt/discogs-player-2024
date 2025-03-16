@@ -8,7 +8,6 @@ import {
     SkipForward,
     List,
 } from 'lucide-react';
-import VideoPlaylist from './VideoPlaylist';
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
@@ -47,8 +46,7 @@ const VinylShelf = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releases, totalPages } = collectionState;
-    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
-    const { selectedRelease } = releaseState;
+    const { dispatchRelease } = useContext(ReleaseContext);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
@@ -66,7 +64,12 @@ const VinylShelf = () => {
                     payload: collection,
                 });
             })
-            .catch(error => console.error(error));
+            .catch(error =>
+                console.error(
+                    'something went wrong with fetching collection,',
+                    error.response,
+                ),
+            );
     }, [currentPage, itemsPerPage]);
 
     const handleRecordClick = (release: Release, index: number) => {
@@ -131,17 +134,6 @@ const VinylShelf = () => {
 
     return (
         <>
-            {selectedRelease && (
-                <Group
-                    className="row"
-                    style={{ height: 'calc(100vh - 150px)' }}
-                >
-                    <div className="col-12">
-                        <VideoPlaylist releaseId={selectedRelease.Release_Id} />
-                    </div>
-                </Group>
-            )}
-
             <Container className="vinyl-shelf-container">
                 <Paper shadow="sm" p="md" withBorder>
                     {/* Local Shelf Paging Buttons */}
@@ -163,7 +155,6 @@ const VinylShelf = () => {
                     {/* The shelf itself, with ref */}
                     <div className="vinyl-shelf" ref={shelfRef}>
                         {releases?.map((release, i) => {
-                            console.log('release', release.Thumb);
                             const n = releases?.length;
                             let angle = 0;
                             if (n > 1) {
