@@ -10,16 +10,15 @@ import {
 } from 'lucide-react';
 import VideoPlaylist from './VideoPlaylist';
 import { CollectionContext } from '../context/collectionContext';
-
-// Mantine components
+import { ReleaseContext } from '../context/releaseContext';
 import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
 
-function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
+const reorderReleases = (records: any, selectedIndex: number) => {
     const n = records.length;
     if (n < 2) return records;
 
     const middleIndex = Math.floor((n - 1) / 2);
-    const newArr = new Array<T>(n);
+    const newArr = new Array(n);
 
     newArr[middleIndex] = records[selectedIndex];
 
@@ -42,22 +41,19 @@ function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
     }
 
     return newArr;
-}
+};
 
-const VinylShelf: FC = () => {
+const VinylShelf = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releases, totalPages } = collectionState;
-    const [selectedRecord, setSelectedRecord] = useState<Release>(null);
+    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
+    const { selectedRelease } = releaseState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
-
-    // Items per page (limit)
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
-    // Reference to the shelf container so we can reset scrollLeft
-    const shelfRef = useRef<HTMLDivElement>(null);
+    const shelfRef = useRef<HTMLDivElement>(null); // Reference to the shelf container so we can reset scrollLeft
 
-    // Fetch data from server whenever currentPage or itemsPerPage changes
     useEffect(() => {
         getCollection({
             username: 'hubenschmidt',
@@ -73,30 +69,31 @@ const VinylShelf: FC = () => {
             .catch(error => console.error(error));
     }, [currentPage, itemsPerPage]);
 
-    // Click a record => reorder so that record is center, then reset scroll, and set selectedRecord
-    const handleRecordClick = (record: Release, index: number) => {
-        const newReleases = reorderRecords(releases, index);
+    const handleRecordClick = (release: Release, index: number) => {
+        const reorderedReleases = reorderReleases(releases, index);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: newReleases },
+            payload: { releases: reorderedReleases },
         });
-        setSelectedRecord(record);
+        dispatchRelease({
+            type: 'SET_SELECTED_RELEASE',
+            payload: release,
+        });
 
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
         }
     };
 
-    // LOCAL "SHELF" PAGING
     const handleShelfPrev = () => {
         if (releases.length < 2) return;
         const n = releases.length;
         const mid = Math.floor((n - 1) / 2);
         const newIndex = (mid - 1 + n) % n;
-        const newReleases = reorderRecords(releases, newIndex);
+        const reorderedReleases = reorderReleases(releases, newIndex);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: newReleases },
+            payload: { releases: reorderedReleases },
         });
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
@@ -108,24 +105,22 @@ const VinylShelf: FC = () => {
         const n = releases.length;
         const mid = Math.floor((n - 1) / 2);
         const newIndex = (mid + 1) % n;
-        const newReleases = reorderRecords(releases, newIndex);
+        const reorderedReleases = reorderReleases(releases, newIndex);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: newReleases },
+            payload: { releases: reorderedReleases },
         });
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
         }
     };
 
-    // SERVER PAGING CONTROLS
     const handleFirstPage = () => setCurrentPage(1);
     const handlePrevPage = () => setCurrentPage(p => Math.max(1, p - 1));
     const handleNextPage = () =>
         setCurrentPage(p => Math.min(totalPages, p + 1));
     const handleLastPage = () => setCurrentPage(totalPages);
 
-    // Items Per Page
     const handleItemsPerPageChange = (
         e: React.ChangeEvent<HTMLSelectElement>,
     ) => {
@@ -136,12 +131,15 @@ const VinylShelf: FC = () => {
 
     return (
         <>
-            {selectedRecord && (
-                <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
+            {selectedRelease && (
+                <Group
+                    className="row"
+                    style={{ height: 'calc(100vh - 150px)' }}
+                >
                     <div className="col-12">
-                        <VideoPlaylist releaseId={selectedRecord.Release_Id} />
+                        <VideoPlaylist releaseId={selectedRelease.Release_Id} />
                     </div>
-                </div>
+                </Group>
             )}
 
             <Container className="vinyl-shelf-container">
@@ -244,6 +242,8 @@ const VinylShelf: FC = () => {
                             <option value={10 + offset}>10</option>
                             <option value={25}>25</option>
                             <option value={50 + offset}>50</option>
+                            <option value={100 + offset}>100</option>
+                            <option value={250 + offset}>250</option>
                         </select>
                     </Group>
                 </Paper>

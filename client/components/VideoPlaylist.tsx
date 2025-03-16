@@ -58,7 +58,6 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
             <Text>{release.artists_sort}</Text>
             <Stack align="center" mb="md">
                 {release.videos.map((video, index) => {
-                    console.log(release, video);
                     const videoId = extractYouTubeVideoId(video.uri);
                     return (
                         <>
