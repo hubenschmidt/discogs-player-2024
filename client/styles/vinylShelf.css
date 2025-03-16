@@ -1,12 +1,17 @@
 /* VinylShelf.css */
+
+/* Overall container with dark background and retro font */
 .vinyl-shelf-container {
     width: 100%;
     margin: 0 auto;
     text-align: center;
-    background-color: #222;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
     padding: 20px;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive; /* Ensure you load this font from Google Fonts */
 }
 
+/* Vinyl shelf container with a neon border and subtle chrome feel */
 .vinyl-shelf {
     display: flex;
     gap: 20px;
@@ -14,29 +19,33 @@
     justify-content: center;
     perspective: 800px;
     padding: 10px;
+    border: 2px solid #e94560;
+    box-shadow: 0 0 15px rgba(233, 69, 96, 0.8);
+    background: #0f3460;
+    border-radius: 8px;
 }
 
-/* We don't set transform here, since it's dynamic in inline style */
+/* Each vinyl record with 3D transform and neon hover effect */
 .vinyl-record {
     flex: 0 0 auto;
-    transition: transform 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
     transform-style: preserve-3d;
     text-align: center;
+    cursor: pointer;
 }
-
-/* On hover, show it at 0deg (straight on) */
 .vinyl-record:hover {
     transform: rotateY(0deg) !important;
 }
 
+/* Circular record cover with neon border & chrome-like shadow */
 .record-cover {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    border: 4px solid #000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 20px solid black;
 }
 
+/* Record title styling */
 .record-title {
     color: #fff;
     margin-top: 8px;
@@ -47,6 +56,7 @@
     white-space: nowrap;
 }
 
+/* Pagination controls styled with neon accents */
 .shelf-pagination {
     margin-top: 1px;
     display: grid;
@@ -57,13 +67,15 @@
 
 .shelf-pagination button {
     padding: 6px 12px;
-    margin: 0px 10px 10px 10px;
-    background-color: #555;
+    margin: 0 10px 10px 10px;
+    background-color: #e94560;
     color: #fff;
     border: none;
     cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(233, 69, 96, 0.8);
+    font-family: 'Press Start 2P', cursive;
 }
-
 .shelf-pagination button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -78,13 +90,26 @@
 .shelf-pagination input {
     margin-left: 5px;
     padding: 3px 6px;
+    background-color: #222;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    outline: none;
+    font-size: 0.8rem;
 }
 
-@keyframes move-lines {
-    0% {
-        transform: translateX(0) skewX(-45deg);
-    }
+/* Optional neon glow effect on headings */
+@keyframes neon-glow {
+    0%,
     100% {
-        transform: translateX(-50%) skewX(-45deg);
+        text-shadow: 0 0 5px #e94560, 0 0 10px #e94560;
     }
+    50% {
+        text-shadow: 0 0 20px #e94560, 0 0 30px #e94560;
+    }
+}
+
+.jukebox-title {
+    font-size: 2rem;
+    animation: neon-glow 2s ease-in-out infinite alternate;
 }

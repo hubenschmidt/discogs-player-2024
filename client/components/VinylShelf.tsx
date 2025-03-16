@@ -177,14 +177,12 @@ const VinylShelf: FC = () => {
                     {records.map((record, i) => {
                         const n = records.length;
                         let angle = 0;
-
                         if (n > 1) {
-                            // Interpolate from +90° (i=0) to -90° (i=n-1)
                             angle = -90 + 180 * (i / (n - 1));
                         }
 
                         return (
-                            <div
+                            <Box
                                 key={record.Release_Id}
                                 className="vinyl-record"
                                 style={{
@@ -194,16 +192,18 @@ const VinylShelf: FC = () => {
                                 }}
                                 onClick={() => handleRecordClick(i)}
                             >
-                                <img
-                                    src={
-                                        record.Thumb ||
-                                        '../static/default-img.jpg'
-                                    }
-                                    alt={record.Title}
+                                <Box
                                     className="record-cover"
+                                    style={{
+                                        backgroundImage: `url(${
+                                            record.Thumb || '/default-img.jpg'
+                                        })`,
+                                    }}
                                 />
-                                <p className="record-title">{record.Title}</p>
-                            </div>
+                                <Text className="record-title">
+                                    {record.Title}
+                                </Text>
+                            </Box>
                         );
                     })}
                 </div>
@@ -245,14 +245,6 @@ const VinylShelf: FC = () => {
                     <select
                         value={itemsPerPage}
                         onChange={handleItemsPerPageChange}
-                        style={{
-                            backgroundColor: '#222',
-                            color: '#fff',
-                            border: '1px solid #fff',
-                            borderRadius: '4px',
-                            padding: '4px 8px',
-                            outline: 'none',
-                        }}
                     >
                         <option value={5}>5</option>
                         <option value={10 + offset}>10</option>
