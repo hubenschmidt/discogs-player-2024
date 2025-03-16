@@ -47,6 +47,8 @@ const VinylShelf: FC = () => {
     const [records, setRecords] = useState<Release[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
+    const offset = 1; // maintains odd number so records center in carousel
+    console.log(records);
 
     // Items per page (limit)
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
@@ -172,7 +174,9 @@ const VinylShelf: FC = () => {
                             onClick={() => handleRecordClick(i)}
                         >
                             <img
-                                src={record.Cover_Image || '/default-vinyl.png'}
+                                src={
+                                    record.Thumb || '../static/default-img.jpg'
+                                }
                                 alt={record.Title}
                                 className="record-cover"
                             />
@@ -191,9 +195,9 @@ const VinylShelf: FC = () => {
                         onChange={handleItemsPerPageChange}
                     >
                         <option value={5}>5</option>
-                        <option value={10}>10</option>
+                        <option value={10 + offset}>10</option>
                         <option value={25}>25</option>
-                        <option value={50}>50</option>
+                        <option value={50 + offset}>50</option>
                     </select>
                 </label>
             </div>

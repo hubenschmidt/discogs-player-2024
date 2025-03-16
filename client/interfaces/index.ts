@@ -23,6 +23,7 @@ export interface Release {
     Release_Id: number;
     Title: string;
     Cover_Image?: string;
+    Thumb?: string;
     // ... etc
 }
 
