@@ -2,17 +2,43 @@ import React, { useState, useEffect, FC } from 'react';
 import { getCollection } from '../api';
 import { Release, CollectionResponse } from '../types'; // Or wherever you keep them
 
+// Helper to reorder records around the selected item
+function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
+    const n = records.length;
+    if (n < 2) return records;
+
+    const middleIndex = Math.floor((n - 1) / 2);
+    const newArr = new Array<T>(n);
+
+    newArr[middleIndex] = records[selectedIndex];
+
+    // Fill to the right
+    let newPos = middleIndex + 1;
+    let oldPos = selectedIndex + 1;
+    while (newPos < n) {
+        newArr[newPos] = records[oldPos % n];
+        newPos++;
+        oldPos++;
+    }
+
+    // Fill to the left
+    newPos = middleIndex - 1;
+    oldPos = selectedIndex - 1;
+    while (newPos >= 0) {
+        newArr[newPos] = records[(oldPos + n) % n];
+        newPos--;
+        oldPos--;
+    }
+
+    return newArr;
+}
+
 const VinylShelf: FC = () => {
     const [records, setRecords] = useState<Release[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
 
-    // This map will hold: { [Release_Id]: boolean }
-    // If true, that record is "flipped" to 0°.
-    const [flippedStates, setFlippedStates] = useState<{
-        [id: number]: boolean;
-    }>({});
-
+    // Load data on mount and page change
     useEffect(() => {
         setRecords([]);
         getCollection({
@@ -26,18 +52,14 @@ const VinylShelf: FC = () => {
             .catch((error: any) => console.error(error));
     }, [currentPage]);
 
-    // Toggle the flipped state for a specific record
-    const handleRecordClick = (releaseId: number) => {
-        setFlippedStates(prev => ({
-            ...prev,
-            [releaseId]: !prev[releaseId], // flip or unflip
-        }));
+    const handleRecordClick = (index: number) => {
+        setRecords(prevRecords => reorderRecords(prevRecords, index));
     };
 
+    // Paging controls
     const handlePrev = () => {
         setCurrentPage(p => Math.max(1, p - 1));
     };
-
     const handleNext = () => {
         setCurrentPage(p => Math.min(totalPages, p + 1));
     };
@@ -54,11 +76,6 @@ const VinylShelf: FC = () => {
                         angle = -90 + 180 * (i / (n - 1));
                     }
 
-                    // If the record is flipped in our state, we override angle = 0
-                    if (flippedStates[record.Release_Id]) {
-                        angle = 0;
-                    }
-
                     return (
                         <div
                             key={record.Release_Id}
@@ -66,12 +83,11 @@ const VinylShelf: FC = () => {
                             style={{
                                 transform: `rotateY(${angle.toFixed(2)}deg)`,
                             }}
-                            onClick={() => handleRecordClick(record.Release_Id)}
+                            onClick={() => handleRecordClick(i)}
                         >
                             <img
                                 src={
-                                    record?.Cover_Image ||
-                                    '../static/default-img.jpg'
+                                    record?.Cover_Image || '/default-vinyl.png'
                                 }
                                 alt={record.Title}
                                 className="record-cover"
