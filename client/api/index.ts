@@ -1,9 +1,22 @@
 import { requestHandler } from '../lib/request-handler';
+import { AxiosResponse } from 'axios';
+import { CollectionResponse } from '../types';
 
-export const getCollection = params => {
+interface CollectionParams {
+    username: string;
+    genre?: string;
+    style?: string;
+    page?: number;
+    limit?: number;
+    order?: string;
+    orderBy?: string;
+}
+
+export const getCollection = async (
+    params: CollectionParams,
+): Promise<CollectionResponse> => {
     const { username, genre, style, page, limit, order, orderBy } = params;
 
-    // Build the base URL with username, and optionally add genre and style
     let uri = `/api/app/collection/${username}`;
     if (genre) {
         uri += `/${genre}`;
@@ -12,10 +25,9 @@ export const getCollection = params => {
         uri += `/${style}`;
     }
 
-    // Create query parameters only for defined values
     const queryParams = new URLSearchParams();
-    if (page !== undefined) queryParams.append('page', page);
-    if (limit !== undefined) queryParams.append('limit', limit);
+    if (page !== undefined) queryParams.append('page', page.toString());
+    if (limit !== undefined) queryParams.append('limit', limit.toString());
     if (order !== undefined) queryParams.append('order', order);
     if (orderBy !== undefined) queryParams.append('orderBy', orderBy);
 
@@ -24,5 +36,15 @@ export const getCollection = params => {
         uri += `?${queryString}`;
     }
 
-    return requestHandler('GET', uri, null, { headers: null });
+    // If requestHandler returns an AxiosResponse<CollectionResponse>,
+    // you can just do:
+    const response: AxiosResponse<CollectionResponse> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        { headers: null },
+    );
+
+    // Return the data directly so the calling code gets CollectionResponse
+    return response.data;
 };

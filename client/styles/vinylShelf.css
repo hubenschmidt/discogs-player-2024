@@ -1,0 +1,36 @@
+.vinyl-shelf {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 20px;
+    background-color: #222; /* a simple dark background for contrast */
+}
+
+.vinyl-record {
+    flex: 0 0 auto;
+    margin-right: 20px;
+    text-align: center;
+}
+
+.record-cover {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid #000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.record-cover:hover {
+    transform: scale(1.1);
+}
+
+.record-title {
+    color: #fff;
+    margin-top: 8px;
+    font-size: 14px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
