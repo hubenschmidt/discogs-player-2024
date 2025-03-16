@@ -1,9 +1,9 @@
 import React, { ReactNode, useContext, useEffect } from 'react';
-import Link from 'next/link';
 import Head from 'next/head';
 import MusicPlayer from './MusicPlayer';
 import ThemePicker from './Dropdown';
 import { ThemeContext } from '../context/themeContext';
+import { getCollection } from '../api';
 
 type Props = {
     children?: ReactNode;
@@ -18,13 +18,16 @@ const TrackDetail = () => (
 );
 
 const Layout = ({ children, title = 'TuneCrook' }: Props) => {
-    const { themeState } = useContext(ThemeContext);
-
-    // Apply theme to body
     useEffect(() => {
-        document.body.className = ''; // Clear previous theme classes
-        document.body.classList.add(`${themeState.theme}-mode`);
-    }, [themeState.theme]);
+        getCollection({
+            username: 'hubenschmidt',
+            // include other params
+        })
+            .then(collection => {
+                console.log(collection);
+            })
+            .catch(error => console.log(error));
+    }, []);
 
     return (
         <div>
@@ -40,50 +43,44 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                     rel="stylesheet"
                 />
             </Head>
-
-            <body>
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col"></div>
-                        <div className="col">
-                            <p className="text-center">TuneCrook</p>
-                        </div>
-
-                        <div className="col"></div>
+            <div className="scanlines"></div>
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-12 col-md-4"></div>
+                    <div className="col-12 col-md-4">
+                        <p className="text-center">TuneCrook</p>
                     </div>
-                    <div className="row">
-                        <div className="col-1"></div>
-
-                        <div className="col-3">
-                            <MusicPlayer />
-                        </div>
-
-                        <div className="col-4">
-                            <TrackDetail />
-                        </div>
-
-                        <div className="col">
-                            <p className="text-center">Column 5</p>
-                        </div>
-                        <div className="col">
-                            <ThemePicker />
-                        </div>
+                    <div className="col-12 col-md-2"></div>
+                    <div className="col-6 col-md-1"></div>
+                    <div className="col-6 col-md-1">
+                        <ThemePicker />
                     </div>
                 </div>
-                <div className="main-content">
-                    <aside className="sidebar">
-                        <p>Library</p>
-                        <ul>
-                            <li>Music</li>
-                        </ul>
-                    </aside>
-                    <main className="content">{children}</main>
+                <div className="row">
+                    <div className="col-12 col-sm-1"></div>
+                    <div className="col-12 col-sm-3">
+                        <MusicPlayer />
+                    </div>
+                    <div className="col-12 col-sm-4">
+                        <TrackDetail />
+                    </div>
+                    <div className="col-12 col-sm-2">
+                        <p className="text-center">Column 5</p>
+                    </div>
+                    <div className="col-12 col-sm-2"></div>
                 </div>
+            </div>
+            <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
+                <div className="col-12 col-md-12">
+                    <div className="row">
+                        <div className="col-12">{children}</div>
+                    </div>
+                </div>
+            </div>
 
-                <footer>
-                    <span>Ⓒopywr0ng™ WiLliⒶMr0y</span>
-                </footer>
-            </body>
+            <footer>
+                <span>WiLliⒶMr0y</span>
+            </footer>
         </div>
     );
 };
