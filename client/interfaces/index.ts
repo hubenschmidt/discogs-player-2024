@@ -35,6 +35,7 @@ export interface Release {
 
 export interface DiscogsRelease {
     videos?: Video[];
+    artists_sort: string;
 }
 
 export interface CollectionResponse {

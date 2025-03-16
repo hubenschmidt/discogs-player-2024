@@ -24,7 +24,6 @@ interface VideoPlaylistProps {
 }
 
 const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
-    console.log(releaseId);
     const [release, setRelease] = useState<DiscogsRelease | null>(null);
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -35,6 +34,7 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
             .then((data: DiscogsRelease) => {
                 setRelease(data);
                 if (data.videos && data.videos.length > 0) {
+                    // Automatically select the first video in the list
                     const firstVideoId = extractYouTubeVideoId(
                         data.videos[0].uri,
                     );
@@ -54,23 +54,33 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
     return (
         <Box>
             {/* Playlist of videos */}
+            <Text>{release.artists_sort}</Text>
             <Stack align="center" mb="md">
                 {release.videos.map((video, index) => {
+                    console.log(release, video);
                     const videoId = extractYouTubeVideoId(video.uri);
                     return (
-                        <Button
-                            key={index}
-                            variant={
-                                videoId === selectedVideo ? 'filled' : 'outline'
-                            }
-                            onClick={() => setSelectedVideo(videoId)}
-                            style={{ textTransform: 'none' }}
-                        >
-                            {video.title}
-                        </Button>
+                        <>
+                            <Button
+                                key={index}
+                                variant={
+                                    videoId === selectedVideo
+                                        ? 'filled'
+                                        : 'outline'
+                                }
+                                onClick={() => setSelectedVideo(videoId)}
+                                style={{
+                                    textTransform: 'none',
+                                    width: '100%',
+                                }}
+                            >
+                                {video.title}
+                            </Button>
+                        </>
                     );
                 })}
             </Stack>
+
             {/* Embedded YouTube Player */}
             {selectedVideo && (
                 <Box maw={800} mx="auto">

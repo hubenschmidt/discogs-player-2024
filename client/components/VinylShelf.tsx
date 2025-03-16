@@ -139,12 +139,13 @@ const VinylShelf: FC = () => {
 
     return (
         <>
-            {/* VideoPlaylist */}
-            <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
-                <div className="col-12">
-                    <VideoPlaylist releaseId={selectedRecord.Release_Id} />
+            {selectedRecord && (
+                <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
+                    <div className="col-12">
+                        <VideoPlaylist releaseId={selectedRecord.Release_Id} />
+                    </div>
                 </div>
-            </div>
+            )}
 
             <Container className="vinyl-shelf-container">
                 <Paper shadow="sm" p="md" withBorder>
