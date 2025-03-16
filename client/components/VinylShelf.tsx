@@ -6,7 +6,6 @@ const VinylShelf: FC = () => {
     const [records, setRecords] = useState<Release[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
-    console.log(records);
 
     // This map will hold: { [Release_Id]: boolean }
     // If true, that record is "flipped" to 0°.
@@ -15,6 +14,7 @@ const VinylShelf: FC = () => {
     }>({});
 
     useEffect(() => {
+        setRecords([]);
         getCollection({
             username: 'hubenschmidt',
             page: currentPage,
@@ -69,7 +69,10 @@ const VinylShelf: FC = () => {
                             onClick={() => handleRecordClick(record.Release_Id)}
                         >
                             <img
-                                src={record.Cover_Image || '/default-vinyl.png'}
+                                src={
+                                    record?.Cover_Image ||
+                                    '../static/default-img.jpg'
+                                }
                                 alt={record.Title}
                                 className="record-cover"
                             />
