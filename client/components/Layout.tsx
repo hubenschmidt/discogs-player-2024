@@ -19,19 +19,6 @@ const TrackDetail = () => (
 );
 
 const Layout = ({ children, title = 'TuneCrook' }: Props) => {
-    useEffect(() => {
-        getCollection({
-            username: 'hubenschmidt',
-            // page: 1,
-            // limit: 100,
-            // include other params
-        })
-            .then(collection => {
-                console.log(collection);
-            })
-            .catch(error => console.log(error));
-    }, []);
-
     return (
         <div>
             <Head>

@@ -6,6 +6,7 @@ const VinylShelf: FC = () => {
     const [records, setRecords] = useState<Release[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
+    console.log(records);
 
     // This map will hold: { [Release_Id]: boolean }
     // If true, that record is "flipped" to 0°.
