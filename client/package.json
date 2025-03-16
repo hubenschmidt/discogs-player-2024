@@ -10,11 +10,11 @@
         "test:ci": "jest --ci --reporters=jest-junit --coverage --passWithNoTests"
     },
     "dependencies": {
-        "@chakra-ui/icons": "^2.1.1",
-        "@chakra-ui/next-js": "^2.1.4",
-        "@chakra-ui/react": "^2.7.1",
+        "@mantine/core": "^7.17.2",
+        "@mantine/hooks": "^7.17.2",
         "axios": "^1.5.0",
         "cors": "^2.8",
+        "framer-motion": "^12.5.0",
         "lucide-react": "^0.482.0",
         "next": "^13.4.0",
         "postcss": "^8.4",

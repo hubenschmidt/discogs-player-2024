@@ -1,10 +1,10 @@
 import '../styles/scanLines.css';
 import '../styles/vinylShelf.css';
 import type { AppProps } from 'next/app';
-import { ThemeProvider } from '../context/themeContext';
+import { MantineProvider } from '@mantine/core';
 
 export default ({ Component, pageProps }: AppProps) => (
-    <ThemeProvider>
+    <MantineProvider>
         <Component {...pageProps} />;
-    </ThemeProvider>
+    </MantineProvider>
 );

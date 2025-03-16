@@ -48,7 +48,11 @@
 }
 
 .shelf-pagination {
-    margin-top: px;
+    margin-top: 1px;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0.5rem;
+    justify-content: center;
 }
 
 .shelf-pagination button {
@@ -74,4 +78,13 @@
 .shelf-pagination input {
     margin-left: 5px;
     padding: 3px 6px;
+}
+
+@keyframes move-lines {
+    0% {
+        transform: translateX(0) skewX(-45deg);
+    }
+    100% {
+        transform: translateX(-50%) skewX(-45deg);
+    }
 }
