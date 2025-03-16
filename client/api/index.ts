@@ -48,3 +48,17 @@ export const getCollection = async (
     // Return the data directly so the calling code gets CollectionResponse
     return response.data;
 };
+
+export const getRelease = async (releaseId: number): Promise<any> => {
+    let uri = `/api/discogs/release/${releaseId}`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        { headers: null },
+    );
+
+    // Return the data directly so the calling code gets ReleaseResponse
+    return response.data;
+};

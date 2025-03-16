@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
-import { getCollection } from '../api';
+import { getCollection, getRelease } from '../api';
 import { Release, CollectionResponse } from '../interfaces'; // your local types
 
 import {
@@ -8,22 +8,10 @@ import {
     SkipBack,
     SkipForward,
     List,
-    Search,
-    ArrowRightCircle,
 } from 'lucide-react';
 
 // Mantine components
-import {
-    Container,
-    Paper,
-    Box,
-    Group,
-    ActionIcon,
-    Select,
-    TextInput,
-    Flex,
-    Text,
-} from '@mantine/core';
+import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
 
 function reorderRecords<T>(records: T[], selectedIndex: number): T[] {
     const n = records.length;
@@ -60,7 +48,6 @@ const VinylShelf: FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
-    console.log(records);
 
     // Items per page (limit)
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
@@ -79,15 +66,15 @@ const VinylShelf: FC = () => {
             page: currentPage,
             limit: itemsPerPage,
         })
-            .then((data: CollectionResponse) => {
-                setRecords(data.releases || []);
-                setTotalPages(data.totalPages || 1);
+            .then((collection: CollectionResponse) => {
+                setRecords(collection.releases || []);
+                setTotalPages(collection.totalPages || 1);
             })
             .catch(error => console.error(error));
     }, [currentPage, itemsPerPage]);
 
     // Click a record => reorder so that record is center, then reset scroll
-    const handleRecordClick = (index: number) => {
+    const handleRecordClick = (record: Release, index: number) => {
         setRecords(prevRecords => {
             const reordered = reorderRecords(prevRecords, index);
             if (shelfRef.current) {
@@ -95,6 +82,10 @@ const VinylShelf: FC = () => {
             }
             return reordered;
         });
+
+        getRelease(record.Release_Id)
+            .then(release => console.log(release))
+            .catch(error => console.log(error));
     };
 
     // LOCAL "SHELF" PAGING
@@ -190,7 +181,7 @@ const VinylShelf: FC = () => {
                                         2,
                                     )}deg)`,
                                 }}
-                                onClick={() => handleRecordClick(i)}
+                                onClick={() => handleRecordClick(record, i)}
                             >
                                 <Box
                                     className="record-cover"
