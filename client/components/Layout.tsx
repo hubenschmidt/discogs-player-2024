@@ -5,6 +5,7 @@ import ThemePicker from './Dropdown';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
+import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { Group, Text } from '@mantine/core';
 
@@ -17,25 +18,32 @@ type Props = {
 const TrackDetail = ({ selectedDiscogsRelease }) => {
     return (
         <div className="track-detail">
-            {' '}
             <Text>
                 {selectedDiscogsRelease?.artists_sort} -{' '}
-                {selectedDiscogsRelease?.title}
-                {' ('}
-                {selectedDiscogsRelease?.year}
-                {')'}
-            </Text>{' '}
+                {selectedDiscogsRelease?.title} ({selectedDiscogsRelease?.year})
+            </Text>
         </div>
     );
 };
 
 const Layout = ({ children, title = 'TuneCrook' }: Props) => {
     const { releaseState, dispatchRelease } = useContext(ReleaseContext);
-    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
-        DiscogsReleaseContext,
-    );
+    const { discogsReleaseState } = useContext(DiscogsReleaseContext);
+    const { collectionState } = useContext(CollectionContext);
+    const { releases } = collectionState;
     const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease } = discogsReleaseState;
+
+    // Next release logic using the collection context:
+    const handleNextRelease = () => {
+        if (!selectedRelease || !releases || releases.length === 0) return;
+        const currentIndex = releases.findIndex(
+            r => r.Release_Id === selectedRelease.Release_Id,
+        );
+        const nextIndex = (currentIndex + 1) % releases.length;
+        const nextRelease = releases[nextIndex];
+        dispatchRelease({ type: 'SET_SELECTED_RELEASE', payload: nextRelease });
+    };
 
     return (
         <div>
@@ -83,7 +91,7 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                 </div>
             </div>
 
-            {/* VideoPlaylist */}
+            {/* VideoPlaylist with continuous play callback */}
             {selectedRelease && (
                 <Group
                     className="row"
@@ -91,7 +99,8 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                 >
                     <div className="col-12">
                         <VideoPlaylist
-                            releaseId={selectedRelease?.Release_Id}
+                            releaseId={selectedRelease.Release_Id}
+                            onNextRelease={handleNextRelease}
                         />
                     </div>
                 </Group>

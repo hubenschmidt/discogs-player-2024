@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, FC } from 'react';
 import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces'; // your local types
-import { Box, Stack, Button, Text, Loader } from '@mantine/core';
+import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 
@@ -24,15 +24,20 @@ const extractYouTubeVideoId = (url: string): string | null => {
 
 interface VideoPlaylistProps {
     releaseId: number;
+    onNextRelease?: () => void;
 }
 
-const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
+const VideoPlaylist: FC<VideoPlaylistProps> = ({
+    releaseId,
+    onNextRelease,
+}) => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
     const { selectedDiscogsRelease } = discogsReleaseState;
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [continuousPlay, setContinuousPlay] = useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
@@ -53,31 +58,52 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
     }, [releaseId]);
 
     useEffect(() => {
-        if (
-            selectedDiscogsRelease.videos &&
-            selectedDiscogsRelease.videos.length > 0
-        ) {
-            const firstVideoId = extractYouTubeVideoId(
-                selectedDiscogsRelease.videos[0].uri,
-            );
-            setSelectedVideo(firstVideoId);
+        try {
+            if (
+                selectedDiscogsRelease.videos &&
+                selectedDiscogsRelease.videos.length > 0
+            ) {
+                const firstVideoId = extractYouTubeVideoId(
+                    selectedDiscogsRelease.videos[0].uri,
+                );
+                setSelectedVideo(firstVideoId);
+            }
+        } catch (error) {
+            console.log('error setting extractYTVideoId', error);
         }
     }, [selectedDiscogsRelease]);
 
     const handleVideoEnd = () => {
+        // Guard: If no release or no videos, exit early
         if (
-            selectedDiscogsRelease &&
-            selectedDiscogsRelease.videos &&
-            selectedDiscogsRelease.videos.length > 0
+            !selectedDiscogsRelease ||
+            !selectedDiscogsRelease.videos ||
+            selectedDiscogsRelease.videos.length === 0
         ) {
-            const videos = selectedDiscogsRelease.videos;
-            const currentIndex = videos.findIndex(
-                video => extractYouTubeVideoId(video.uri) === selectedVideo,
-            );
-            const nextIndex = (currentIndex + 1) % videos.length;
-            const nextVideoId = extractYouTubeVideoId(videos[nextIndex].uri);
-            setSelectedVideo(nextVideoId);
+            return;
         }
+
+        const videos = selectedDiscogsRelease.videos;
+        const currentIndex = videos.findIndex(
+            video => extractYouTubeVideoId(video.uri) === selectedVideo,
+        );
+
+        // If a valid index is found and it’s not the last video, advance to the next video
+        if (currentIndex !== -1 && currentIndex < videos.length - 1) {
+            setSelectedVideo(
+                extractYouTubeVideoId(videos[currentIndex + 1].uri),
+            );
+            return;
+        }
+
+        // If continuous play is enabled and a next release callback is provided, trigger it
+        if (continuousPlay && onNextRelease) {
+            onNextRelease();
+            return;
+        }
+
+        // Otherwise, loop back to the first video
+        setSelectedVideo(extractYouTubeVideoId(videos[0].uri));
     };
 
     if (loading) return <Loader />;
@@ -92,6 +118,14 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
 
     return (
         <Box>
+            {/* Toggle Continuous Play Mode */}
+            <Group mb="md">
+                <Switch
+                    label="Continuous Play"
+                    checked={continuousPlay}
+                    onChange={e => setContinuousPlay(e.currentTarget.checked)}
+                />
+            </Group>
             {/* Playlist of videos */}
             <Text>{selectedDiscogsRelease.artists_sort}</Text>
             <Stack align="center" mb="md">
