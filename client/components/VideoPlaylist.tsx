@@ -3,6 +3,7 @@ import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces'; // your local types
 import { Box, Stack, Button, Text, Loader } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import CustomYouTubePlayer from './CustomYoutubePlayer';
 
 // Helper function to extract a YouTube video ID from a URL
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -41,26 +42,43 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
                     type: 'SET_SELECTED_DISCOGS_RELEASE',
                     payload: discogsRelease,
                 });
-
-                if (
-                    selectedDiscogsRelease.videos &&
-                    selectedDiscogsRelease.videos.length > 0
-                ) {
-                    // Automatically select the first video in the list
-                    const firstVideoId = extractYouTubeVideoId(
-                        selectedDiscogsRelease.videos[0].uri,
-                    );
-                    setSelectedVideo(firstVideoId);
-                }
             })
             .catch(error =>
                 console.error(
                     'something went wrong with fetching discogs release,',
-                    error.response,
+                    error.response || error,
                 ),
             )
             .finally(() => setLoading(false));
     }, [releaseId]);
+
+    useEffect(() => {
+        if (
+            selectedDiscogsRelease.videos &&
+            selectedDiscogsRelease.videos.length > 0
+        ) {
+            const firstVideoId = extractYouTubeVideoId(
+                selectedDiscogsRelease.videos[0].uri,
+            );
+            setSelectedVideo(firstVideoId);
+        }
+    }, [selectedDiscogsRelease]);
+
+    const handleVideoEnd = () => {
+        if (
+            selectedDiscogsRelease &&
+            selectedDiscogsRelease.videos &&
+            selectedDiscogsRelease.videos.length > 0
+        ) {
+            const videos = selectedDiscogsRelease.videos;
+            const currentIndex = videos.findIndex(
+                video => extractYouTubeVideoId(video.uri) === selectedVideo,
+            );
+            const nextIndex = (currentIndex + 1) % videos.length;
+            const nextVideoId = extractYouTubeVideoId(videos[nextIndex].uri);
+            setSelectedVideo(nextVideoId);
+        }
+    };
 
     if (loading) return <Loader />;
 
@@ -104,14 +122,10 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
             {/* Embedded YouTube Player */}
             {selectedVideo && (
                 <Box maw={800} mx="auto">
-                    <iframe
-                        width="100%"
-                        height="350"
-                        src={`https://www.youtube.com/embed/${selectedVideo}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title="Video Player"
-                    ></iframe>
+                    <CustomYouTubePlayer
+                        videoId={selectedVideo}
+                        onEnd={handleVideoEnd}
+                    />
                 </Box>
             )}
         </Box>
