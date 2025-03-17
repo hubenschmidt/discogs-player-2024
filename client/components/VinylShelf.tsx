@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, FC } from 'react';
 import { getCollection } from '../api';
-import { Release, CollectionResponse } from '../interfaces'; // your local types
+import { Release, CollectionResponse } from '../interfaces';
 import {
     ChevronLeft,
     ChevronRight,
@@ -12,13 +12,14 @@ import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
 
-const reorderReleases = (records: any, selectedIndex: number) => {
+const reorderReleases = (
+    records: Release[],
+    selectedIndex: number,
+): Release[] => {
     const n = records.length;
     if (n < 2) return records;
-
     const middleIndex = Math.floor((n - 1) / 2);
-    const newArr = new Array(n);
-
+    const newArr = new Array<Release>(n);
     newArr[middleIndex] = records[selectedIndex];
 
     // Fill to the right
@@ -42,15 +43,16 @@ const reorderReleases = (records: any, selectedIndex: number) => {
     return newArr;
 };
 
-const VinylShelf = () => {
+const VinylShelf: FC = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releases, totalPages } = collectionState;
-    const { dispatchRelease } = useContext(ReleaseContext);
+    const { dispatchRelease, releaseState } = useContext(ReleaseContext);
+    const { selectedRelease } = releaseState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
-    const shelfRef = useRef<HTMLDivElement>(null); // Reference to the shelf container so we can reset scrollLeft
+    const shelfRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         getCollection({
@@ -58,7 +60,7 @@ const VinylShelf = () => {
             page: currentPage,
             limit: itemsPerPage,
         })
-            .then(collection => {
+            .then((collection: CollectionResponse) => {
                 dispatchCollection({
                     type: 'SET_COLLECTION',
                     payload: collection,
@@ -133,113 +135,113 @@ const VinylShelf = () => {
     };
 
     return (
-        <>
-            <Container className="vinyl-shelf-container">
-                <Paper shadow="sm" p="md" withBorder>
-                    {/* Local Shelf Paging Buttons */}
-                    <Group className="shelf-pagination" mb="md">
-                        <ActionIcon
-                            onClick={handleShelfPrev}
-                            disabled={releases?.length < 2}
-                        >
-                            <ChevronLeft size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            onClick={handleShelfNext}
-                            disabled={releases?.length < 2}
-                        >
-                            <ChevronRight size={16} />
-                        </ActionIcon>
-                    </Group>
+        <Container className="vinyl-shelf-container">
+            <Paper shadow="sm" p="md" withBorder>
+                {/* Local Shelf Paging Buttons */}
+                <Group className="shelf-pagination" mb="md">
+                    <ActionIcon
+                        onClick={handleShelfPrev}
+                        disabled={releases?.length < 2}
+                    >
+                        <ChevronLeft size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                        onClick={handleShelfNext}
+                        disabled={releases?.length < 2}
+                    >
+                        <ChevronRight size={16} />
+                    </ActionIcon>
+                </Group>
 
-                    {/* The shelf itself, with ref */}
-                    <div className="vinyl-shelf" ref={shelfRef}>
-                        {releases?.map((release, i) => {
-                            const n = releases?.length;
-                            let angle = 0;
-                            if (n > 1) {
-                                angle = -90 + 180 * (i / (n - 1));
-                            }
-
-                            return (
+                {/* The shelf itself, with ref */}
+                <div className="vinyl-shelf" ref={shelfRef}>
+                    {releases?.map((release, i) => {
+                        const n = releases?.length;
+                        let angle = 0;
+                        if (n > 1) {
+                            angle = -90 + 180 * (i / (n - 1));
+                        }
+                        const isSelected =
+                            selectedRelease?.Release_Id === release.Release_Id;
+                        return (
+                            <Box
+                                key={release.Release_Id}
+                                className="vinyl-record"
+                                style={{
+                                    transform: `rotateY(${angle.toFixed(
+                                        2,
+                                    )}deg)`,
+                                }}
+                                onClick={() => handleRecordClick(release, i)}
+                            >
                                 <Box
-                                    key={release.Release_Id}
-                                    className="vinyl-record"
+                                    className={`record-cover ${
+                                        isSelected
+                                            ? 'selected-record-cover'
+                                            : ''
+                                    }`}
                                     style={{
-                                        transform: `rotateY(${angle.toFixed(
-                                            2,
-                                        )}deg)`,
+                                        backgroundImage: `url(${
+                                            release.Thumb || '/default-img.jpg'
+                                        })`,
                                     }}
-                                    onClick={() =>
-                                        handleRecordClick(release, i)
-                                    }
-                                >
-                                    <Box
-                                        className="record-cover"
-                                        style={{
-                                            backgroundImage: `url(${
-                                                release.Thumb ||
-                                                '/default-img.jpg'
-                                            })`,
-                                        }}
-                                    />
-                                    <Text className="record-title">
-                                        {release.Title}
-                                    </Text>
-                                </Box>
-                            );
-                        })}
-                    </div>
+                                />
+                                <Text className="record-title">
+                                    {release.Title}
+                                </Text>
+                            </Box>
+                        );
+                    })}
+                </div>
 
-                    {/* Server Pagination Controls */}
-                    <Group className="shelf-pagination">
-                        <ActionIcon
-                            onClick={handleFirstPage}
-                            disabled={currentPage <= 1}
-                        >
-                            <SkipBack size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            onClick={handlePrevPage}
-                            disabled={currentPage <= 1}
-                        >
-                            <ChevronLeft size={16} />
-                        </ActionIcon>
-                        <Text>
-                            {currentPage} of {totalPages}
-                        </Text>
-                        <ActionIcon
-                            onClick={handleNextPage}
-                            disabled={currentPage >= totalPages}
-                        >
-                            <ChevronRight size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                            onClick={handleLastPage}
-                            disabled={currentPage >= totalPages}
-                        >
-                            <SkipForward size={16} />
-                        </ActionIcon>
-                    </Group>
+                {/* Server Pagination Controls */}
+                <Group className="shelf-pagination">
+                    <ActionIcon
+                        onClick={handleFirstPage}
+                        disabled={currentPage <= 1}
+                    >
+                        <SkipBack size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                        onClick={handlePrevPage}
+                        disabled={currentPage <= 1}
+                    >
+                        <ChevronLeft size={16} />
+                    </ActionIcon>
+                    <Text>
+                        {currentPage} of {totalPages}
+                    </Text>
+                    <ActionIcon
+                        onClick={handleNextPage}
+                        disabled={currentPage >= totalPages}
+                    >
+                        <ChevronRight size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                        onClick={handleLastPage}
+                        disabled={currentPage >= totalPages}
+                    >
+                        <SkipForward size={16} />
+                    </ActionIcon>
+                </Group>
 
-                    {/* Items Per Page */}
-                    <Group className="shelf-pagination">
-                        <List size={16} />
-                        <select
-                            value={itemsPerPage}
-                            onChange={handleItemsPerPageChange}
-                        >
-                            <option value={5}>5</option>
-                            <option value={10 + offset}>10</option>
-                            <option value={25}>25</option>
-                            <option value={50 + offset}>50</option>
-                            <option value={100 + offset}>100</option>
-                            <option value={250 + offset}>250</option>
-                        </select>
-                    </Group>
-                </Paper>
-            </Container>
-        </>
+                {/* Items Per Page */}
+                <Group className="shelf-pagination">
+                    <List size={16} />
+                    <select
+                        value={itemsPerPage}
+                        onChange={handleItemsPerPageChange}
+                    >
+                        <option value={5}>5</option>
+                        <option value={10 + offset}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50 + offset}>50</option>
+                        <option value={100 + offset}>100</option>
+                        <option value={250 + offset}>250</option>
+                    </select>
+                </Group>
+            </Paper>
+        </Container>
     );
 };
 
