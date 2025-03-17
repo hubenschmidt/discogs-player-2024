@@ -1,11 +1,19 @@
 import React, { useContext } from 'react';
 import { PlayerContext } from '../context/playerContext';
 import { ActionIcon, Slider, Group } from '@mantine/core';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Pause,
+    Play,
+    StopCircle,
+} from 'lucide-react';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 
 const MusicPlayer = () => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
+    const { dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
 
     const handlePlay = () => {
         controls?.play();
@@ -23,11 +31,22 @@ const MusicPlayer = () => {
         controls?.setVolume(value);
     };
 
+    const handleNextVideo = () => {
+        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
+    };
+
+    const handlePrevVideo = () => {
+        dispatchDiscogsRelease({ type: 'SET_PREV_VIDEO' });
+    };
+
     return (
         <div>
             <Group>
-                <ActionIcon onClick={handleStop}>
+                <ActionIcon onClick={handlePrevVideo}>
                     <ChevronLeft />
+                </ActionIcon>
+                <ActionIcon onClick={handleNextVideo}>
+                    <ChevronRight />
                 </ActionIcon>
                 <ActionIcon onClick={handlePlay}>
                     <Play />
@@ -36,7 +55,7 @@ const MusicPlayer = () => {
                     <Pause />
                 </ActionIcon>
                 <ActionIcon onClick={handleStop}>
-                    <ChevronRight />
+                    <StopCircle />
                 </ActionIcon>
             </Group>
             <Slider

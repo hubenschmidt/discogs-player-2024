@@ -1,6 +1,9 @@
+import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 export const SET_SELECTED_DISCOGS_RELEASE = 'SET_SELECTED_DISCOGS_RELEASE';
 export const SET_CONTINUOUS_PLAY = 'SET_CONTINUOUS_PLAY';
 export const SET_SELECTED_VIDEO = 'SET_SELECTED_VIDEO';
+export const SET_NEXT_VIDEO = 'SET_NEXT_VIDEO';
+export const SET_PREV_VIDEO = 'SET_PREV_VIDEO';
 
 export default initialState => {
     return (state, action) => {
@@ -11,6 +14,10 @@ export default initialState => {
                 return setContinuousPlay(state, action.payload);
             case SET_SELECTED_VIDEO:
                 return setSelectedVideo(state, action.payload);
+            case SET_NEXT_VIDEO:
+                return setNextVideo(state);
+            case SET_PREV_VIDEO:
+                return setPrevVideo(state);
             default:
                 return state;
         }
@@ -35,5 +42,42 @@ const setSelectedVideo = (state, payload) => {
     return {
         ...state,
         selectedVideo: payload,
+    };
+};
+
+const setNextVideo = state => {
+    const videos = state.selectedDiscogsRelease?.videos;
+    if (!videos || videos.length === 0) return state;
+
+    const currentIndex = videos.findIndex(
+        video => extractYouTubeVideoId(video.uri) === state.selectedVideo,
+    );
+
+    // Advance if not last, otherwise loop back
+    const nextIndex =
+        currentIndex !== -1 && currentIndex < videos.length - 1
+            ? currentIndex + 1
+            : 0;
+
+    return {
+        ...state,
+        selectedVideo: extractYouTubeVideoId(videos[nextIndex].uri),
+    };
+};
+
+const setPrevVideo = state => {
+    const videos = state.selectedDiscogsRelease?.videos;
+    if (!videos || videos.length === 0) return state;
+
+    const currentIndex = videos.findIndex(
+        video => extractYouTubeVideoId(video.uri) === state.selectedVideo,
+    );
+
+    // Go back if not first, otherwise loop to last
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : videos.length - 1;
+
+    return {
+        ...state,
+        selectedVideo: extractYouTubeVideoId(videos[prevIndex].uri),
     };
 };

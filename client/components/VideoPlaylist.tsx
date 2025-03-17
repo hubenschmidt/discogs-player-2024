@@ -3,7 +3,6 @@ import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces'; // your local types
 import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import CustomYouTubePlayer from './CustomYoutubePlayer';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface VideoPlaylistProps {

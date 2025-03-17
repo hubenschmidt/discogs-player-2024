@@ -42,40 +42,21 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     };
 
     const handleVideoEnd = () => {
-        // Guard: If no release or no videos, exit early
         if (
             !selectedDiscogsRelease ||
             !selectedDiscogsRelease.videos ||
             selectedDiscogsRelease.videos.length === 0
-        ) {
+        )
             return;
-        }
 
-        const videos = selectedDiscogsRelease.videos;
-        const currentIndex = videos.findIndex(
-            video => extractYouTubeVideoId(video.uri) === selectedVideo,
-        );
-
-        // If a valid index is found and it’s not the last video, advance to the next video
-        if (currentIndex !== -1 && currentIndex < videos.length - 1) {
-            dispatchDiscogsRelease({
-                type: 'SET_SELECTED_VIDEO',
-                payload: extractYouTubeVideoId(videos[currentIndex + 1].uri),
-            });
-            return;
-        }
+        // If not at the last video, dispatch NEXT_VIDEO
+        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
 
         // If continuous play is enabled, trigger it
         if (continuousPlay) {
             handleNextRelease();
             return;
         }
-
-        // Otherwise, loop back to the first video
-        dispatchDiscogsRelease({
-            type: 'SET_SELECTED_VIDEO',
-            payload: extractYouTubeVideoId(videos[0].uri),
-        });
     };
 
     // Function to create the YouTube player
