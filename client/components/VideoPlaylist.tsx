@@ -34,10 +34,9 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedDiscogsRelease } = discogsReleaseState;
-    const [selectedVideo, setSelectedVideo] = useState<string | null>(null); // likely move this to context so it doesnt get rerendered when continuousPlayis set
+    const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
+        discogsReleaseState;
     const [loading, setLoading] = useState<boolean>(true);
-    const [continuousPlay, setContinuousPlay] = useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
@@ -59,13 +58,17 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
 
     useEffect(() => {
         if (
+            selectedDiscogsRelease &&
             selectedDiscogsRelease.videos &&
             selectedDiscogsRelease.videos.length > 0
         ) {
             const firstVideoId = extractYouTubeVideoId(
                 selectedDiscogsRelease.videos[0].uri,
             );
-            setSelectedVideo(firstVideoId);
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: firstVideoId,
+            });
         }
     }, [selectedDiscogsRelease]);
 
@@ -86,9 +89,11 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
 
         // If a valid index is found and it’s not the last video, advance to the next video
         if (currentIndex !== -1 && currentIndex < videos.length - 1) {
-            setSelectedVideo(
-                extractYouTubeVideoId(videos[currentIndex + 1].uri),
-            );
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: extractYouTubeVideoId(videos[currentIndex + 1].uri),
+            });
+
             return;
         }
 
@@ -99,7 +104,10 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
         }
 
         // Otherwise, loop back to the first video
-        setSelectedVideo(extractYouTubeVideoId(videos[0].uri));
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_VIDEO',
+            payload: extractYouTubeVideoId(videos[0].uri),
+        });
     };
 
     if (loading) return <Loader />;
@@ -119,7 +127,12 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
                 <Switch
                     label="Continuous Play"
                     checked={continuousPlay}
-                    onChange={e => setContinuousPlay(e.currentTarget.checked)}
+                    onChange={e =>
+                        dispatchDiscogsRelease({
+                            type: 'SET_CONTINUOUS_PLAY',
+                            payload: e.currentTarget.checked,
+                        })
+                    }
                 />
             </Group>
             {/* Playlist of videos */}
@@ -136,7 +149,12 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
                                         ? 'filled'
                                         : 'outline'
                                 }
-                                onClick={() => setSelectedVideo(videoId)}
+                                onClick={() =>
+                                    dispatchDiscogsRelease({
+                                        type: 'SET_SELECTED_VIDEO',
+                                        payload: videoId,
+                                    })
+                                }
                                 style={{
                                     textTransform: 'none',
                                     width: '100%',

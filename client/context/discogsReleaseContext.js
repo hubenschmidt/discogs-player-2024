@@ -3,6 +3,8 @@ import discogsReleaseReducer from '../reducers/discogsReleaseReducer';
 
 const initialState = {
     selectedDiscogsRelease: null,
+    continuousPlay: true,
+    selectedVideo: null,
 };
 
 export const DiscogsReleaseContext = createContext(initialState);
