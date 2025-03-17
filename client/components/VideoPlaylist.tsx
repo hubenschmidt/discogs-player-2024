@@ -58,18 +58,14 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
     }, [releaseId]);
 
     useEffect(() => {
-        try {
-            if (
-                selectedDiscogsRelease.videos &&
-                selectedDiscogsRelease.videos.length > 0
-            ) {
-                const firstVideoId = extractYouTubeVideoId(
-                    selectedDiscogsRelease.videos[0].uri,
-                );
-                setSelectedVideo(firstVideoId);
-            }
-        } catch (error) {
-            console.log('error setting extractYTVideoId', error);
+        if (
+            selectedDiscogsRelease.videos &&
+            selectedDiscogsRelease.videos.length > 0
+        ) {
+            const firstVideoId = extractYouTubeVideoId(
+                selectedDiscogsRelease.videos[0].uri,
+            );
+            setSelectedVideo(firstVideoId);
         }
     }, [selectedDiscogsRelease]);
 
