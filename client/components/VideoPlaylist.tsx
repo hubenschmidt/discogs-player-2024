@@ -35,7 +35,7 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({
         DiscogsReleaseContext,
     );
     const { selectedDiscogsRelease } = discogsReleaseState;
-    const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+    const [selectedVideo, setSelectedVideo] = useState<string | null>(null); // likely move this to context so it doesnt get rerendered when continuousPlayis set
     const [loading, setLoading] = useState<boolean>(true);
     const [continuousPlay, setContinuousPlay] = useState<boolean>(false);
 
