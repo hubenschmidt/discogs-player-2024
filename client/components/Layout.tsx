@@ -7,7 +7,8 @@ import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Group, Text } from '@mantine/core';
+import { Group, Text, Box } from '@mantine/core';
+import CustomYouTubePlayer from './CustomYoutubePlayer';
 
 type Props = {
     children?: ReactNode;
@@ -27,23 +28,10 @@ const TrackDetail = ({ selectedDiscogsRelease }) => {
 };
 
 const Layout = ({ children, title = 'TuneCrook' }: Props) => {
-    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
+    const { releaseState } = useContext(ReleaseContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const { collectionState } = useContext(CollectionContext);
-    const { releases } = collectionState;
     const { selectedRelease } = releaseState;
-    const { selectedDiscogsRelease } = discogsReleaseState;
-
-    // Next release logic using the collection context:
-    const handleNextRelease = () => {
-        if (!selectedRelease || !releases || releases.length === 0) return;
-        const currentIndex = releases.findIndex(
-            r => r.Release_Id === selectedRelease.Release_Id,
-        );
-        const nextIndex = (currentIndex + 1) % releases.length;
-        const nextRelease = releases[nextIndex];
-        dispatchRelease({ type: 'SET_SELECTED_RELEASE', payload: nextRelease });
-    };
+    const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
 
     return (
         <div>
@@ -91,25 +79,24 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                 </div>
             </div>
 
-            {/* VideoPlaylist with continuous play callback */}
-            {selectedRelease && (
-                <Group
-                    className="row"
-                    style={{ height: 'calc(100vh - 150px)' }}
-                >
-                    <div className="col-12">
-                        <VideoPlaylist
-                            releaseId={selectedRelease.Release_Id}
-                            onNextRelease={handleNextRelease}
-                        />
-                    </div>
-                </Group>
-            )}
-            <div className="row" style={{ height: 'calc(100vh - 150px)' }}>
+            <div className="row">
                 <div className="col-12">
                     <VinylShelf />
                 </div>
             </div>
+
+            {selectedRelease && (
+                <div className="col-12">
+                    <VideoPlaylist releaseId={selectedRelease.Release_Id} />
+                </div>
+            )}
+
+            {selectedVideo && (
+                <Box maw={800} mx="auto">
+                    <CustomYouTubePlayer width="100%" height="430px" />
+                </Box>
+            )}
+
             <footer>
                 <span>WiLliⒶMr0y</span>
             </footer>

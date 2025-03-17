@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, FC } from 'react';
+import React, { useEffect, useRef, useContext, FC } from 'react';
+import { CollectionContext } from '../context/collectionContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { ReleaseContext } from '../context/releaseContext';
+import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
-    videoId: string;
-    onEnd: () => void;
     width?: string;
     height?: string;
 }
@@ -14,44 +16,90 @@ declare global {
     }
 }
 
-const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
-    videoId,
-    onEnd,
-    width = '100%',
-    height = '450',
-}) => {
+const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const playerRef = useRef<HTMLDivElement>(null);
     const playerInstance = useRef<any>(null);
+    const { collectionState } = useContext(CollectionContext);
+    const { releases } = collectionState;
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
+        DiscogsReleaseContext,
+    );
+    const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
+        discogsReleaseState;
+    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
+    const { selectedRelease } = releaseState;
+
+    const handleNextRelease = () => {
+        if (!selectedRelease || !releases || releases.length === 0) return;
+        const currentIndex = releases.findIndex(
+            r => r.Release_Id === selectedRelease.Release_Id,
+        );
+        const nextIndex = (currentIndex + 1) % releases.length;
+        const nextRelease = releases[nextIndex];
+        dispatchRelease({ type: 'SET_SELECTED_RELEASE', payload: nextRelease });
+    };
+
+    const handleVideoEnd = () => {
+        // Guard: If no release or no videos, exit early
+        if (
+            !selectedDiscogsRelease ||
+            !selectedDiscogsRelease.videos ||
+            selectedDiscogsRelease.videos.length === 0
+        ) {
+            return;
+        }
+
+        const videos = selectedDiscogsRelease.videos;
+        const currentIndex = videos.findIndex(
+            video => extractYouTubeVideoId(video.uri) === selectedVideo,
+        );
+
+        // If a valid index is found and it’s not the last video, advance to the next video
+        if (currentIndex !== -1 && currentIndex < videos.length - 1) {
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: extractYouTubeVideoId(videos[currentIndex + 1].uri),
+            });
+            return;
+        }
+
+        // If continuous play is enabled, trigger it
+        if (continuousPlay) {
+            handleNextRelease();
+            return;
+        }
+
+        // Otherwise, loop back to the first video
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_VIDEO',
+            payload: extractYouTubeVideoId(videos[0].uri),
+        });
+    };
+
+    // Function to create the YouTube player
+    const createPlayer = () => {
+        if (playerRef.current) {
+            playerInstance.current = new window.YT.Player(playerRef.current, {
+                height,
+                width,
+                videoId: selectedVideo,
+                playerVars: {
+                    autoplay: 1,
+                    controls: 1,
+                },
+                events: {
+                    onStateChange: (event: any) => {
+                        // When the video ends (state 0), call onEnd
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            handleVideoEnd();
+                        }
+                    },
+                },
+            });
+        }
+    };
 
     useEffect(() => {
-        // Function to create the YouTube player
-        const createPlayer = () => {
-            if (playerRef.current) {
-                playerInstance.current = new window.YT.Player(
-                    playerRef.current,
-                    {
-                        height,
-                        width,
-                        videoId,
-                        playerVars: {
-                            autoplay: 1,
-                            controls: 1,
-                        },
-                        events: {
-                            onStateChange: (event: any) => {
-                                // When the video ends (state 0), call onEnd
-                                if (
-                                    event.data === window.YT.PlayerState.ENDED
-                                ) {
-                                    onEnd();
-                                }
-                            },
-                        },
-                    },
-                );
-            }
-        };
-
         // Check if the YT API is loaded
         if (!window.YT || !window.YT.Player) {
             // Load the YouTube IFrame API script
@@ -73,7 +121,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                 playerInstance.current.destroy();
             }
         };
-    }, [videoId, onEnd, width, height]);
+    }, [selectedVideo, width, height]);
 
     return <div ref={playerRef} />;
 };

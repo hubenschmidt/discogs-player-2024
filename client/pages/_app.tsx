@@ -11,7 +11,7 @@ export default ({ Component, pageProps }: AppProps) => (
         <CollectionProvider>
             <ReleaseProvider>
                 <DiscogsReleaseProvider>
-                    <Component {...pageProps} />;
+                    <Component {...pageProps} />
                 </DiscogsReleaseProvider>
             </ReleaseProvider>
         </CollectionProvider>
