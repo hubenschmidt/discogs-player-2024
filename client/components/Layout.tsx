@@ -1,7 +1,6 @@
 import React, { ReactNode, useContext } from 'react';
 import Head from 'next/head';
 import MusicPlayer from './MusicPlayer';
-import ThemePicker from './Dropdown';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
@@ -27,7 +26,7 @@ const TrackDetail = ({ selectedDiscogsRelease }) => {
     );
 };
 
-const Layout = ({ children, title = 'TuneCrook' }: Props) => {
+const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { releaseState } = useContext(ReleaseContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedRelease } = releaseState;
@@ -56,9 +55,7 @@ const Layout = ({ children, title = 'TuneCrook' }: Props) => {
                     </div>
                     <div className="col-12 col-md-2"></div>
                     <div className="col-6 col-md-1"></div>
-                    <div className="col-6 col-md-1">
-                        <ThemePicker />
-                    </div>
+                    <div className="col-6 col-md-1"></div>
                 </div>
                 <div className="row">
                     <div className="col-12 col-sm-1"></div>

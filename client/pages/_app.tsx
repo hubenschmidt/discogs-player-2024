@@ -5,13 +5,16 @@ import { MantineProvider } from '@mantine/core';
 import { CollectionProvider } from '../context/collectionContext';
 import { ReleaseProvider } from '../context/releaseContext';
 import { DiscogsReleaseProvider } from '../context/discogsReleaseContext';
+import { PlayerProvider } from '../context/playerContext';
 
 export default ({ Component, pageProps }: AppProps) => (
     <MantineProvider>
         <CollectionProvider>
             <ReleaseProvider>
                 <DiscogsReleaseProvider>
-                    <Component {...pageProps} />
+                    <PlayerProvider>
+                        <Component {...pageProps} />
+                    </PlayerProvider>
                 </DiscogsReleaseProvider>
             </ReleaseProvider>
         </CollectionProvider>

@@ -1,17 +1,49 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { PlayerContext } from '../context/playerContext';
+import { ActionIcon, Slider, Group } from '@mantine/core';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 const MusicPlayer = () => {
+    const { playerState } = useContext(PlayerContext);
+    const { controls } = playerState;
+
+    const handlePlay = () => {
+        controls?.play();
+    };
+
+    const handlePause = () => {
+        controls?.pause();
+    };
+
+    const handleStop = () => {
+        controls?.stop();
+    };
+
+    const handleVolumeChange = (value: number) => {
+        controls?.setVolume(value);
+    };
+
     return (
         <div>
-            <button className="player-button">⏮</button>
-            <button className="player-button">⏯</button>
-            <button className="player-button">⏭</button>
-            <input
-                type="range"
-                className="player-slider"
-                min="0"
-                max="100"
-                defaultValue="50"
+            <Group>
+                <ActionIcon onClick={handleStop}>
+                    <ChevronLeft />
+                </ActionIcon>
+                <ActionIcon onClick={handlePlay}>
+                    <Play />
+                </ActionIcon>
+                <ActionIcon onClick={handlePause}>
+                    <Pause />
+                </ActionIcon>
+                <ActionIcon onClick={handleStop}>
+                    <ChevronRight />
+                </ActionIcon>
+            </Group>
+            <Slider
+                defaultValue={50}
+                min={0}
+                max={100}
+                onChangeEnd={handleVolumeChange}
             />
         </div>
     );

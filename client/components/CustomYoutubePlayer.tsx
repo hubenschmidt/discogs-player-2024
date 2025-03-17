@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useContext, FC } from 'react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { ReleaseContext } from '../context/releaseContext';
+import { PlayerContext } from '../context/playerContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
@@ -17,8 +18,9 @@ declare global {
 }
 
 const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
-    const playerRef = useRef<HTMLDivElement>(null);
+    const playerRef = useRef<HTMLDivElement>(null); // keep DOM refs inside the component and not in PlayerContext
     const playerInstance = useRef<any>(null);
+    const { dispatchPlayer } = useContext(PlayerContext);
     const { collectionState } = useContext(CollectionContext);
     const { releases } = collectionState;
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -97,6 +99,17 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 },
             });
         }
+
+        dispatchPlayer({
+            type: 'SET_CONTROLS',
+            payload: {
+                play: () => playerInstance.current.playVideo(),
+                pause: () => playerInstance.current.pauseVideo(),
+                stop: () => playerInstance.current.stopVideo(),
+                setVolume: (volume: number) =>
+                    playerInstance.current.setVolume(volume),
+            },
+        });
     };
 
     useEffect(() => {
