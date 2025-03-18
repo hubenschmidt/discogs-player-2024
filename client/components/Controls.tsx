@@ -113,19 +113,19 @@ const Controls = () => {
                             )}
                         </select>
                     </div>
-                    <ActionIcon onClick={handlePrevVideo}>
+                    <ActionIcon color="blue" onClick={handlePrevVideo}>
                         <ChevronLeft />
                     </ActionIcon>
-                    <ActionIcon onClick={handleNextVideo}>
+                    <ActionIcon color="blue" onClick={handleNextVideo}>
                         <ChevronRight />
                     </ActionIcon>
-                    <ActionIcon onClick={handlePlay}>
+                    <ActionIcon color="blue" onClick={handlePlay}>
                         <Play />
                     </ActionIcon>
-                    <ActionIcon onClick={handlePause}>
+                    <ActionIcon color="blue" onClick={handlePause}>
                         <Pause />
                     </ActionIcon>
-                    <ActionIcon onClick={handleStop}>
+                    <ActionIcon color="blue" onClick={handleStop}>
                         <StopCircle />
                     </ActionIcon>
                 </Group>

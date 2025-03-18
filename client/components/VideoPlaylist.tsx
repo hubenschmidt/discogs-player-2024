@@ -64,7 +64,7 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
     return (
         <Box>
             {/* Toggle Continuous Play Mode */}
-            <Group mb="md">
+            <Group mb="lg">
                 <Switch
                     label="Continuous Play"
                     checked={continuousPlay}
@@ -77,25 +77,45 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
                 />
             </Group>
             {/* Playlist of videos */}
-            <Stack align="center" mb="md">
+            <Stack>
                 {selectedDiscogsRelease.videos.map((video, index) => {
                     const videoId = extractYouTubeVideoId(video.uri);
+                    const isSelected = videoId === selectedVideo;
+
                     return (
                         <Button
                             key={index}
-                            variant={
-                                videoId === selectedVideo ? 'filled' : 'outline'
-                            }
+                            variant="filled"
                             onClick={() =>
                                 dispatchDiscogsRelease({
                                     type: 'SET_SELECTED_VIDEO',
                                     payload: videoId,
                                 })
                             }
-                            style={{
-                                textTransform: 'none',
-                                width: '100%',
-                            }}
+                            mt="-15px"
+                            styles={() => ({
+                                root: {
+                                    // White background with black text if selected;
+                                    // black background with white text if not selected
+                                    backgroundColor: isSelected
+                                        ? '#fff'
+                                        : '#553f57',
+                                    color: isSelected ? '#000' : '#fff',
+                                    fontWeight: '100',
+                                    // Optional hover states:
+                                    '&:hover': {
+                                        backgroundColor: isSelected
+                                            ? '#f0f0f0'
+                                            : '#000',
+                                    },
+                                },
+                                // Left-align label
+                                label: {
+                                    justifyContent: 'flex-start',
+                                    width: '100%',
+                                    textAlign: 'left',
+                                },
+                            })}
                         >
                             {video.title}
                         </Button>

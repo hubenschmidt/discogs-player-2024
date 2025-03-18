@@ -16,21 +16,25 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
     const commonBoxStyles = {
         backgroundColor: 'black',
         color: 'white',
-        padding: '8px',
-        borderRadius: '4px',
+        paddingTop: '8px',
+        paddingBottom: '8px',
+        paddingRight: '2px',
+        paddingLeft: '4px',
+        marginLeft: '-2px',
+        marginRight: '-2px',
     };
 
     return (
         <Box>
             {/* Top Box: Video Title */}
-            <Box style={commonBoxStyles}>
+            <Box style={commonBoxStyles} mt="-2px">
                 <Text style={{ fontWeight: 300 }}>
                     {controls?.videoTitle || 'No title available'}
                 </Text>
             </Box>
 
             {/* Bottom Box: Release Details */}
-            <Box style={commonBoxStyles} mt="8px">
+            <Box style={commonBoxStyles} mt="4px" mb="-2px">
                 <Group align="left">
                     <Text size="sm">
                         <strong>Release:</strong>{' '}

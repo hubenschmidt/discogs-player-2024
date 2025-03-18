@@ -142,13 +142,13 @@ const VinylShelf: FC = () => {
                     onClick={handleShelfPrev}
                     disabled={releases?.length < 2}
                 >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft />
                 </ActionIcon>
                 <ActionIcon
                     onClick={handleShelfNext}
                     disabled={releases?.length < 2}
                 >
-                    <ChevronRight size={16} />
+                    <ChevronRight />
                 </ActionIcon>
             </Group>
 
@@ -195,13 +195,13 @@ const VinylShelf: FC = () => {
                     onClick={handleFirstPage}
                     disabled={currentPage <= 1}
                 >
-                    <SkipBack size={16} />
+                    <SkipBack />
                 </ActionIcon>
                 <ActionIcon
                     onClick={handlePrevPage}
                     disabled={currentPage <= 1}
                 >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft />
                 </ActionIcon>
                 <Text>
                     {currentPage} of {totalPages}
@@ -210,13 +210,13 @@ const VinylShelf: FC = () => {
                     onClick={handleNextPage}
                     disabled={currentPage >= totalPages}
                 >
-                    <ChevronRight size={16} />
+                    <ChevronRight />
                 </ActionIcon>
                 <ActionIcon
                     onClick={handleLastPage}
                     disabled={currentPage >= totalPages}
                 >
-                    <SkipForward size={16} />
+                    <SkipForward />
                 </ActionIcon>
             </Group>
 
