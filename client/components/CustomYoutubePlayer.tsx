@@ -83,11 +83,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                 setPlaybackRate: (rate: number) =>
                                     event.target.setPlaybackRate(rate),
                                 getAvailablePlaybackRates: () =>
-                                    typeof event.target
-                                        .getAvailablePlaybackRates ===
-                                    'function'
-                                        ? event.target.getAvailablePlaybackRates()
-                                        : [],
+                                    event.target.getAvailablePlaybackRates(),
                             },
                         });
                     },

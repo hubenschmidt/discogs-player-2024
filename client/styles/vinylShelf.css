@@ -7,8 +7,6 @@
     text-align: center;
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     padding: 20px;
-    color: #fff;
-    font-family: 'Press Start 2P', cursive; /* Ensure you load this font from Google Fonts */
 }
 
 /* Vinyl shelf container with a neon border and subtle chrome feel */

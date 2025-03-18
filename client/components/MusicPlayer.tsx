@@ -60,6 +60,13 @@ const MusicPlayer = () => {
 
     return (
         <div>
+            <Slider
+                color="orange"
+                defaultValue={50}
+                min={0}
+                max={100}
+                onChangeEnd={handleVolumeChange}
+            />
             <Group>
                 <ActionIcon onClick={handlePrevVideo}>
                     <ChevronLeft />
@@ -67,15 +74,16 @@ const MusicPlayer = () => {
                 <ActionIcon onClick={handleNextVideo}>
                     <ChevronRight />
                 </ActionIcon>
-                <ActionIcon onClick={handlePlay}>
-                    <Play />
+                <ActionIcon onClick={handleStop}>
+                    <StopCircle />
                 </ActionIcon>
                 <ActionIcon onClick={handlePause}>
                     <Pause />
                 </ActionIcon>
-                <ActionIcon onClick={handleStop}>
-                    <StopCircle />
+                <ActionIcon onClick={handlePlay}>
+                    <Play />
                 </ActionIcon>
+
                 <div
                     style={{
                         display: 'flex',
@@ -123,12 +131,6 @@ const MusicPlayer = () => {
                         )}
                     </select>
                 </div>
-                <Slider
-                    defaultValue={50}
-                    min={0}
-                    max={100}
-                    onChangeEnd={handleVolumeChange}
-                />
             </Group>
         </div>
     );

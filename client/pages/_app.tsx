@@ -1,5 +1,6 @@
-import '../styles/scanLines.css';
+import '@mantine/core/styles.css';
 import '../styles/vinylShelf.css';
+import '../styles/scanLines.css';
 import type { AppProps } from 'next/app';
 import { MantineProvider } from '@mantine/core';
 import { CollectionProvider } from '../context/collectionContext';
