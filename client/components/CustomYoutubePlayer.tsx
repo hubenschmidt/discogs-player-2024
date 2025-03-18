@@ -71,7 +71,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 },
                 events: {
                     onReady: (event: any) => {
-                        // Now the player is fully ready—dispatch controls
                         dispatchPlayer({
                             type: 'SET_CONTROLS',
                             payload: {
@@ -84,6 +83,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                     event.target.setPlaybackRate(rate),
                                 getAvailablePlaybackRates: () =>
                                     event.target.getAvailablePlaybackRates(),
+                                videoTitle: event.target.videoTitle,
                             },
                         });
                     },

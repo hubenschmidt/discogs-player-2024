@@ -5,28 +5,13 @@ import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Grid, Container, Text, Box, useMantineTheme } from '@mantine/core';
+import { Grid, Container, Text, Box } from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
+import TrackDetail from './TrackDetail';
 
 type Props = {
     children?: ReactNode;
     title?: string;
-};
-
-// Mock TrackDetail Component
-const TrackDetail = ({
-    selectedDiscogsRelease,
-}: {
-    selectedDiscogsRelease: any;
-}) => {
-    return (
-        <Box mb="md">
-            <Text style={{ textAlign: 'center' }}>
-                {selectedDiscogsRelease?.artists_sort} -{' '}
-                {selectedDiscogsRelease?.title} ({selectedDiscogsRelease?.year})
-            </Text>
-        </Box>
-    );
 };
 
 const Layout = ({ title = 'TuneCrook' }: Props) => {
@@ -96,7 +81,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Grid>
 
                 {/* Vinyl Shelf Section */}
-                <Grid>
+                <Grid mb="sm">
                     <Grid.Col span={12} style={devStyle}>
                         <VinylShelf />
                     </Grid.Col>
@@ -104,7 +89,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Video Playlist Section */}
 
-                <Grid>
+                <Grid mb="sm">
                     <Grid.Col span={12} style={devStyle}>
                         {selectedRelease && (
                             <VideoPlaylist
