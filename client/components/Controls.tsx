@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { PlayerContext } from '../context/playerContext';
-import { ActionIcon, Slider, Group } from '@mantine/core';
+import { ActionIcon, Group } from '@mantine/core';
 import {
     ChevronLeft,
     ChevronRight,
@@ -26,7 +26,6 @@ const Controls = () => {
             if (rates && Array.isArray(rates) && rates.length > 0) {
                 setAvailableRates(rates);
             }
-            console.log(rates);
         }
     }, [controls]);
 
@@ -37,7 +36,6 @@ const Controls = () => {
     const handlePlay = () => controls?.play();
     const handlePause = () => controls?.pause();
     const handleStop = () => controls?.stop();
-    const handleVolumeChange = (value: number) => controls?.setVolume(value);
     const handlePlaybackRateChange = (value: string) => {
         setPlaybackRate(value);
         const newRate = parseFloat(value);
@@ -52,84 +50,64 @@ const Controls = () => {
 
     return (
         <>
-            <Slider
-                color="orange"
-                defaultValue={50}
-                min={0}
-                max={100}
-                onChangeEnd={handleVolumeChange}
-                mb="10px"
-            />
-
-            <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                }}
-            >
-                {/* Slider wrapped in a container to push it to the right */}
-
-                <Group style={{ flexWrap: 'nowrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <label
-                            style={{
-                                color: '#fff',
-                                marginRight: '5px',
-                                fontSize: '0.8rem',
-                            }}
-                        >
-                            Speed:
-                        </label>
-                        <select
-                            value={playbackRate}
-                            onChange={e =>
-                                handlePlaybackRateChange(e.target.value)
-                            }
-                            style={{
-                                backgroundColor: '#222',
-                                color: '#fff',
-                                border: '1px solid #fff',
-                                padding: '4px',
-                                borderRadius: '4px',
-                                fontSize: '0.8rem',
-                            }}
-                        >
-                            {availableRates.length > 0 ? (
-                                availableRates.map(rate => (
-                                    <option key={rate} value={rate}>
-                                        {rate}x
-                                    </option>
-                                ))
-                            ) : (
-                                <>
-                                    <option value="0.25">0.25x</option>
-                                    <option value="0.5">0.5x</option>
-                                    <option value="1">Normal</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                    <option value="2">2x</option>
-                                </>
-                            )}
-                        </select>
-                    </div>
-                    <ActionIcon color="blue" onClick={handlePrevVideo}>
-                        <ChevronLeft />
-                    </ActionIcon>
-                    <ActionIcon color="blue" onClick={handleNextVideo}>
-                        <ChevronRight />
-                    </ActionIcon>
-                    <ActionIcon color="blue" onClick={handlePlay}>
-                        <Play />
-                    </ActionIcon>
-                    <ActionIcon color="blue" onClick={handlePause}>
-                        <Pause />
-                    </ActionIcon>
-                    <ActionIcon color="blue" onClick={handleStop}>
-                        <StopCircle />
-                    </ActionIcon>
-                </Group>
-            </div>
+            {/* Slider wrapped in a container to push it to the right */}
+            <Group style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <label
+                        style={{
+                            color: '#fff',
+                            marginRight: '5px',
+                            fontSize: '0.8rem',
+                        }}
+                    >
+                        Speed:
+                    </label>
+                    <select
+                        value={playbackRate}
+                        onChange={e => handlePlaybackRateChange(e.target.value)}
+                        style={{
+                            backgroundColor: '#222',
+                            color: '#fff',
+                            border: '1px solid #fff',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            fontSize: '0.8rem',
+                        }}
+                    >
+                        {availableRates.length > 0 ? (
+                            availableRates.map(rate => (
+                                <option key={rate} value={rate}>
+                                    {rate}x
+                                </option>
+                            ))
+                        ) : (
+                            <>
+                                <option value="0.25">0.25x</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="1">Normal</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </>
+                        )}
+                    </select>
+                </div>
+                <ActionIcon color="blue" onClick={handlePrevVideo}>
+                    <ChevronLeft />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handleNextVideo}>
+                    <ChevronRight />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handlePlay}>
+                    <Play />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handlePause}>
+                    <Pause />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handleStop}>
+                    <StopCircle />
+                </ActionIcon>
+            </Group>
         </>
     );
 };

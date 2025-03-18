@@ -1,6 +1,7 @@
 import React, { ReactNode, useContext } from 'react';
 import Head from 'next/head';
 import Controls from './Controls';
+import Volume from './Volume';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
@@ -28,7 +29,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderBottom: borderStyle,
         borderLeft: borderStyle,
     };
-    //  devStyle = {};
 
     return (
         <Box>
@@ -47,7 +47,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 />
             </Head>
 
-            <Container fluid>
+            <Container fluid className="layout-container">
                 {/* Header Section */}
                 <Grid mt="sm" mb="sm">
                     <Grid.Col
@@ -79,48 +79,53 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     )}
                 </Grid>
 
+                <Grid mb="sm">
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 6 }}
+                        style={devStyle}
+                    >
+                        <TrackDetail
+                            selectedDiscogsRelease={selectedDiscogsRelease}
+                        />
+                    </Grid.Col>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 6 }}
+                        style={devStyle}
+                    ></Grid.Col>
+                </Grid>
+            </Container>
+
+            {/* Vinyl Shelf Section */}
+            <Grid mb="sm">
+                <Grid.Col span={{ base: 12 }}>
+                    <VinylShelf />
+                </Grid.Col>
+            </Grid>
+
+            <Container fluid className="layout-container">
                 {/* Main Content Section */}
                 <Grid mb="sm">
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
                     >
+                        <Volume />
                         <Controls />
                     </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
-                    >
-                        {selectedDiscogsRelease && (
-                            <TrackDetail
-                                selectedDiscogsRelease={selectedDiscogsRelease}
-                            />
-                        )}
-                    </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    >
-                        <Text style={{ textAlign: 'center' }}>
-                            Additional Column
-                        </Text>
-                    </Grid.Col>
-                </Grid>
-
-                {/* Vinyl Shelf Section */}
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12 }} style={devStyle}>
-                        <VinylShelf />
-                    </Grid.Col>
-                </Grid>
-
-                {/* Video Playlist Section */}
-                <Grid mb="sm">
+                    ></Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
                     ></Grid.Col>
+                </Grid>
+            </Container>
 
+            <Container fluid className="layout-container">
+                {/* Video Playlist Section */}
+                <Grid mb="sm">
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
@@ -131,7 +136,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             />
                         )}
                     </Grid.Col>
-
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    ></Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}

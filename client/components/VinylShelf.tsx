@@ -136,22 +136,6 @@ const VinylShelf: FC = () => {
 
     return (
         <div className="vinyl-shelf-container">
-            {/* Local Shelf Paging Buttons */}
-            <Group className="shelf-pagination" mb="md">
-                <ActionIcon
-                    onClick={handleShelfPrev}
-                    disabled={releases?.length < 2}
-                >
-                    <ChevronLeft />
-                </ActionIcon>
-                <ActionIcon
-                    onClick={handleShelfNext}
-                    disabled={releases?.length < 2}
-                >
-                    <ChevronRight />
-                </ActionIcon>
-            </Group>
-
             {/* The shelf itself, with ref */}
             <div className="vinyl-shelf" ref={shelfRef}>
                 {releases?.map((release, i) => {
@@ -189,6 +173,21 @@ const VinylShelf: FC = () => {
                 })}
             </div>
 
+            <div className="shelf-controls">
+                <ActionIcon
+                    onClick={handleShelfPrev}
+                    disabled={releases?.length < 2}
+                >
+                    <ChevronLeft />
+                </ActionIcon>
+                <ActionIcon
+                    onClick={handleShelfNext}
+                    disabled={releases?.length < 2}
+                >
+                    <ChevronRight />
+                </ActionIcon>
+            </div>
+
             {/* Server Pagination Controls */}
             <Group className="shelf-pagination">
                 <ActionIcon
@@ -203,9 +202,7 @@ const VinylShelf: FC = () => {
                 >
                     <ChevronLeft />
                 </ActionIcon>
-                <Text>
-                    {currentPage} of {totalPages}
-                </Text>
+                <Text>Pg: {currentPage}</Text>
                 <ActionIcon
                     onClick={handleNextPage}
                     disabled={currentPage >= totalPages}
@@ -218,11 +215,7 @@ const VinylShelf: FC = () => {
                 >
                     <SkipForward />
                 </ActionIcon>
-            </Group>
-
-            {/* Items Per Page */}
-            <Group className="shelf-pagination">
-                <List size={16} />
+                <Text>Per:</Text>
                 <select
                     value={itemsPerPage}
                     onChange={handleItemsPerPageChange}

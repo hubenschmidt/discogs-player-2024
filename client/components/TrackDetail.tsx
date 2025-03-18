@@ -28,7 +28,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
         <Box>
             {/* Top Box: Video Title */}
             <Box style={commonBoxStyles} mt="-2px">
-                <Text style={{ fontWeight: 300 }}>
+                <Text style={{ fontWeight: 900 }}>
                     {controls?.videoTitle || 'No title available'}
                 </Text>
             </Box>
