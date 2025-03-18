@@ -18,12 +18,9 @@ const MusicPlayer = () => {
     );
     const { selectedVideo } = discogsReleaseState;
 
-    // State to control playback rate select
     const [playbackRate, setPlaybackRate] = useState<string>('1');
-
     const [availableRates, setAvailableRates] = useState<number[]>([]);
 
-    // When controls become available, fetch the available playback rates
     useEffect(() => {
         if (controls && controls.getAvailablePlaybackRates) {
             const rates = controls.getAvailablePlaybackRates();
@@ -34,7 +31,6 @@ const MusicPlayer = () => {
         }
     }, [controls]);
 
-    // Whenever the selected video changes, reset the playback rate to "Normal"
     useEffect(() => {
         setPlaybackRate('1');
     }, [selectedVideo]);
@@ -43,96 +39,99 @@ const MusicPlayer = () => {
     const handlePause = () => controls?.pause();
     const handleStop = () => controls?.stop();
     const handleVolumeChange = (value: number) => controls?.setVolume(value);
-
     const handlePlaybackRateChange = (value: string) => {
         setPlaybackRate(value);
         const newRate = parseFloat(value);
         controls?.setPlaybackRate(newRate);
     };
-
     const handleNextVideo = () => {
         dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
     };
-
     const handlePrevVideo = () => {
         dispatchDiscogsRelease({ type: 'SET_PREV_VIDEO' });
     };
 
     return (
-        <div>
+        <>
             <Slider
                 color="orange"
                 defaultValue={50}
                 min={0}
                 max={100}
                 onChangeEnd={handleVolumeChange}
+                mb="10px"
             />
-            <Group>
-                <ActionIcon onClick={handlePrevVideo}>
-                    <ChevronLeft />
-                </ActionIcon>
-                <ActionIcon onClick={handleNextVideo}>
-                    <ChevronRight />
-                </ActionIcon>
-                <ActionIcon onClick={handleStop}>
-                    <StopCircle />
-                </ActionIcon>
-                <ActionIcon onClick={handlePause}>
-                    <Pause />
-                </ActionIcon>
-                <ActionIcon onClick={handlePlay}>
-                    <Play />
-                </ActionIcon>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginLeft: '20px',
-                    }}
-                >
-                    <label
-                        style={{
-                            color: '#fff',
-                            marginRight: '5px',
-                            fontSize: '0.8rem',
-                        }}
-                    >
-                        Speed:
-                    </label>
-                    <select
-                        value={playbackRate}
-                        onChange={e => handlePlaybackRateChange(e.target.value)}
-                        style={{
-                            backgroundColor: '#222',
-                            color: '#fff',
-                            border: '1px solid #fff',
-                            padding: '4px',
-                            borderRadius: '4px',
-                            fontSize: '0.8rem',
-                        }}
-                    >
-                        {availableRates.length > 0 ? (
-                            availableRates.map(rate => (
-                                <option key={rate} value={rate}>
-                                    {rate}x
-                                </option>
-                            ))
-                        ) : (
-                            <>
-                                <option value="0.25">0.25x</option>
-                                <option value="0.5">0.5x</option>
-                                <option value="0.75">0.75x</option>
-                                <option value="1">1x</option>
-                                <option value="1.25">1.25x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2x</option>
-                            </>
-                        )}
-                    </select>
-                </div>
-            </Group>
-        </div>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                }}
+            >
+                {/* Slider wrapped in a container to push it to the right */}
+
+                <Group style={{ flexWrap: 'nowrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <label
+                            style={{
+                                color: '#fff',
+                                marginRight: '5px',
+                                fontSize: '0.8rem',
+                            }}
+                        >
+                            Speed:
+                        </label>
+                        <select
+                            value={playbackRate}
+                            onChange={e =>
+                                handlePlaybackRateChange(e.target.value)
+                            }
+                            style={{
+                                backgroundColor: '#222',
+                                color: '#fff',
+                                border: '1px solid #fff',
+                                padding: '4px',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                            }}
+                        >
+                            {availableRates.length > 0 ? (
+                                availableRates.map(rate => (
+                                    <option key={rate} value={rate}>
+                                        {rate}x
+                                    </option>
+                                ))
+                            ) : (
+                                <>
+                                    <option value="0.25">0.25x</option>
+                                    <option value="0.5">0.5x</option>
+                                    <option value="1">Normal</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2x</option>
+                                </>
+                            )}
+                        </select>
+                    </div>
+                    <ActionIcon onClick={handlePrevVideo}>
+                        <ChevronLeft />
+                    </ActionIcon>
+                    <ActionIcon onClick={handleNextVideo}>
+                        <ChevronRight />
+                    </ActionIcon>
+                    <ActionIcon onClick={handlePlay}>
+                        <Play />
+                    </ActionIcon>
+                    <ActionIcon onClick={handlePause}>
+                        <Pause />
+                    </ActionIcon>
+                    <ActionIcon onClick={handleStop}>
+                        <StopCircle />
+                    </ActionIcon>
+                </Group>
+            </div>
+        </>
     );
 };
 

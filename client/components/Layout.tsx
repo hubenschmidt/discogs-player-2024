@@ -35,9 +35,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
 
-    const devStyle = {
-        border: '1px solid white',
+    let devStyle = {
+        border: '.5px solid white',
     };
+    // devStyle = {};
 
     return (
         <Box>
