@@ -4,9 +4,8 @@ import MusicPlayer from './MusicPlayer';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
-import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Group, Text, Box } from '@mantine/core';
+import { Grid, Container, Text, Box, useMantineTheme } from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 
 type Props = {
@@ -15,14 +14,18 @@ type Props = {
 };
 
 // Mock TrackDetail Component
-const TrackDetail = ({ selectedDiscogsRelease }) => {
+const TrackDetail = ({
+    selectedDiscogsRelease,
+}: {
+    selectedDiscogsRelease: any;
+}) => {
     return (
-        <div className="track-detail">
-            <Text>
+        <Box mb="md">
+            <Text style={{ textAlign: 'center' }}>
                 {selectedDiscogsRelease?.artists_sort} -{' '}
                 {selectedDiscogsRelease?.title} ({selectedDiscogsRelease?.year})
             </Text>
-        </div>
+        </Box>
     );
 };
 
@@ -32,75 +35,96 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
 
+    const devStyle = {
+        border: '1px solid white',
+    };
+
     return (
-        <Box p="10px">
-            <div>
-                <Head>
-                    <title>{title}</title>
-                    <meta charSet="utf-8" />
-                    <meta
-                        name="viewport"
-                        content="initial-scale=1.0, width=device-width"
-                    />
-                    <link
-                        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-                        rel="stylesheet"
-                    />
-                </Head>
-                <div className="scanlines"></div>
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col-12 col-md-4"></div>
-                        <div className="col-12 col-md-4">
-                            <p className="text-center">TuneCrook</p>
-                        </div>
-                        <div className="col-12 col-md-2"></div>
-                        <div className="col-6 col-md-1"></div>
-                        <div className="col-6 col-md-1"></div>
-                    </div>
-                    <div className="row">
-                        <div className="col-12 col-sm-1"></div>
-                        <div className="col-12 col-sm-3">
-                            <MusicPlayer />
-                        </div>
-                        <div className="col-12 col-sm-4">
-                            {selectedDiscogsRelease && (
-                                <TrackDetail
-                                    selectedDiscogsRelease={
-                                        selectedDiscogsRelease
-                                    }
-                                />
-                            )}
-                        </div>
-                        <div className="col-12 col-sm-2">
-                            <p className="text-center">Column 5</p>
-                        </div>
-                        <div className="col-12 col-sm-2"></div>
-                    </div>
-                </div>
+        <Box>
+            <Head>
+                <title>{title}</title>
+                <meta charSet="utf-8" />
+                <meta
+                    name="viewport"
+                    content="initial-scale=1.0, width=device-width"
+                />
+            </Head>
 
-                <div className="row">
-                    <div className="col-12">
+            <Container fluid>
+                {/* Header Section */}
+                <Grid mt="sm" mb="sm">
+                    <Grid.Col span={{ base: 12 }} style={devStyle}>
+                        <Text
+                            style={{
+                                textAlign: 'center',
+                                fontWeight: 700,
+                                fontSize: '1.5rem',
+                            }}
+                        >
+                            TuneCrook
+                        </Text>
+                    </Grid.Col>
+                </Grid>
+
+                {/* Main Content Section */}
+                <Grid mb="sm">
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
+                        <MusicPlayer />
+                    </Grid.Col>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
+                        {selectedDiscogsRelease && (
+                            <TrackDetail
+                                selectedDiscogsRelease={selectedDiscogsRelease}
+                            />
+                        )}
+                    </Grid.Col>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
+                        <Text style={{ textAlign: 'center' }}>
+                            Additional Column
+                        </Text>
+                    </Grid.Col>
+                </Grid>
+
+                {/* Vinyl Shelf Section */}
+                <Grid>
+                    <Grid.Col span={12} style={devStyle}>
                         <VinylShelf />
-                    </div>
-                </div>
+                    </Grid.Col>
+                </Grid>
 
-                {selectedRelease && (
-                    <div className="col-12">
-                        <VideoPlaylist releaseId={selectedRelease.Release_Id} />
-                    </div>
-                )}
+                {/* Video Playlist Section */}
 
+                <Grid>
+                    <Grid.Col span={12} style={devStyle}>
+                        {selectedRelease && (
+                            <VideoPlaylist
+                                releaseId={selectedRelease.Release_Id}
+                            />
+                        )}
+                    </Grid.Col>
+                </Grid>
+
+                {/* YouTube Player Section */}
                 {selectedVideo && (
-                    <Box mx="auto">
+                    <Box mx="auto" mb="md">
                         <CustomYouTubePlayer width="100%" height="430px" />
                     </Box>
                 )}
 
-                <footer>
-                    <span>WiLliⒶMr0y</span>
-                </footer>
-            </div>
+                {/* Footer */}
+                <Box pt="lg" style={{ textAlign: 'center' }}>
+                    <Text>WiLliⒶMr0y</Text>
+                </Box>
+            </Container>
         </Box>
     );
 };
