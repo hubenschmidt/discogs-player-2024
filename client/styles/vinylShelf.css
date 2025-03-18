@@ -3,10 +3,10 @@
 /* Overall container with dark background and retro font */
 .vinyl-shelf-container {
     width: 100%;
-    margin: 0 auto;
+    margin: 10 auto;
     text-align: center;
     background: linear-gradient(135deg, #1a1a2e, #16213e);
-    padding: 20px;
+    padding: 0px;
 }
 
 /* Vinyl shelf container with a neon border and subtle chrome feel */
@@ -16,11 +16,12 @@
     overflow-x: auto;
     justify-content: center;
     perspective: 800px;
-    padding: 10px;
-    border: 2px solid #e94560;
+    padding: 20px;
+    border-top: 2px solid #e94560;
+    border-bottom: 2px solid #e94560;
     box-shadow: 0 0 15px rgba(233, 69, 96, 0.8);
     background: #0f3460;
-    border-radius: 8px;
+    /* border-radius: 10px; */
 }
 
 /* Each vinyl record with 3D transform and neon hover effect */
@@ -30,9 +31,29 @@
     transform-style: preserve-3d;
     text-align: center;
     cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Removes tap highlight */
+    outline: none; /* Removes focus outline in many browsers */
 }
+
+/* Optionally, remove focus outline even on keyboard focus if you wish: */
+.vinyl-record:focus {
+    outline: none !important;
+}
+
 .vinyl-record:hover {
     transform: rotateY(0deg) !important;
+}
+
+/* Remove the rotation on mobile screens */
+@media (hover: none) and (pointer: coarse) {
+    .vinyl-record {
+        /* Cancel out the initial transform if needed */
+        transform: none !important;
+    }
+    .vinyl-record:hover {
+        /* No hover transform on touch devices */
+        transform: none !important;
+    }
 }
 
 /* Circular record cover with neon border & chrome-like shadow */
@@ -104,20 +125,4 @@
     border-radius: 4px;
     outline: none;
     font-size: 0.8rem;
-}
-
-/* Optional neon glow effect on headings */
-@keyframes neon-glow {
-    0%,
-    100% {
-        text-shadow: 0 0 5px #e94560, 0 0 10px #e94560;
-    }
-    50% {
-        text-shadow: 0 0 20px #e94560, 0 0 30px #e94560;
-    }
-}
-
-.jukebox-title {
-    font-size: 2rem;
-    animation: neon-glow 2s ease-in-out infinite alternate;
 }

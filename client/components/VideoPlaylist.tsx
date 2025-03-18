@@ -99,7 +99,7 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
                                     // black background with white text if not selected
                                     backgroundColor: isSelected
                                         ? '#fff'
-                                        : '#553f57',
+                                        : '#40343d',
                                     color: isSelected ? '#000' : '#fff',
                                     fontWeight: '100',
                                     // Optional hover states:

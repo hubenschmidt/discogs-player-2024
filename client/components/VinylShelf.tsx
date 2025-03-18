@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
-import { Container, Paper, Box, Group, ActionIcon, Text } from '@mantine/core';
+import { Box, Group, ActionIcon, Text } from '@mantine/core';
 
 const reorderReleases = (
     records: Release[],
