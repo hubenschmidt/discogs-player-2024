@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Title, Text, Group } from '@mantine/core';
+import { Box, Text, Group } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
 
 interface TrackDetailProps {
@@ -12,31 +12,40 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
 
-    return (
-        <Box
-            p="xs"
-            style={{
-                backgroundColor: 'black',
-                color: 'white',
-            }}
-        >
-            <Text size="lg" style={{ fontWeight: 300 }} mb="md">
-                {controls?.videoTitle || 'No title available'}
-            </Text>
+    // Common styles for both boxes
+    const commonBoxStyles = {
+        backgroundColor: 'black',
+        color: 'white',
+        padding: '8px',
+        borderRadius: '4px',
+    };
 
-            <Group align="left">
-                <Text size="sm">
-                    <strong>Release:</strong> {selectedDiscogsRelease?.title} (
-                    {selectedDiscogsRelease?.year})
+    return (
+        <Box>
+            {/* Top Box: Video Title */}
+            <Box style={commonBoxStyles}>
+                <Text style={{ fontWeight: 300 }}>
+                    {controls?.videoTitle || 'No title available'}
                 </Text>
-                <Text size="sm">
-                    <strong>Artist:</strong>{' '}
-                    {selectedDiscogsRelease?.artists_sort}
-                </Text>
-                <Text size="sm">
-                    <strong>Year:</strong> {selectedDiscogsRelease?.year}
-                </Text>
-            </Group>
+            </Box>
+
+            {/* Bottom Box: Release Details */}
+            <Box style={commonBoxStyles} mt="8px">
+                <Group align="left">
+                    <Text size="sm">
+                        <strong>Release:</strong>{' '}
+                        {selectedDiscogsRelease?.title} (
+                        {selectedDiscogsRelease?.year})
+                    </Text>
+                    <Text size="sm">
+                        <strong>Artist:</strong>{' '}
+                        {selectedDiscogsRelease?.artists_sort}
+                    </Text>
+                    <Text size="sm">
+                        <strong>Year:</strong> {selectedDiscogsRelease?.year}
+                    </Text>
+                </Group>
+            </Box>
         </Box>
     );
 };

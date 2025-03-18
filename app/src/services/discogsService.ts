@@ -207,6 +207,18 @@ export const fetchUser = async (req: Request) => {
 
 export const fetchRelease = async (req: Request) => {
     const endpoint = `releases/${req.params.release_id}`;
-    const release = await discogsClient(endpoint, 'get', null);
-    return release;
+    const response = await discogsClient(endpoint, 'get', null);
+    const release = response?.data;
+
+    if (!Array.isArray(release.videos)) return release;
+
+    // Filter out Discogs bugged duplicates by 'uri'
+    const seen = new Set<string>();
+    release.videos = release.videos.filter((video: any) => {
+        if (!video.uri || seen.has(video.uri)) return false;
+        seen.add(video.uri);
+        return true;
+    });
+
+    return response;
 };

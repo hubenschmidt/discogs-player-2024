@@ -10,14 +10,13 @@ import {
 } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 
-const MusicPlayer = () => {
+const Controls = () => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
     const { selectedVideo } = discogsReleaseState;
-
     const [playbackRate, setPlaybackRate] = useState<string>('1');
     const [availableRates, setAvailableRates] = useState<number[]>([]);
 
@@ -135,4 +134,4 @@ const MusicPlayer = () => {
     );
 };
 
-export default MusicPlayer;
+export default Controls;

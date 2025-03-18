@@ -1,6 +1,6 @@
 import React, { ReactNode, useContext } from 'react';
 import Head from 'next/head';
-import MusicPlayer from './MusicPlayer';
+import Controls from './Controls';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { ReleaseContext } from '../context/releaseContext';
@@ -20,10 +20,15 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
 
+    let placeholder = null;
+    let borderStyle = '.5px solid white';
     let devStyle = {
-        border: '.5px solid white',
+        borderRight: borderStyle,
+        borderTop: borderStyle,
+        borderBottom: borderStyle,
+        borderLeft: borderStyle,
     };
-    // devStyle = {};
+    //  devStyle = {};
 
     return (
         <Box>
@@ -34,22 +39,44 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     name="viewport"
                     content="initial-scale=1.0, width=device-width"
                 />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+                    rel="stylesheet"
+                />
             </Head>
 
             <Container fluid>
                 {/* Header Section */}
                 <Grid mt="sm" mb="sm">
-                    <Grid.Col span={{ base: 12 }} style={devStyle}>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
                         <Text
                             style={{
-                                textAlign: 'center',
-                                fontWeight: 700,
-                                fontSize: '1.5rem',
+                                fontFamily: '"Orbitron", sans-serif',
+                                fontSize: '1rem',
+                                textAlign: 'left',
+                                letterSpacing: '1px',
                             }}
                         >
-                            TuneCrook
+                            tuneCrook
                         </Text>
                     </Grid.Col>
+                    {placeholder && (
+                        <>
+                            <Grid.Col
+                                span={{ base: 12, md: 6, lg: 4 }}
+                                style={devStyle}
+                            ></Grid.Col>
+                            <Grid.Col
+                                span={{ base: 12, md: 6, lg: 4 }}
+                                style={devStyle}
+                            ></Grid.Col>
+                        </>
+                    )}
                 </Grid>
 
                 {/* Main Content Section */}
@@ -58,7 +85,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
                     >
-                        <MusicPlayer />
+                        <Controls />
                     </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 4 }}
@@ -82,21 +109,33 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Vinyl Shelf Section */}
                 <Grid mb="sm">
-                    <Grid.Col span={12} style={devStyle}>
+                    <Grid.Col span={{ base: 12 }} style={devStyle}>
                         <VinylShelf />
                     </Grid.Col>
                 </Grid>
 
                 {/* Video Playlist Section */}
-
                 <Grid mb="sm">
-                    <Grid.Col span={12} style={devStyle}>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    ></Grid.Col>
+
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
                         {selectedRelease && (
                             <VideoPlaylist
                                 releaseId={selectedRelease.Release_Id}
                             />
                         )}
                     </Grid.Col>
+
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    ></Grid.Col>
                 </Grid>
 
                 {/* YouTube Player Section */}
