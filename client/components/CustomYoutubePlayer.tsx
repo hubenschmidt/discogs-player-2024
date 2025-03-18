@@ -3,7 +3,6 @@ import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { PlayerContext } from '../context/playerContext';
-import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
     width?: string;
@@ -71,6 +70,28 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                     controls: 1,
                 },
                 events: {
+                    onReady: (event: any) => {
+                        // Now the player is fully ready—dispatch controls
+                        dispatchPlayer({
+                            type: 'SET_CONTROLS',
+                            payload: {
+                                play: () => event.target.playVideo(),
+                                pause: () => event.target.pauseVideo(),
+                                stop: () => event.target.stopVideo(),
+                                setVolume: (volume: number) =>
+                                    event.target.setVolume(volume),
+                                setPlaybackRate: (rate: number) =>
+                                    event.target.setPlaybackRate(rate),
+                                getAvailablePlaybackRates: () =>
+                                    typeof event.target
+                                        .getAvailablePlaybackRates ===
+                                    'function'
+                                        ? event.target.getAvailablePlaybackRates()
+                                        : [],
+                            },
+                        });
+                    },
+
                     onStateChange: (event: any) => {
                         // When the video ends (state 0), call onEnd
                         if (event.data === window.YT.PlayerState.ENDED) {
@@ -80,17 +101,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 },
             });
         }
-
-        dispatchPlayer({
-            type: 'SET_CONTROLS',
-            payload: {
-                play: () => playerInstance.current.playVideo(),
-                pause: () => playerInstance.current.pauseVideo(),
-                stop: () => playerInstance.current.stopVideo(),
-                setVolume: (volume: number) =>
-                    playerInstance.current.setVolume(volume),
-            },
-        });
     };
 
     useEffect(() => {
