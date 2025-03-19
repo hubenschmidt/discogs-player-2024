@@ -142,3 +142,73 @@ export const getStylesByGenre = async (req: Request) => {
         throw error;
     }
 };
+
+export const search = async (req: Request) => {
+    const { searchQuery, type } = req.query;
+    const { username } = req.params;
+
+    const ilikeWildcard = `%${searchQuery}%`;
+
+    // Filter by username added to each query (assumes each table has a `username` field)
+    if (type === 'Everything') {
+        const [artists] = await Promise.all([
+            db.Artist.findAll({
+                where: {
+                    Name: { [Op.iLike]: ilikeWildcard },
+                },
+            }),
+        ]);
+        return { artists };
+
+        // const [releases, artists, labels] = await Promise.all([
+        //     db.Release.findAll({
+        //         where: {
+        //             title: { [Op.iLike]: ilikeWildcard },
+        //             username: req.params.username,
+        //         },
+        //     }),
+        //     db.Artist.findAll({
+        //         where: {
+        //             Name: { [Op.iLike]: ilikeWildcard },
+        //             username: username,
+        //         },
+        //     }),
+        //     db.Label.findAll({
+        //         where: {
+        //             labelName: { [Op.iLike]: ilikeWildcard },
+        //             username: username,
+        //         },
+        //     }),
+        // ]);
+        // return { releases, artists, labels };
+    }
+
+    if (type === 'Releases') {
+        return db.Release.findAll({
+            where: {
+                title: { [Op.iLike]: ilikeWildcard },
+                username: username,
+            },
+        });
+    }
+
+    if (type === 'Artists') {
+        return db.Artist.findAll({
+            where: {
+                name: { [Op.iLike]: ilikeWildcard },
+                username: username,
+            },
+        });
+    }
+
+    if (type === 'Labels') {
+        return db.Label.findAll({
+            where: {
+                labelName: { [Op.iLike]: ilikeWildcard },
+                username: username,
+            },
+        });
+    }
+
+    return [];
+};

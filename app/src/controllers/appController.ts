@@ -1,6 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
 
+export const search = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const searchResult = await appService.search(req);
+        res.status(200).json(searchResult);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const getCollection = async (
     req: Request,
     res: Response,
