@@ -150,40 +150,58 @@ export const search = async (req: Request) => {
     const ilikeWildcard = `%${searchQuery}%`;
 
     // Filter by username added to each query (assumes each table has a `username` field)
-    if (type === 'Everything') {
-        const [artists] = await Promise.all([
-            db.Artist.findAll({
-                where: {
-                    Name: { [Op.iLike]: ilikeWildcard },
-                },
-            }),
-        ]);
-        return { artists };
+    // if (type === 'Everything') {
+    //     const [releases, artists, labels] = await Promise.all([
+    //         db.Release.findAll({
+    //             where: {
+    //                 title: { [Op.iLike]: ilikeWildcard },
+    //                 username: req.params.username,
+    //             },
+    //         }),
+    //         db.Artist.findAll({
+    //             where: {
+    //                 Name: { [Op.iLike]: ilikeWildcard },
+    //                 username: username,
+    //             },
+    //         }),
+    //         db.Label.findAll({
+    //             where: {
+    //                 labelName: { [Op.iLike]: ilikeWildcard },
+    //                 username: username,
+    //             },
+    //         }),
+    //     ]);
+    //     return { releases, artists, labels };
+    // }
 
-        // const [releases, artists, labels] = await Promise.all([
-        //     db.Release.findAll({
-        //         where: {
-        //             title: { [Op.iLike]: ilikeWildcard },
-        //             username: req.params.username,
-        //         },
-        //     }),
-        //     db.Artist.findAll({
-        //         where: {
-        //             Name: { [Op.iLike]: ilikeWildcard },
-        //             username: username,
-        //         },
-        //     }),
-        //     db.Label.findAll({
-        //         where: {
-        //             labelName: { [Op.iLike]: ilikeWildcard },
-        //             username: username,
-        //         },
-        //     }),
-        // ]);
-        // return { releases, artists, labels };
+    if (type === 'artist') {
+        return db.Artist.findAll({
+            where: {
+                Name: { [Op.iLike]: ilikeWildcard },
+            },
+            include: [
+                {
+                    model: db.Release,
+                    required: true,
+                    include: [
+                        {
+                            model: db.Collection,
+                            required: true,
+                            include: [
+                                {
+                                    model: db.User,
+                                    required: true,
+                                    where: { Username: username },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
     }
 
-    if (type === 'Releases') {
+    if (type === 'release') {
         return db.Release.findAll({
             where: {
                 title: { [Op.iLike]: ilikeWildcard },
@@ -192,16 +210,7 @@ export const search = async (req: Request) => {
         });
     }
 
-    if (type === 'Artists') {
-        return db.Artist.findAll({
-            where: {
-                name: { [Op.iLike]: ilikeWildcard },
-                username: username,
-            },
-        });
-    }
-
-    if (type === 'Labels') {
+    if (type === 'label') {
         return db.Label.findAll({
             where: {
                 labelName: { [Op.iLike]: ilikeWildcard },
