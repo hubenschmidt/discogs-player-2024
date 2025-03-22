@@ -58,6 +58,24 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         }
     };
 
+    const safeSetVolume = (target: any, volume: number, attempts = 5) => {
+        try {
+            target.setVolume(volume);
+        } catch (err) {
+            if (attempts > 0) {
+                setTimeout(
+                    () => safeSetVolume(target, volume, attempts - 1),
+                    10,
+                );
+            } else {
+                console.error(
+                    'Failed to set volume after multiple attempts',
+                    err,
+                );
+            }
+        }
+    };
+
     // Function to create the YouTube player
     const createPlayer = () => {
         if (playerRef.current) {
@@ -71,6 +89,8 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 },
                 events: {
                     onReady: (event: any) => {
+                        // enable case we need to wait a little to ensure the player is fully ready
+                        // setTimeout(() => {
                         dispatchPlayer({
                             type: 'SET_CONTROLS',
                             payload: {
@@ -78,7 +98,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                 pause: () => event.target.pauseVideo(),
                                 stop: () => event.target.stopVideo(),
                                 setVolume: (volume: number) =>
-                                    event.target.setVolume(volume),
+                                    safeSetVolume(event.target, volume),
                                 setPlaybackRate: (rate: number) =>
                                     event.target.setPlaybackRate(rate),
                                 getAvailablePlaybackRates: () =>
@@ -86,6 +106,11 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                 videoTitle: event.target.videoTitle,
                             },
                         });
+                        dispatchPlayer({
+                            type: 'SET_PLAYER_READY',
+                            payload: true,
+                        });
+                        // }, 50);
                     },
 
                     onStateChange: (event: any) => {

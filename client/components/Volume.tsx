@@ -1,17 +1,29 @@
-import React, { useContext } from 'react';
-import { PlayerContext } from '../context/playerContext';
+import React, { useContext, useEffect } from 'react';
 import { Slider } from '@mantine/core';
+import { PlayerContext } from '../context/playerContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 
 const Volume = () => {
-    const { playerState } = useContext(PlayerContext);
-    const { controls } = playerState;
+    const { playerState, dispatchPlayer } = useContext(PlayerContext);
+    const { discogsReleaseState } = useContext(DiscogsReleaseContext);
+    const { controls, volume } = playerState;
+    const { selectedVideo } = discogsReleaseState;
 
-    const handleVolumeChange = (value: number) => controls?.setVolume(value);
+    useEffect(() => {
+        if (controls) {
+            controls.setVolume(volume);
+        }
+    }, [selectedVideo, controls]);
+
+    const handleVolumeChange = (value: number) => {
+        dispatchPlayer({ type: 'SET_VOLUME', payload: value });
+        controls?.setVolume(value);
+    };
 
     return (
         <Slider
             color="orange"
-            defaultValue={50}
+            value={volume}
             min={0}
             max={100}
             onChangeEnd={handleVolumeChange}

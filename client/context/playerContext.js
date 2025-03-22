@@ -3,6 +3,7 @@ import playerReducer from '../reducers/playerReducer';
 
 const initialState = {
     controls: null,
+    volume: 100,
 };
 
 export const PlayerContext = createContext(initialState);
