@@ -86,6 +86,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 playerVars: {
                     autoplay: 1,
                     controls: 1,
+                    rel: 0, // prevents showing related videos from other channels
                 },
                 events: {
                     onReady: (event: any) => {
