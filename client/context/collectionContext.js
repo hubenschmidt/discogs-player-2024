@@ -1,12 +1,12 @@
 import React, { createContext, useReducer } from 'react';
 import collectionReducer from '../reducers/collectionReducer';
 
-const initialState = {};
+const initialState = {
+    synced: false,
+};
 
-// Create Context
 export const CollectionContext = createContext(initialState);
 
-// Provider Component
 export const CollectionProvider = props => {
     const reducer = collectionReducer(initialState);
     const [collectionState, dispatchCollection] = useReducer(

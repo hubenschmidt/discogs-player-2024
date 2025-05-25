@@ -1,14 +1,16 @@
-import React, { ReactNode, useContext } from 'react';
+import React, { ReactNode, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import Controls from './Controls';
 import Volume from './Volume';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
+import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { Grid, Container, Text, Box } from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
+import { syncCollection } from '../api';
 
 type Props = {
     children?: ReactNode;
@@ -16,6 +18,8 @@ type Props = {
 };
 
 const Layout = ({ title = 'TuneCrook' }: Props) => {
+    const { collectionState, dispatchCollection } =
+        useContext(CollectionContext);
     const { releaseState } = useContext(ReleaseContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedRelease } = releaseState;
@@ -29,6 +33,20 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderBottom: borderStyle,
         borderLeft: borderStyle,
     };
+
+    useEffect(() => {
+        if (!collectionState.synced) {
+            console.log('then we need to sync', collectionState.synced);
+            syncCollection('hubenschmidt') // placeholder until multi-user support is enabled
+                .then(response => {
+                    dispatchCollection({
+                        type: 'SET_SYNCED',
+                        payload: true,
+                    });
+                })
+                .catch(err => console.log(err));
+        }
+    }, []);
 
     return (
         <Box>

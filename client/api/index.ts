@@ -12,6 +12,12 @@ interface CollectionParams {
     orderBy?: string;
 }
 
+export const syncCollection = async username => {
+    const uri = `/api/discogs/sync-collection/${username}`;
+    const response = await requestHandler('GET', uri, null, { headers: null });
+    return response.data;
+};
+
 export const getCollection = async (
     params: CollectionParams,
 ): Promise<CollectionResponse> => {
@@ -50,7 +56,7 @@ export const getCollection = async (
 };
 
 export const getDiscogsRelease = async (releaseId: number): Promise<any> => {
-    let uri = `/api/discogs/release/${releaseId}`;
+    const uri = `/api/discogs/release/${releaseId}`;
 
     const response: AxiosResponse<any> = await requestHandler(
         'GET',

@@ -60,17 +60,12 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
 
     const safeSetVolume = (target: any, volume: number, attempts = 5) => {
         try {
-            target.setVolume(volume);
+            target?.setVolume(volume);
         } catch (err) {
             if (attempts > 0) {
                 setTimeout(
                     () => safeSetVolume(target, volume, attempts - 1),
                     10,
-                );
-            } else {
-                console.error(
-                    'Failed to set volume after multiple attempts',
-                    err,
                 );
             }
         }
