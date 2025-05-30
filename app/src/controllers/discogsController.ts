@@ -1,7 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import * as discogsService from '../services/discogsService';
 
-export const syncCollection = async (req: Request, res: Response, next: NextFunction) => {
+export const getRequestToken = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const data = await discogsService.getRequestToken();
+    res.status(200).json(data);
+};
+
+export const syncCollection = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const syncedCollection = await discogsService.syncCollection(req);
         res.status(200).json(syncedCollection);
@@ -11,7 +24,11 @@ export const syncCollection = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-export const fetchCollection = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchCollection = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const collection = await discogsService.fetchCollection(req);
         res.status(200).json(collection);
@@ -21,7 +38,11 @@ export const fetchCollection = async (req: Request, res: Response, next: NextFun
     }
 };
 
-export const fetchUser = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const { data } = await discogsService.fetchUser(req);
         res.status(200).json(data);
@@ -31,7 +52,11 @@ export const fetchUser = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-export const fetchRelease = async (req: Request, res: Response, next: NextFunction) => {
+export const fetchRelease = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const { data } = await discogsService.fetchRelease(req);
         res.status(200).json(data);

@@ -1,6 +1,12 @@
 import { Request } from 'express';
 import discogsClient from '../lib/discogsClient';
+import getDiscogsRequestToken from '../lib/getDiscogsRequestToken';
 import { createUser, createCollection, syncData } from '../repositories';
+
+export const getRequestToken = async () => {
+    const response = await getDiscogsRequestToken();
+    return response;
+};
 
 export const syncCollection = async (req: Request) => {
     const discogsCol = await fetchCollection(req);
