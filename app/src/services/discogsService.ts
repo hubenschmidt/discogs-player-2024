@@ -1,11 +1,24 @@
 import { Request } from 'express';
 import discogsClient from '../lib/discogsClient';
-import getDiscogsRequestToken from '../lib/getDiscogsRequestToken';
+import {
+    getDiscogsAccessToken,
+    getDiscogsRequestToken,
+} from '../lib/discogsAuthClient';
 import { createUser, createCollection, syncData } from '../repositories';
 
 export const getRequestToken = async () => {
     const response = await getDiscogsRequestToken();
+    console.trace(response);
+    // should trace  Trace: oauth_token=jCNGzzGmjcogDIiNdANLPUfFysrpEbfVxtthVHZS&oauth_token_secret=KKYAzteIfyueRVodTkTtlagZyYdGkKNDaxATBSHM&oauth_callback_confirmed=true
+    // note the oauth_token_secret
+    // and this should be used https://www.discogs.com/forum/thread/785104
     return response;
+};
+
+export const getAccessToken = async (req: Request) => {
+    const response = await getDiscogsAccessToken(req);
+    console.trace(response);
+    // we should call the repo layer here to persist token secrets
 };
 
 export const syncCollection = async (req: Request) => {

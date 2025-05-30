@@ -18,6 +18,19 @@ export const getRequestToken = async () => {
     return response.data;
 };
 
+export const getAccessToken = async (
+    oauth_token: string | string[],
+    oauth_verifier: string | string[],
+) => {
+    const uri = `/api/discogs/get-access-token`;
+    const body = { oauth_token, oauth_verifier };
+    console.log(body, 'body');
+
+    // reuse your requestHandler just like the GET helper
+    const response = await requestHandler('POST', uri, body, { headers: null });
+    return response.data; // should be { oauth_token, oauth_token_secret, username }
+};
+
 export const syncCollection = async username => {
     const uri = `/api/discogs/sync-collection/${username}`;
     const response = await requestHandler('GET', uri, null, { headers: null });

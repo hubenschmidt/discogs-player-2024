@@ -16,10 +16,20 @@ const DiscogsAuthPrompt = () => {
     const handleConnect = async () => {
         setStatus('loading');
         try {
-            const response = await getRequestToken();
-            console.log(response);
-            // const { authorize_url } = await getRequestToken();
-            // window.location.href = authorize_url;
+            // 1) Fetch the raw query-string response
+            const raw = await getRequestToken();
+            //    e.g. "oauth_token=ABC&oauth_token_secret=XYZ&oauth_callback_confirmed=true"
+
+            // 2) Parse it
+            const params = new URLSearchParams(raw);
+            const oauthToken = params.get('oauth_token');
+            if (!oauthToken) {
+                throw new Error('No oauth_token in response');
+            }
+
+            // 3) Redirect user to Discogs authorize page
+            const authorizeUrl = `https://discogs.com/oauth/authorize?oauth_token=${oauthToken}`;
+            window.location.href = authorizeUrl;
         } catch (err) {
             console.error(err);
             setStatus('error');

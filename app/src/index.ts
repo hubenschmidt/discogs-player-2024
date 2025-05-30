@@ -14,14 +14,15 @@ const app = express();
  */
 app.use(cors());
 
-// Use the router for all routes
-app.use(router);
-
 // Middleware to parse JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlencoded
 
 // Custom middleware for logging requests
 app.use(morgan('combined'));
+
+// Use the router for all routes
+app.use(router);
 
 // Error handling middleware
 // app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

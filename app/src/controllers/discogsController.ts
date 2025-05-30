@@ -6,8 +6,27 @@ export const getRequestToken = async (
     res: Response,
     next: NextFunction,
 ) => {
-    const data = await discogsService.getRequestToken();
-    res.status(200).json(data);
+    try {
+        const data = await discogsService.getRequestToken();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const getAccessToken = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const data = await discogsService.getAccessToken(req);
+        res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
 };
 
 export const syncCollection = async (
