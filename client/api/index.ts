@@ -12,6 +12,12 @@ interface CollectionParams {
     orderBy?: string;
 }
 
+export const getRequestToken = async () => {
+    const uri = `/api/discogs/get-request-token`;
+    const response = await requestHandler('GET', uri, null, { headers: null });
+    return response.data;
+};
+
 export const syncCollection = async username => {
     const uri = `/api/discogs/sync-collection/${username}`;
     const response = await requestHandler('GET', uri, null, { headers: null });
