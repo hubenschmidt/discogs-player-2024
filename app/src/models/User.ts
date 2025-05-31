@@ -10,6 +10,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Username: {
                 type: DataTypes.STRING,
             },
+            OAuth_Access_Token: {
+                type: DataTypes.STRING,
+            },
+            OAuth_Access_Token_Secret: {
+                type: DataTypes.STRING,
+            },
         },
         {
             tableName: 'User',

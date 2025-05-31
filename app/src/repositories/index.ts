@@ -2,6 +2,14 @@ const db = require('../models');
 import { Request } from 'express';
 import { Op } from 'sequelize';
 
+export const createRequestToken = async (token: string, secret: string) => {
+    const requestTokenEntry = await db.RequestToken.create({
+        OAuth_Request_Token: token,
+        OAuth_Request_Token_Secret: secret,
+    });
+    return requestTokenEntry.get();
+};
+
 export const createUser = async (username: string) => {
     return await db.User.findOrCreate({
         where: { Username: username },
