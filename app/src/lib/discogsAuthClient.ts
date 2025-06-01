@@ -3,7 +3,6 @@ import { Request } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
 import 'dotenv/config';
-import { request } from 'http';
 
 type OAuthParams = {
     oauth_token?: string;
@@ -15,6 +14,7 @@ async function fetchDiscogsToken(
     endpoint: 'oauth/request_token' | 'oauth/access_token',
     method: 'GET' | 'POST',
     extraParams: OAuthParams,
+    requestTokenSecret: string | null,
 ) {
     const BASE = 'https://api.discogs.com/';
     const url = `${BASE}${endpoint}`;
@@ -31,7 +31,7 @@ async function fetchDiscogsToken(
     const signature =
         endpoint === 'oauth/request_token'
             ? `${CS}&`
-            : `${CS}&${extraParams?.oauth_token}`;
+            : `${CS}&${requestTokenSecret}`;
 
     // assemble the base OAuth fields
     const oauthFields: Record<string, string> = {
@@ -42,8 +42,6 @@ async function fetchDiscogsToken(
         oauth_timestamp: ts,
         ...extraParams, // adds oauth_callback or oauth_verifier
     };
-
-    console.log(oauthFields);
 
     // stringify into header format: key="value", key="value", …
     const authHeader =
@@ -81,20 +79,33 @@ async function fetchDiscogsToken(
  */
 export const getDiscogsRequestToken = async () => {
     const CB = process.env.DISCOGS_AUTH_CALLBACK_URL;
-    return fetchDiscogsToken('oauth/request_token', 'GET', {
-        oauth_callback: CB,
-    });
+    return fetchDiscogsToken(
+        'oauth/request_token',
+        'GET',
+        {
+            oauth_callback: CB,
+        },
+        null,
+    );
 };
 
 /**
  * Steps 3–5: exchange request token + verifier for access credentials
  */
-export function getDiscogsAccessToken(req: Request) {
+export function getDiscogsAccessToken(
+    req: Request,
+    requestTokenSecret: string,
+) {
     const { body } = req;
     const { oauth_token, oauth_verifier } = body;
 
-    return fetchDiscogsToken('oauth/access_token', 'POST', {
-        oauth_token: oauth_token, // needed so header includes token
-        oauth_verifier: oauth_verifier,
-    });
+    return fetchDiscogsToken(
+        'oauth/access_token',
+        'POST',
+        {
+            oauth_token: oauth_token, // needed so header includes token
+            oauth_verifier: oauth_verifier,
+        },
+        requestTokenSecret,
+    );
 }

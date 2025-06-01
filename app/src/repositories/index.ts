@@ -10,6 +10,20 @@ export const createRequestToken = async (token: string, secret: string) => {
     return requestTokenEntry.get();
 };
 
+export const getRequestToken = async (req: Request) => {
+    const {
+        body: { oauth_token },
+    } = req;
+    const requestTokenEntry = await db.RequestToken.findOne({
+        where: { OAuth_Request_Token: oauth_token },
+    });
+    return requestTokenEntry;
+};
+
+export const createAccessToken = async (token: string, secret: string) => {
+    const accessTokenEntry = await db.User.update({});
+};
+
 export const createUser = async (username: string) => {
     return await db.User.findOrCreate({
         where: { Username: username },

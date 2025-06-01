@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import discogsClient_DEPRECATED from '../lib/discogsClient_DEPRECATED';
 import discogsClient from '../lib/discogsClient';
 import {
     getDiscogsAccessToken,
@@ -6,16 +7,21 @@ import {
 } from '../lib/discogsAuthClient';
 import {
     createRequestToken,
+    getRequestToken,
     createUser,
     createCollection,
     syncData,
 } from '../repositories';
 
-export const getRequestToken = async () => {
+const parseTokenResponse = (response: string) => {
+    const parsed = response.split('&');
+    return parsed.map(pair => pair.split('=')[1]);
+};
+
+export const fetchRequestToken = async () => {
     const response = await getDiscogsRequestToken();
 
-    let parsed = response.split('&');
-    parsed = parsed.map(pair => pair.split('=')[1]);
+    const parsed = parseTokenResponse(response);
 
     const requestTokenEntry = await createRequestToken(parsed[0], parsed[1]);
     const { OAuth_Request_Token } = requestTokenEntry;
@@ -25,9 +31,26 @@ export const getRequestToken = async () => {
     return `oauth_token=${OAuth_Request_Token}`; // strictly validate the persisted token was used even if it means reconstructing the response obj
 };
 
-export const getAccessToken = async (req: Request) => {
-    const response = await getDiscogsAccessToken(req);
-    console.trace(response);
+export const fetchAccessToken = async (req: Request) => {
+    const requestTokenEntry = await getRequestToken(req);
+    const { OAuth_Request_Token_Secret } = requestTokenEntry;
+    const response = await getDiscogsAccessToken(
+        req,
+        OAuth_Request_Token_Secret,
+    );
+    const parsed = parseTokenResponse(response);
+
+    parsed[0]; // oauth access token
+    parsed[1]; // oauth access token secret
+
+    // now fetch User Identity from https://www.discogs.com/developers#page:user-identity,header:user-identity-identity
+    const endpoint = `oauth/identity`;
+    const userIdentity = await discogsClient(endpoint, 'GET', null, {
+        accessToken: parsed[0],
+        accessTokenSecret: parsed[1],
+    });
+    console.trace(userIdentity);
+
     // we should call the repo layer here to persist token secrets
 };
 
@@ -195,7 +218,7 @@ export const fetchCollection = async (req: Request) => {
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
 
     // Fetch the first page to get total pages and initial data
-    const firstResponse = await discogsClient(
+    const firstResponse = await discogsClient_DEPRECATED(
         `${endpoint}?page=1&per_page=${perPage}`,
         'get',
         null,
@@ -209,7 +232,7 @@ export const fetchCollection = async (req: Request) => {
     const pagePromises = [];
     for (let page = 2; page <= totalPages; page++) {
         pagePromises.push(
-            discogsClient(
+            discogsClient_DEPRECATED(
                 `${endpoint}?page=${page}&per_page=${perPage}`,
                 'get',
                 null,
@@ -230,13 +253,13 @@ export const fetchCollection = async (req: Request) => {
 
 export const fetchUser = async (req: Request) => {
     const endpoint = `users/${req.params.username}`;
-    const user = await discogsClient(endpoint, 'get', null);
+    const user = await discogsClient_DEPRECATED(endpoint, 'get', null);
     return user;
 };
 
 export const fetchRelease = async (req: Request) => {
     const endpoint = `releases/${req.params.release_id}`;
-    const response = await discogsClient(endpoint, 'get', null);
+    const response = await discogsClient_DEPRECATED(endpoint, 'get', null);
     const release = response?.data;
 
     if (!Array.isArray(release.videos)) return release;

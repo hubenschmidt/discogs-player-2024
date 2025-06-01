@@ -35,19 +35,23 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderLeft: borderStyle,
     };
 
-    useEffect(() => {
-        if (!collectionState.synced) {
-            console.log('then we need to sync', collectionState.synced);
-            syncCollection('hubenschmidt') // placeholder until multi-user support is enabled
-                .then(response => {
-                    dispatchCollection({
-                        type: 'SET_SYNCED',
-                        payload: true,
-                    });
-                })
-                .catch(err => console.log(err));
-        }
-    }, []);
+    /**
+     * need to fetch the user first before running the following sync method:
+     */
+
+    // useEffect(() => {
+    //     if (!collectionState.synced) {
+    //         console.log('then we need to sync', collectionState.synced);
+    //         syncCollection('hubenschmidt') // placeholder until multi-user support is enabled
+    //             .then(response => {
+    //                 dispatchCollection({
+    //                     type: 'SET_SYNCED',
+    //                     payload: true,
+    //                 });
+    //             })
+    //             .catch(err => console.log(err));
+    //     }
+    // }, []);
 
     return <DiscogsAuthPrompt />;
 

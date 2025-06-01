@@ -12,19 +12,18 @@ interface CollectionParams {
     orderBy?: string;
 }
 
-export const getRequestToken = async () => {
-    const uri = `/api/discogs/get-request-token`;
+export const fetchRequestToken = async () => {
+    const uri = `/api/discogs/fetch-request-token`;
     const response = await requestHandler('GET', uri, null, { headers: null });
     return response.data;
 };
 
-export const getAccessToken = async (
+export const fetchAccessToken = async (
     oauth_token: string | string[],
     oauth_verifier: string | string[],
 ) => {
-    const uri = `/api/discogs/get-access-token`;
+    const uri = `/api/discogs/fetch-access-token`;
     const body = { oauth_token, oauth_verifier };
-    console.log(body, 'body');
 
     // reuse your requestHandler just like the GET helper
     const response = await requestHandler('POST', uri, body, { headers: null });

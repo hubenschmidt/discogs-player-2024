@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getRequestToken } from '../api';
+import { fetchRequestToken } from '../api';
 import {
     Button,
     Center,
@@ -17,11 +17,11 @@ const DiscogsAuthPrompt = () => {
         setStatus('loading');
         try {
             // 1) Fetch the raw query-string response
-            const raw = await getRequestToken();
+            const response = await fetchRequestToken();
             //    e.g. "oauth_token=ABC&oauth_token_secret=XYZ&oauth_callback_confirmed=true"
 
             // 2) Parse it
-            const params = new URLSearchParams(raw);
+            const params = new URLSearchParams(response);
             const oauthToken = params.get('oauth_token');
             if (!oauthToken) {
                 throw new Error('No oauth_token in response');

@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import * as discogsService from '../services/discogsService';
 
-export const getRequestToken = async (
+export const fetchRequestToken = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const data = await discogsService.getRequestToken();
+        const data = await discogsService.fetchRequestToken();
         res.status(200).json(data);
     } catch (error) {
         console.error(error);
@@ -15,13 +15,13 @@ export const getRequestToken = async (
     }
 };
 
-export const getAccessToken = async (
+export const fetchAccessToken = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const data = await discogsService.getAccessToken(req);
+        const data = await discogsService.fetchAccessToken(req);
         res.status(200).json(data);
     } catch (error) {
         console.error(error);
