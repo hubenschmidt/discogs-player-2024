@@ -8,7 +8,15 @@ import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Grid, Container, Text, Box } from '@mantine/core';
+import {
+    Grid,
+    Container,
+    Text,
+    Box,
+    Center,
+    Loader,
+    Stack,
+} from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
@@ -40,7 +48,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     /**
      * need to fetch the user first before running the following sync method:
      */
-
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
             syncCollection(userState.username)
@@ -55,9 +62,22 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         }
     }, [userState]);
 
-    return !userState.username ? (
-        <DiscogsAuthPrompt />
-    ) : collectionState.synced ? (
+    if (!userState.username) {
+        return <DiscogsAuthPrompt />;
+    }
+
+    if (!collectionState.synced) {
+        return (
+            <Center style={{ height: '100vh' }}>
+                <Stack align="center">
+                    <Loader size="xl" />
+                    <Text>Loading your collection…</Text>
+                </Stack>
+            </Center>
+        );
+    }
+
+    return (
         <Box>
             <Head>
                 <title>{title}</title>
@@ -186,7 +206,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Box>
             </Container>
         </Box>
-    ) : null;
+    );
 };
 
 export default Layout;
