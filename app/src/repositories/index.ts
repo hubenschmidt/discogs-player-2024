@@ -20,15 +20,24 @@ export const getRequestToken = async (req: Request) => {
     return requestTokenEntry;
 };
 
-export const createAccessToken = async (token: string, secret: string) => {
-    const accessTokenEntry = await db.User.update({});
-};
+interface DiscogsUserIdentity {
+    id: number;
+    username: string;
+    accessToken: string;
+    accessTokenSecret: string;
+}
 
-export const createUser = async (username: string) => {
-    return await db.User.findOrCreate({
-        where: { Username: username },
-        defaults: { Username: username },
+export const createUser = async (user: DiscogsUserIdentity) => {
+    const [userEntry, created] = await db.User.findOrCreate({
+        where: { Username: user.username },
+        defaults: {
+            User_Id: user.id,
+            Username: user.username,
+            OAuth_Access_Token: user.accessToken,
+            OAuth_Access_Token_Secret: user.accessTokenSecret,
+        },
     });
+    return userEntry.get();
 };
 
 export const createCollection = async (userId: number) => {
