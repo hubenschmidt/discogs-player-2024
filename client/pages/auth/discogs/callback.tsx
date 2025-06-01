@@ -1,10 +1,12 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
+import { UserContext } from '../../../context/userContext';
 import { fetchAccessToken } from '../../../api'; // or your own helper
 import { Loader, Center, Notification, Text } from '@mantine/core';
 
 const DiscogsCallbackPage = () => {
     const { query, replace } = useRouter();
+    const { dispatchUser } = useContext(UserContext);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -13,7 +15,12 @@ const DiscogsCallbackPage = () => {
         if (oauth_token && oauth_verifier) {
             // call your API route or external backend endpoint
             fetchAccessToken(oauth_token, oauth_verifier)
-                .then(res => console.log(res, 'username')) // this should return username, which we will store in react context
+                .then(res => {
+                    dispatchUser({
+                        type: 'SET_USERNAME',
+                        payload: res,
+                    });
+                })
                 .catch(err => console.log(err));
             // now you’ve stored tokens in cookies or context—navigate home
             replace('/');

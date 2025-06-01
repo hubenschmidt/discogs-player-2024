@@ -40,6 +40,13 @@ export const createUser = async (user: DiscogsUserIdentity) => {
     return userEntry.get();
 };
 
+export const getUser = async (req: Request) => {
+    const userEntry = await db.User.findOne({
+        where: { Username: req.params.username },
+    });
+    return userEntry;
+};
+
 export const createCollection = async (userId: number) => {
     return await db.Collection.findOrCreate({
         where: { User_Id: userId },
