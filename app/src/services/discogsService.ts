@@ -26,9 +26,6 @@ export const fetchRequestToken = async () => {
 
     const requestTokenEntry = await createRequestToken(parsed[0], parsed[1]);
     const { OAuth_Request_Token } = requestTokenEntry;
-    // should trace  Trace: oauth_token=jCNGzzGmjcogDIiNdANLPUfFysrpEbfVxtthVHZS&oauth_token_secret=KKYAzteIfyueRVodTkTtlagZyYdGkKNDaxATBSHM&oauth_callback_confirmed=true
-    // note the oauth_token_secret
-    // and this should be used https://www.discogs.com/forum/thread/785104
     return `oauth_token=${OAuth_Request_Token}`; // strictly validate the persisted token was used even if it means reconstructing the response obj
 };
 
