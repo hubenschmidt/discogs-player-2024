@@ -1,4 +1,3 @@
-// lib/discogs-oauth.ts
 import { Request } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
@@ -10,12 +9,12 @@ type OAuthParams = {
     oauth_verifier?: string;
 };
 
-async function fetchDiscogsToken(
+const fetchDiscogsToken = async (
     endpoint: 'oauth/request_token' | 'oauth/access_token',
     method: 'GET' | 'POST',
     extraParams: OAuthParams,
     requestTokenSecret: string | null,
-) {
+) => {
     const BASE = 'https://api.discogs.com/';
     const url = `${BASE}${endpoint}`;
     const CK = process.env.DISCOGS_CONSUMER_KEY!;
@@ -68,11 +67,8 @@ async function fetchDiscogsToken(
                   timeout: 10_000,
               });
 
-    // Discogs returns a url-encoded string in the body
     return res.data;
-}
-
-// --- wrappers ------------------------------------------------
+};
 
 /**
  * Step 1: fetch a request token
@@ -92,10 +88,10 @@ export const getDiscogsRequestToken = async () => {
 /**
  * Steps 3–5: exchange request token + verifier for access credentials
  */
-export function getDiscogsAccessToken(
+export const getDiscogsAccessToken = (
     req: Request,
     requestTokenSecret: string,
-) {
+) => {
     const { body } = req;
     const { oauth_token, oauth_verifier } = body;
 
@@ -108,4 +104,4 @@ export function getDiscogsAccessToken(
         },
         requestTokenSecret,
     );
-}
+};

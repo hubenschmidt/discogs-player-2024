@@ -52,7 +52,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         if (userState.username && !collectionState.synced) {
             syncCollection(userState.username)
                 .then(response => {
-                    console.log(response);
                     dispatchCollection({
                         type: 'SET_SYNCED',
                         payload: true,

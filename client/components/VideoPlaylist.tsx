@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, FC } from 'react';
 import { getDiscogsRelease } from '../api';
-import { DiscogsRelease } from '../interfaces'; // your local types
+import { DiscogsRelease } from '../interfaces';
 import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';

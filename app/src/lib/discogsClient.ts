@@ -10,12 +10,12 @@ interface OAuthOptions {
 }
 
 // Builds a PLAINTEXT OAuth 1.0a Authorization header
-function buildOAuthHeader(
+const buildOAuthHeader = (
     consumerKey: string,
     consumerSecret: string,
     accessToken: string,
     accessTokenSecret: string,
-): string {
+): string => {
     const nonce = crypto.randomBytes(16).toString('hex');
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const signatureMethod = 'PLAINTEXT';
@@ -40,7 +40,7 @@ function buildOAuthHeader(
             .join(', ');
 
     return header;
-}
+};
 
 /**
  * A generic Discogs client that signs requests with OAuth 1.0a (PLAINTEXT).

@@ -25,9 +25,8 @@ export const fetchAccessToken = async (
     const uri = `/api/discogs/fetch-access-token`;
     const body = { oauth_token, oauth_verifier };
 
-    // reuse your requestHandler just like the GET helper
     const response = await requestHandler('POST', uri, body, { headers: null });
-    return response.data; // should be { oauth_token, oauth_token_secret, username }
+    return response.data;
 };
 
 export const syncCollection = async username => {
@@ -60,8 +59,6 @@ export const getCollection = async (
         uri += `?${queryString}`;
     }
 
-    // If requestHandler returns an AxiosResponse<CollectionResponse>,
-    // you can just do:
     const response: AxiosResponse<CollectionResponse> = await requestHandler(
         'GET',
         uri,
@@ -69,7 +66,6 @@ export const getCollection = async (
         { headers: null },
     );
 
-    // Return the data directly so the calling code gets CollectionResponse
     return response.data;
 };
 
@@ -83,6 +79,5 @@ export const getDiscogsRelease = async (releaseId: number): Promise<any> => {
         { headers: null },
     );
 
-    // Return the data directly so the calling code gets ReleaseResponse
     return response.data;
 };
