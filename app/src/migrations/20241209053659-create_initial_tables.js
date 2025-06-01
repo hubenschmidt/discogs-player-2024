@@ -6,11 +6,34 @@ module.exports = {
             User_Id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
-                autoIncrement: true,
             },
             Username: {
                 type: Sequelize.STRING,
                 allowNull: false,
+            },
+            OAuth_Access_Token: {
+                type: Sequelize.STRING,
+            },
+            OAuth_Access_Token_Secret: {
+                type: Sequelize.STRING,
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+        });
+
+        await queryInterface.createTable('RequestToken', {
+            OAuth_Request_Token: {
+                type: Sequelize.STRING,
+                primaryKey: true,
+            },
+            OAuth_Request_Token_Secret: {
+                type: Sequelize.STRING,
             },
             createdAt: {
                 type: Sequelize.DATE,

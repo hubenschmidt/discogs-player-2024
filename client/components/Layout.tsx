@@ -4,13 +4,23 @@ import Controls from './Controls';
 import Volume from './Volume';
 import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
+import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Grid, Container, Text, Box } from '@mantine/core';
+import {
+    Grid,
+    Container,
+    Text,
+    Box,
+    Center,
+    Loader,
+    Stack,
+} from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
+import DiscogsAuthPrompt from './DiscogsAuthPrompt';
 
 type Props = {
     children?: ReactNode;
@@ -18,6 +28,7 @@ type Props = {
 };
 
 const Layout = ({ title = 'TuneCrook' }: Props) => {
+    const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releaseState } = useContext(ReleaseContext);
@@ -34,10 +45,12 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderLeft: borderStyle,
     };
 
+    /**
+     * need to fetch the user first before running the following sync method:
+     */
     useEffect(() => {
-        if (!collectionState.synced) {
-            console.log('then we need to sync', collectionState.synced);
-            syncCollection('hubenschmidt') // placeholder until multi-user support is enabled
+        if (userState.username && !collectionState.synced) {
+            syncCollection(userState.username)
                 .then(response => {
                     dispatchCollection({
                         type: 'SET_SYNCED',
@@ -46,7 +59,22 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 })
                 .catch(err => console.log(err));
         }
-    }, []);
+    }, [userState]);
+
+    if (!userState.username) {
+        return <DiscogsAuthPrompt />;
+    }
+
+    if (!collectionState.synced) {
+        return (
+            <Center style={{ height: '100vh' }}>
+                <Stack align="center">
+                    <Loader size="xl" />
+                    <Text>Loading your collection…</Text>
+                </Stack>
+            </Center>
+        );
+    }
 
     return (
         <Box>

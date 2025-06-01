@@ -5,9 +5,14 @@ module.exports = (sequelize: any, DataTypes: any) => {
             User_Id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
-                autoIncrement: true,
             },
             Username: {
+                type: DataTypes.STRING,
+            },
+            OAuth_Access_Token: {
+                type: DataTypes.STRING,
+            },
+            OAuth_Access_Token_Secret: {
                 type: DataTypes.STRING,
             },
         },

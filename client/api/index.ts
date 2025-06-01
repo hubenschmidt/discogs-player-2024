@@ -12,6 +12,23 @@ interface CollectionParams {
     orderBy?: string;
 }
 
+export const fetchRequestToken = async () => {
+    const uri = `/api/discogs/fetch-request-token`;
+    const response = await requestHandler('GET', uri, null, { headers: null });
+    return response.data;
+};
+
+export const fetchAccessToken = async (
+    oauth_token: string | string[],
+    oauth_verifier: string | string[],
+) => {
+    const uri = `/api/discogs/fetch-access-token`;
+    const body = { oauth_token, oauth_verifier };
+
+    const response = await requestHandler('POST', uri, body, { headers: null });
+    return response.data;
+};
+
 export const syncCollection = async username => {
     const uri = `/api/discogs/sync-collection/${username}`;
     const response = await requestHandler('GET', uri, null, { headers: null });
@@ -42,8 +59,6 @@ export const getCollection = async (
         uri += `?${queryString}`;
     }
 
-    // If requestHandler returns an AxiosResponse<CollectionResponse>,
-    // you can just do:
     const response: AxiosResponse<CollectionResponse> = await requestHandler(
         'GET',
         uri,
@@ -51,7 +66,6 @@ export const getCollection = async (
         { headers: null },
     );
 
-    // Return the data directly so the calling code gets CollectionResponse
     return response.data;
 };
 
@@ -65,6 +79,5 @@ export const getDiscogsRelease = async (releaseId: number): Promise<any> => {
         { headers: null },
     );
 
-    // Return the data directly so the calling code gets ReleaseResponse
     return response.data;
 };

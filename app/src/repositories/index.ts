@@ -2,11 +2,49 @@ const db = require('../models');
 import { Request } from 'express';
 import { Op } from 'sequelize';
 
-export const createUser = async (username: string) => {
-    return await db.User.findOrCreate({
-        where: { Username: username },
-        defaults: { Username: username },
+export const createRequestToken = async (token: string, secret: string) => {
+    const requestTokenEntry = await db.RequestToken.create({
+        OAuth_Request_Token: token,
+        OAuth_Request_Token_Secret: secret,
     });
+    return requestTokenEntry.get();
+};
+
+export const getRequestToken = async (req: Request) => {
+    const {
+        body: { oauth_token },
+    } = req;
+    const requestTokenEntry = await db.RequestToken.findOne({
+        where: { OAuth_Request_Token: oauth_token },
+    });
+    return requestTokenEntry;
+};
+
+interface DiscogsUserIdentity {
+    id: number;
+    username: string;
+    accessToken: string;
+    accessTokenSecret: string;
+}
+
+export const createUser = async (user: DiscogsUserIdentity) => {
+    const [userEntry, created] = await db.User.findOrCreate({
+        where: { Username: user.username },
+        defaults: {
+            User_Id: user.id,
+            Username: user.username,
+            OAuth_Access_Token: user.accessToken,
+            OAuth_Access_Token_Secret: user.accessTokenSecret,
+        },
+    });
+    return userEntry.get();
+};
+
+export const getUser = async (req: Request) => {
+    const userEntry = await db.User.findOne({
+        where: { Username: req.params.username },
+    });
+    return userEntry;
 };
 
 export const createCollection = async (userId: number) => {
