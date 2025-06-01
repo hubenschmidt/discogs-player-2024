@@ -19,9 +19,10 @@ const DiscogsCallbackPage = () => {
                         type: 'SET_USERNAME',
                         payload: res,
                     });
+
+                    replace('/'); // redirect only after userIdentity is received
                 })
                 .catch(err => console.log(err));
-            replace('/');
         }
     }, [query]);
 
