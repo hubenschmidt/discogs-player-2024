@@ -110,6 +110,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         >
                             tuneCrook
                         </Text>
+                        <a href="/auth/login">Login</a>
                     </Grid.Col>
                     {placeholder && (
                         <>
