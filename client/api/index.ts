@@ -1,4 +1,5 @@
 import { requestHandler } from '../lib/request-handler';
+import { getBearerTokenHeader } from '../lib/get-bearer-token-header';
 import { AxiosResponse } from 'axios';
 import { CollectionResponse } from '../interfaces';
 
@@ -12,9 +13,10 @@ interface CollectionParams {
     orderBy?: string;
 }
 
-export const fetchRequestToken = async () => {
+export const fetchRequestToken = async accessToken => {
     const uri = `/api/discogs/fetch-request-token`;
-    const response = await requestHandler('GET', uri, null, { headers: null });
+    const headers = getBearerTokenHeader(accessToken);
+    const response = await requestHandler('GET', uri, null, headers);
     return response.data;
 };
 

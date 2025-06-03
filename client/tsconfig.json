@@ -21,6 +21,6 @@
         "**/*.tsx",
         "reducers/collectionReducer.js",
         "context/collectionContext.js"
-    ],
+, "lib/get-session-token.ts"    ],
     "exclude": ["node_modules"]
 }

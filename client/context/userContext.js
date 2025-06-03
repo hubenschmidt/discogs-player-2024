@@ -2,7 +2,8 @@ import { createContext, useReducer } from 'react';
 import userReducer from '../reducers/userReducer';
 
 const initialState = {
-    username: null,
+    username: '',
+    accessToken: '',
 };
 
 export const UserContext = createContext(initialState);

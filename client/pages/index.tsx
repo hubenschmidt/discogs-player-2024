@@ -1,11 +1,13 @@
 import Layout from '../components/Layout';
-import { useUser } from '@auth0/nextjs-auth0';
+import { useUser, getAccessToken } from '@auth0/nextjs-auth0';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Flex, Loader, Box } from '@mantine/core';
+import { UserContext } from '../context/userContext';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
+    const { dispatchUser } = useContext(UserContext);
     const router = useRouter();
     const [redirecting, setRedirecting] = useState(false);
 
@@ -15,6 +17,19 @@ const IndexPage = () => {
             router.replace('/auth/login').catch(() => setRedirecting(false));
         }
     }, [isLoading, user, redirecting, router]);
+
+    useEffect(() => {
+        if (user) {
+            getAccessToken()
+                .then(accessToken => {
+                    dispatchUser({
+                        type: 'SET_ACCESS_TOKEN',
+                        payload: accessToken,
+                    });
+                })
+                .catch(err => console.log(err));
+        }
+    }, [user]);
 
     if (isLoading || redirecting) {
         return (

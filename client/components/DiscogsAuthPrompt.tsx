@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchRequestToken } from '../api';
+import { useAuth0AccessToken } from '../hooks/useAuth0AccessToken';
 import {
     Button,
     Center,
@@ -12,12 +13,13 @@ import {
 
 const DiscogsAuthPrompt = () => {
     const [status, setStatus] = useState('idle');
+    const accessToken = useAuth0AccessToken();
 
     const handleConnect = async () => {
         setStatus('loading');
         try {
             // 1) Fetch the raw query-string response
-            const response = await fetchRequestToken();
+            const response = await fetchRequestToken(accessToken);
             //    e.g. "oauth_token=ABC&oauth_token_secret=XYZ&oauth_callback_confirmed=true"
 
             // 2) Parse it
