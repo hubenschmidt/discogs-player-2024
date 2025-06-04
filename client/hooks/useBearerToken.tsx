@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 import { UserContext } from '../context/userContext';
 
-export const useAuth0AccessToken = () => {
+export const useBearerToken = () => {
     const {
-        userState: { accessToken },
+        userState: { bearerToken },
     } = useContext(UserContext);
-    return accessToken;
+    return bearerToken;
 };

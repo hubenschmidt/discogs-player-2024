@@ -5,11 +5,7 @@ type Data = {
     error?: string;
 };
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<Data>,
-) {
-    console.log('handleris called');
+const handler = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     try {
         const payload = {
             client_id: process.env.AUTH0_CLIENT_ID,
@@ -17,7 +13,6 @@ export default async function handler(
             audience: process.env.AUTH0_AUDIENCE,
             grant_type: 'client_credentials',
         };
-        console.log(process.env.AUTH0_DOMAIN, 'called');
 
         const auth0Res = await fetch(
             `${process.env.AUTH0_DOMAIN}/oauth/token`,
@@ -38,4 +33,6 @@ export default async function handler(
     } catch (e: any) {
         console.error('Error in /api/auth/get-token:', e);
     }
-}
+};
+
+export default handler;

@@ -11,6 +11,8 @@ import {
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { Box, Group, ActionIcon, Text } from '@mantine/core';
+import { useBearerToken } from '../hooks/useBearerToken';
+import { UserContext } from '../context/userContext';
 
 const reorderReleases = (
     records: Release[],
@@ -44,6 +46,7 @@ const reorderReleases = (
 };
 
 const VinylShelf: FC = () => {
+    const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releases, totalPages } = collectionState;
@@ -53,13 +56,17 @@ const VinylShelf: FC = () => {
     const offset = 1; // maintains odd number so records center in carousel
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
     const shelfRef = useRef<HTMLDivElement>(null);
+    const bearerToken = useBearerToken();
 
     useEffect(() => {
-        getCollection({
-            username: 'hubenschmidt',
-            page: currentPage,
-            limit: itemsPerPage,
-        })
+        getCollection(
+            {
+                username: userState.username,
+                page: currentPage,
+                limit: itemsPerPage,
+            },
+            bearerToken,
+        )
             .then((collection: CollectionResponse) => {
                 dispatchCollection({
                     type: 'SET_COLLECTION',

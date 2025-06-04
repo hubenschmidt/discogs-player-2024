@@ -11,6 +11,10 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            Email: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
             OAuth_Access_Token: {
                 type: Sequelize.STRING,
             },

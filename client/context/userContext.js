@@ -3,7 +3,7 @@ import userReducer from '../reducers/userReducer';
 
 const initialState = {
     username: '',
-    accessToken: '',
+    bearerToken: null,
 };
 
 export const UserContext = createContext(initialState);

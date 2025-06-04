@@ -1,7 +1,7 @@
 import { requestHandler } from '../lib/request-handler';
-import { getBearerTokenHeader } from '../lib/get-bearer-token-header';
 import { AxiosResponse } from 'axios';
 import { CollectionResponse } from '../interfaces';
+import type { BearerToken } from '../types/types';
 
 interface CollectionParams {
     username: string;
@@ -13,34 +13,35 @@ interface CollectionParams {
     orderBy?: string;
 }
 
-export const fetchRequestToken = async accessToken => {
+export const fetchDiscogsRequestToken = async (token: BearerToken) => {
     const uri = `/api/discogs/fetch-request-token`;
-    const headers = getBearerTokenHeader(accessToken);
-    const response = await requestHandler('GET', uri, null, headers);
+    const response = await requestHandler('GET', uri, null, token);
     return response.data;
 };
 /**
 These all need to use `getBearerTokenHeader` and take an accessToken param like the above
  */
-export const fetchAccessToken = async (
+export const fetchDiscogsAccessToken = async (
     oauth_token: string | string[],
     oauth_verifier: string | string[],
+    token: BearerToken,
 ) => {
     const uri = `/api/discogs/fetch-access-token`;
     const body = { oauth_token, oauth_verifier };
 
-    const response = await requestHandler('POST', uri, body, { headers: null });
+    const response = await requestHandler('POST', uri, body, token);
     return response.data;
 };
 
-export const syncCollection = async username => {
+export const syncCollection = async (username: string, token: BearerToken) => {
     const uri = `/api/discogs/sync-collection/${username}`;
-    const response = await requestHandler('GET', uri, null, { headers: null });
+    const response = await requestHandler('GET', uri, null, token);
     return response.data;
 };
 
 export const getCollection = async (
     params: CollectionParams,
+    token: BearerToken,
 ): Promise<CollectionResponse> => {
     const { username, genre, style, page, limit, order, orderBy } = params;
 
@@ -67,20 +68,23 @@ export const getCollection = async (
         'GET',
         uri,
         null,
-        { headers: null },
+        token,
     );
 
     return response.data;
 };
 
-export const getDiscogsRelease = async (releaseId: number): Promise<any> => {
+export const getDiscogsRelease = async (
+    releaseId: number,
+    token: BearerToken,
+): Promise<any> => {
     const uri = `/api/discogs/release/${releaseId}`;
 
     const response: AxiosResponse<any> = await requestHandler(
         'GET',
         uri,
         null,
-        { headers: null },
+        token,
     );
 
     return response.data;
