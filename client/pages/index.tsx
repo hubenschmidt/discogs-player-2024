@@ -11,7 +11,6 @@ const IndexPage = () => {
     const { dispatchUser } = useContext(UserContext);
     const router = useRouter();
     const [redirecting, setRedirecting] = useState(false);
-    console.log(user?.email, 'user email'); // this probably needs to be written to the database at User.Email and then fetched later and added to the userState `SET_EMAIL` when the user logs in again
 
     useEffect(() => {
         if (!isLoading && !user && !redirecting) {

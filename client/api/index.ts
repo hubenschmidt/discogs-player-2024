@@ -22,12 +22,13 @@ export const fetchDiscogsRequestToken = async (token: BearerToken) => {
 These all need to use `getBearerTokenHeader` and take an accessToken param like the above
  */
 export const fetchDiscogsAccessToken = async (
+    email: string,
     oauth_token: string | string[],
     oauth_verifier: string | string[],
     token: BearerToken,
 ) => {
     const uri = `/api/discogs/fetch-access-token`;
-    const body = { oauth_token, oauth_verifier };
+    const body = { email, oauth_token, oauth_verifier };
 
     const response = await requestHandler('POST', uri, body, token);
     return response.data;

@@ -23,6 +23,7 @@ export const getRequestToken = async (req: Request) => {
 interface DiscogsUserIdentity {
     id: number;
     username: string;
+    email: string;
     accessToken: string;
     accessTokenSecret: string;
 }
@@ -33,6 +34,7 @@ export const createUser = async (user: DiscogsUserIdentity) => {
         defaults: {
             User_Id: user.id,
             Username: user.username,
+            Email: user.email,
             OAuth_Access_Token: user.accessToken,
             OAuth_Access_Token_Secret: user.accessTokenSecret,
         },

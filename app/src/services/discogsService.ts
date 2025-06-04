@@ -46,10 +46,13 @@ export const fetchAccessToken = async (req: Request) => {
         accessToken: parsed[0],
         accessTokenSecret: parsed[1],
     });
+    console.trace(req.body.email);
+
     const { id, username } = userIdentity;
     const user = await createUser({
         id: id,
         username: username,
+        email: req.body.email,
         accessToken: parsed[0],
         accessTokenSecret: parsed[1],
     });
