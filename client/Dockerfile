@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as the parent image
-FROM node:16
+FROM node:24
 
 # Set the working directory in the Docker container to /app
 WORKDIR /app

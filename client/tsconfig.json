@@ -20,7 +20,8 @@
         "**/*.ts",
         "**/*.tsx",
         "reducers/collectionReducer.js",
-        "context/collectionContext.js"
+        "context/collectionContext.js",
+        "lib/fetch-bearer-token.ts"
     ],
     "exclude": ["node_modules"]
 }

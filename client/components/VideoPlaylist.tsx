@@ -4,6 +4,7 @@ import { DiscogsRelease } from '../interfaces';
 import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
+import { useBearerToken } from '../hooks/useBearerToken';
 
 interface VideoPlaylistProps {
     releaseId: number;
@@ -16,10 +17,11 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
     const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
         discogsReleaseState;
     const [loading, setLoading] = useState<boolean>(true);
+    const bearerToken = useBearerToken();
 
     useEffect(() => {
         setLoading(true);
-        getDiscogsRelease(releaseId)
+        getDiscogsRelease(releaseId, bearerToken)
             .then((discogsRelease: DiscogsRelease) => {
                 dispatchDiscogsRelease({
                     type: 'SET_SELECTED_DISCOGS_RELEASE',

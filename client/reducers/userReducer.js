@@ -1,10 +1,13 @@
 export const SET_USERNAME = 'SET_USERNAME';
+export const SET_BEARER_TOKEN = 'SET_BEARER_TOKEN';
 
 export default initialState => {
     return (state, action) => {
         switch (action.type) {
             case SET_USERNAME:
                 return setUsername(state, action.payload);
+            case SET_BEARER_TOKEN:
+                return setBearerToken(state, action.payload);
             default:
                 return state;
         }
@@ -15,5 +18,12 @@ const setUsername = (state, payload) => {
     return {
         ...state,
         username: payload,
+    };
+};
+
+const setBearerToken = (state, payload) => {
+    return {
+        ...state,
+        bearerToken: payload,
     };
 };

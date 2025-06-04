@@ -21,6 +21,7 @@ import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
 import DiscogsAuthPrompt from './DiscogsAuthPrompt';
+import { useBearerToken } from '../hooks/useBearerToken';
 
 type Props = {
     children?: ReactNode;
@@ -35,6 +36,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
+    const bearerToken = useBearerToken();
 
     let placeholder = null;
     let borderStyle = '.5px solid white';
@@ -50,7 +52,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
      */
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
-            syncCollection(userState.username)
+            syncCollection(userState.username, bearerToken)
                 .then(response => {
                     dispatchCollection({
                         type: 'SET_SYNCED',
@@ -110,6 +112,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         >
                             tuneCrook
                         </Text>
+                        <a href="/auth/logout">Logout</a>
                     </Grid.Col>
                     {placeholder && (
                         <>
