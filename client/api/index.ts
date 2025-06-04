@@ -19,7 +19,9 @@ export const fetchRequestToken = async accessToken => {
     const response = await requestHandler('GET', uri, null, headers);
     return response.data;
 };
-
+/**
+These all need to use `getBearerTokenHeader` and take an accessToken param like the above
+ */
 export const fetchAccessToken = async (
     oauth_token: string | string[],
     oauth_verifier: string | string[],

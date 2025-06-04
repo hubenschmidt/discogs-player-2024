@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useContext } from 'react';
 import { Flex, Loader, Box } from '@mantine/core';
 import { UserContext } from '../context/userContext';
+import { getAuth0AccessToken } from '../lib/get-session-token';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
@@ -20,7 +21,7 @@ const IndexPage = () => {
 
     useEffect(() => {
         if (user) {
-            getAccessToken()
+            getAuth0AccessToken()
                 .then(accessToken => {
                     dispatchUser({
                         type: 'SET_ACCESS_TOKEN',
