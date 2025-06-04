@@ -30,8 +30,6 @@ const DiscogsCallbackPage = () => {
 
     useEffect(() => {
         const { oauth_token, oauth_verifier } = query;
-        console.log(query, 'query');
-        console.log(bearerToken, 'bearerToken');
 
         if (oauth_token && oauth_verifier && bearerToken) {
             fetchDiscogsAccessToken(oauth_token, oauth_verifier, bearerToken)
@@ -40,7 +38,6 @@ const DiscogsCallbackPage = () => {
                         type: 'SET_USERNAME',
                         payload: res,
                     });
-
                     replace('/'); // redirect only after userIdentity is received
                 })
                 .catch(err => console.log(err));
