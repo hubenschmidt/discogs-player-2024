@@ -39,8 +39,8 @@ const DiscogsCallbackPage = () => {
             )
                 .then(res => {
                     dispatchUser({
-                        type: 'SET_USERNAME',
-                        payload: res,
+                        type: 'SET_USER',
+                        payload: { username: res.Username, email: res.Email },
                     });
                     replace('/');
                 })

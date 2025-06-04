@@ -47,9 +47,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderLeft: borderStyle,
     };
 
-    /**
-     * need to fetch the user first before running the following sync method:
-     */
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
             syncCollection(userState.username, bearerToken)
@@ -61,13 +58,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 })
                 .catch(err => console.log(err));
         }
-    }, [userState]);
+    }, [userState.username]);
+    console.log(userState);
 
-    if (!userState.username) {
+    if (userState.notAuthed) {
         return <DiscogsAuthPrompt />;
     }
 
-    if (!collectionState.synced) {
+    if (userState.username && !collectionState.synced) {
         return (
             <Center style={{ height: '100vh' }}>
                 <Stack align="center">
@@ -78,7 +76,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         );
     }
 
-    return (
+    return collectionState.synced ? (
         <Box>
             <Head>
                 <title>{title}</title>
@@ -208,7 +206,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Box>
             </Container>
         </Box>
-    );
+    ) : null;
 };
 
 export default Layout;

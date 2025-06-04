@@ -13,6 +13,13 @@ interface CollectionParams {
     orderBy?: string;
 }
 
+export const getUser = async (email: string, token: BearerToken) => {
+    console.log(email, 'getUser email');
+    const uri = `/api/app/user/${email}`;
+    const response = await requestHandler('GET', uri, null, token);
+    return response.data;
+};
+
 export const fetchDiscogsRequestToken = async (token: BearerToken) => {
     const uri = `/api/discogs/fetch-request-token`;
     const response = await requestHandler('GET', uri, null, token);
