@@ -23,6 +23,7 @@ export const getRequestToken = async (req: Request) => {
 interface DiscogsUserIdentity {
     id: number;
     username: string;
+    email: string;
     accessToken: string;
     accessTokenSecret: string;
 }
@@ -33,18 +34,12 @@ export const createUser = async (user: DiscogsUserIdentity) => {
         defaults: {
             User_Id: user.id,
             Username: user.username,
+            Email: user.email,
             OAuth_Access_Token: user.accessToken,
             OAuth_Access_Token_Secret: user.accessTokenSecret,
         },
     });
     return userEntry.get();
-};
-
-export const getUser = async (req: Request) => {
-    const userEntry = await db.User.findOne({
-        where: { Username: req.params.username },
-    });
-    return userEntry;
 };
 
 export const createCollection = async (userId: number) => {
@@ -58,6 +53,31 @@ export const syncData = async (model: string, data: any[]) => {
     return await db[model].bulkCreate(data, { ignoreDuplicates: true });
 };
 
+export const getUser = async (req: Request) => {
+    // Pull both possible lookup values from query or params
+    const email =
+        (req.params.email as string) ||
+        (req.query.email as string) ||
+        undefined;
+    const username =
+        (req.params.username as string) ||
+        (req.query.username as string) ||
+        undefined;
+
+    // Build an array of conditions—for each non-null field, push { field: value }
+    const orConditions: Record<string, string>[] = [];
+    if (email) orConditions.push({ Email: email });
+    if (username) orConditions.push({ Username: username });
+
+    // Find a user matching any of those conditions
+    const userEntry = await db.User.findOne({
+        where: {
+            [Op.or]: orConditions,
+        },
+    });
+
+    return userEntry;
+};
 export const getCollection = async (req: Request) => {
     try {
         const { username, genre, style } = req.params;

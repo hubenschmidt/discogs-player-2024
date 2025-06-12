@@ -15,6 +15,20 @@ export const search = async (
     }
 };
 
+export const getUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const user = await appService.getUser(req);
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const getCollection = async (
     req: Request,
     res: Response,

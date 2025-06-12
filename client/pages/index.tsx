@@ -5,13 +5,15 @@ import { useEffect, useState, useContext } from 'react';
 import { Flex, Loader, Box } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { fetchBearerToken } from '../lib/fetch-bearer-token';
+import { getUser } from '../api';
+import { useBearerToken } from '../hooks/useBearerToken';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
-    const { dispatchUser } = useContext(UserContext);
+    const { userState, dispatchUser } = useContext(UserContext);
     const router = useRouter();
     const [redirecting, setRedirecting] = useState(false);
-    console.log(user?.email, 'user email'); // this probably needs to be written to the database at User.Email and then fetched later and added to the userState `SET_EMAIL` when the user logs in again
+    const bearerToken = useBearerToken();
 
     useEffect(() => {
         if (!isLoading && !user && !redirecting) {
@@ -32,6 +34,25 @@ const IndexPage = () => {
                 .catch(err => console.log(err));
         }
     }, [user]);
+
+    useEffect(() => {
+        if (user?.name && bearerToken) {
+            getUser(user.name, bearerToken)
+                .then(res => {
+                    console.log(res, 'getUser was called');
+                    dispatchUser({
+                        type: 'SET_USER',
+                        payload: {
+                            username: res?.Username ?? '',
+                            email: res?.Email ?? '',
+                            notAuthed:
+                                !res?.Email && !res?.Username ? true : false,
+                        },
+                    });
+                })
+                .catch(err => console.log(err));
+        }
+    }, [bearerToken]);
 
     if (isLoading || redirecting) {
         return (

@@ -46,15 +46,17 @@ export const fetchAccessToken = async (req: Request) => {
         accessToken: parsed[0],
         accessTokenSecret: parsed[1],
     });
+
     const { id, username } = userIdentity;
     const user = await createUser({
         id: id,
         username: username,
+        email: req.body.email,
         accessToken: parsed[0],
         accessTokenSecret: parsed[1],
     });
-    const { Username } = user;
-    return Username;
+    const { Username, Email } = user;
+    return { Username, Email };
 };
 
 export const syncCollection = async (req: Request) => {
@@ -252,12 +254,6 @@ export const fetchCollection = async (req: Request) => {
     });
 
     return collection;
-};
-
-export const fetchUser = async (req: Request) => {
-    const endpoint = `users/${req.params.username}`;
-    const user = await discogsClient_DEPRECATED(endpoint, 'get', null);
-    return user;
 };
 
 export const fetchRelease = async (req: Request) => {

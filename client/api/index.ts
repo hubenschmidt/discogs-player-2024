@@ -13,6 +13,13 @@ interface CollectionParams {
     orderBy?: string;
 }
 
+export const getUser = async (email: string, token: BearerToken) => {
+    console.log(email, 'getUser email');
+    const uri = `/api/app/user/${email}`;
+    const response = await requestHandler('GET', uri, null, token);
+    return response.data;
+};
+
 export const fetchDiscogsRequestToken = async (token: BearerToken) => {
     const uri = `/api/discogs/fetch-request-token`;
     const response = await requestHandler('GET', uri, null, token);
@@ -22,12 +29,13 @@ export const fetchDiscogsRequestToken = async (token: BearerToken) => {
 These all need to use `getBearerTokenHeader` and take an accessToken param like the above
  */
 export const fetchDiscogsAccessToken = async (
+    email: string,
     oauth_token: string | string[],
     oauth_verifier: string | string[],
     token: BearerToken,
 ) => {
     const uri = `/api/discogs/fetch-access-token`;
-    const body = { oauth_token, oauth_verifier };
+    const body = { email, oauth_token, oauth_verifier };
 
     const response = await requestHandler('POST', uri, body, token);
     return response.data;

@@ -30,19 +30,23 @@ const DiscogsCallbackPage = () => {
 
     useEffect(() => {
         const { oauth_token, oauth_verifier } = query;
-
-        if (oauth_token && oauth_verifier && bearerToken) {
-            fetchDiscogsAccessToken(oauth_token, oauth_verifier, bearerToken)
+        if (user?.name && oauth_token && oauth_verifier && bearerToken) {
+            fetchDiscogsAccessToken(
+                user.name,
+                oauth_token,
+                oauth_verifier,
+                bearerToken,
+            )
                 .then(res => {
                     dispatchUser({
-                        type: 'SET_USERNAME',
-                        payload: res,
+                        type: 'SET_USER',
+                        payload: { username: res.Username, email: res.Email },
                     });
                     replace('/');
                 })
                 .catch(err => console.log(err));
         }
-    }, [query, bearerToken]);
+    }, [user, query, bearerToken]);
 
     if (error) {
         return (
