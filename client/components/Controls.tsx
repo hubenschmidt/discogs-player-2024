@@ -19,8 +19,9 @@ const Controls = () => {
         DiscogsReleaseContext,
     );
     const { selectedVideo } = discogsReleaseState;
-    const [playbackRate, setPlaybackRate] = useState<string>('1');
+    const [playbackRate, setPlaybackRate] = useState('1');
     const [availableRates, setAvailableRates] = useState<number[]>([]);
+    const [isPlaying, setIsPlaying] = useState(true);
 
     useEffect(() => {
         if (controls && controls.getAvailablePlaybackRates) {
@@ -35,9 +36,21 @@ const Controls = () => {
         setPlaybackRate('1');
     }, [selectedVideo]);
 
-    const handlePlay = () => controls?.play();
-    const handlePause = () => controls?.pause();
-    const handleStop = () => controls?.stop();
+    const handlePlay = () => {
+        controls?.play();
+        setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+        controls?.pause();
+        setIsPlaying(false);
+    };
+
+    const handleStop = () => {
+        controls?.stop();
+        setIsPlaying(false);
+    };
+
     const handleFastForward = () => {
         if (controls?.getCurrentTime && controls?.seekTo) {
             const currentTime = controls.getCurrentTime();
@@ -48,7 +61,6 @@ const Controls = () => {
     const handleRewind = () => {
         if (controls?.getCurrentTime && controls?.seekTo) {
             const currentTime = controls.getCurrentTime();
-
             controls.seekTo(Math.max(0, currentTime - 20)); // rewind 10s, avoid negative time
         }
     };
@@ -58,14 +70,16 @@ const Controls = () => {
         const newRate = parseFloat(value);
         controls?.setPlaybackRate(newRate);
     };
+
     const handleNextVideo = () => {
         dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
     };
+
     const handlePrevVideo = () => {
         dispatchDiscogsRelease({ type: 'SET_PREV_VIDEO' });
     };
 
-    return (
+    return selectedVideo ? (
         <>
             {/* Slider wrapped in a container to push it to the right */}
             <Group style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
@@ -109,30 +123,35 @@ const Controls = () => {
                         )}
                     </select>
                 </div>
+                <ActionIcon color="blue" onClick={handleRewind}>
+                    <Rewind />
+                </ActionIcon>
                 <ActionIcon color="blue" onClick={handlePrevVideo}>
                     <ChevronLeft />
+                </ActionIcon>
+
+                {isPlaying ? (
+                    <ActionIcon color="blue" onClick={handlePause}>
+                        <Pause />
+                    </ActionIcon>
+                ) : (
+                    <ActionIcon color="blue" onClick={handlePlay}>
+                        <Play />
+                    </ActionIcon>
+                )}
+                <ActionIcon color="blue" onClick={handleStop}>
+                    <StopCircle />
                 </ActionIcon>
                 <ActionIcon color="blue" onClick={handleNextVideo}>
                     <ChevronRight />
                 </ActionIcon>
-                <ActionIcon color="blue" onClick={handlePlay}>
-                    <Play />
-                </ActionIcon>
-                <ActionIcon color="blue" onClick={handlePause}>
-                    <Pause />
-                </ActionIcon>
-                <ActionIcon color="blue" onClick={handleStop}>
-                    <StopCircle />
-                </ActionIcon>
-                <ActionIcon color="blue" onClick={handleRewind}>
-                    <Rewind />
-                </ActionIcon>
+
                 <ActionIcon color="blue" onClick={handleFastForward}>
                     <FastForward />
                 </ActionIcon>
             </Group>
         </>
-    );
+    ) : null;
 };
 
 export default Controls;

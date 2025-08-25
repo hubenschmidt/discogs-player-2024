@@ -20,7 +20,7 @@ const Volume = () => {
         controls?.setVolume(value);
     };
 
-    return (
+    return selectedVideo ? (
         <Slider
             color="orange"
             value={volume}
@@ -29,7 +29,7 @@ const Volume = () => {
             onChangeEnd={handleVolumeChange}
             mb="10"
         />
-    );
+    ) : null;
 };
 
 export default Volume;
