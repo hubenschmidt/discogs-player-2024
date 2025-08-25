@@ -18,13 +18,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlencoded
 
-// // validate bearerToken is from a trusted source
-// const jwtCheck = auth({
-//     audience: 'http://localhost:5000/',
-//     issuerBaseURL: 'https://dev-gzizexcaww2ggsh4.us.auth0.com/',
-//     tokenSigningAlg: 'RS256',
-// });
-// app.use(jwtCheck);
+// validate bearerToken is from a trusted source
+const jwtCheck = auth({
+    audience: 'http://localhost:5000/',
+    issuerBaseURL: 'https://dev-gzizexcaww2ggsh4.us.auth0.com/',
+    tokenSigningAlg: 'RS256',
+});
+app.use(jwtCheck);
 
 app.get('/authorized', function (req, res) {
     console.trace(req);
