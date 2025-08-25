@@ -3,6 +3,7 @@ import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { PlayerContext } from '../context/playerContext';
+import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
     width?: string;
@@ -48,16 +49,29 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         )
             return;
 
-        // If not at the last video, dispatch NEXT_VIDEO
-        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
+        const videos = selectedDiscogsRelease.videos;
+        const currentIndex = videos.findIndex(
+            v => extractYouTubeVideoId(v.uri) === selectedVideo,
+        );
 
-        // If continuous play is enabled, trigger it
-        if (continuousPlay) {
+        const isLastVideo = currentIndex === videos.length - 1;
+        console.log(
+            'logging video data:',
+            isLastVideo,
+            currentIndex,
+            videos.length,
+        );
+
+        console.log('isLastVideo', isLastVideo);
+
+        if (isLastVideo && !continuousPlay) {
             handleNextRelease();
             return;
         }
-    };
 
+        // If not at the last video, dispatch NEXT_VIDEO
+        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
+    };
     const safeSetVolume = (target: any, volume: number, attempts = 5) => {
         try {
             target?.setVolume(volume);

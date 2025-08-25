@@ -3,7 +3,7 @@ import discogsReleaseReducer from '../reducers/discogsReleaseReducer';
 
 const initialState = {
     selectedDiscogsRelease: null,
-    continuousPlay: true,
+    continuousPlay: false,
     selectedVideo: null,
 };
 
