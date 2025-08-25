@@ -39,7 +39,6 @@ const IndexPage = () => {
         if (user?.name && bearerToken) {
             getUser(user.name, bearerToken)
                 .then(res => {
-                    console.log(res, 'getUser was called');
                     dispatchUser({
                         type: 'SET_USER',
                         payload: {

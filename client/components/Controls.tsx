@@ -7,6 +7,8 @@ import {
     Pause,
     Play,
     StopCircle,
+    Rewind,
+    FastForward,
 } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 
@@ -36,6 +38,21 @@ const Controls = () => {
     const handlePlay = () => controls?.play();
     const handlePause = () => controls?.pause();
     const handleStop = () => controls?.stop();
+    const handleFastForward = () => {
+        if (controls?.getCurrentTime && controls?.seekTo) {
+            const currentTime = controls.getCurrentTime();
+            controls.seekTo(currentTime + 20); // skip forward 10s
+        }
+    };
+
+    const handleRewind = () => {
+        if (controls?.getCurrentTime && controls?.seekTo) {
+            const currentTime = controls.getCurrentTime();
+
+            controls.seekTo(Math.max(0, currentTime - 20)); // rewind 10s, avoid negative time
+        }
+    };
+
     const handlePlaybackRateChange = (value: string) => {
         setPlaybackRate(value);
         const newRate = parseFloat(value);
@@ -106,6 +123,12 @@ const Controls = () => {
                 </ActionIcon>
                 <ActionIcon color="blue" onClick={handleStop}>
                     <StopCircle />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handleRewind}>
+                    <Rewind />
+                </ActionIcon>
+                <ActionIcon color="blue" onClick={handleFastForward}>
+                    <FastForward />
                 </ActionIcon>
             </Group>
         </>

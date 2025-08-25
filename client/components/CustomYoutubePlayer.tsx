@@ -55,14 +55,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         );
 
         const isLastVideo = currentIndex === videos.length - 1;
-        console.log(
-            'logging video data:',
-            isLastVideo,
-            currentIndex,
-            videos.length,
-        );
-
-        console.log('isLastVideo', isLastVideo);
 
         if (isLastVideo && !continuousPlay) {
             handleNextRelease();
@@ -104,6 +96,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                         dispatchPlayer({
                             type: 'SET_CONTROLS',
                             payload: {
+                                // explicitly set some controls from YouTube API.. add more if needed
                                 play: () => event.target.playVideo(),
                                 pause: () => event.target.pauseVideo(),
                                 stop: () => event.target.stopVideo(),
@@ -113,6 +106,10 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                     event.target.setPlaybackRate(rate),
                                 getAvailablePlaybackRates: () =>
                                     event.target.getAvailablePlaybackRates(),
+                                getCurrentTime: () =>
+                                    event.target.getCurrentTime(),
+                                seekTo: (seconds: number) =>
+                                    event.target.seekTo(seconds, true),
                                 videoTitle: event.target.videoTitle,
                             },
                         });
