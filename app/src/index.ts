@@ -26,11 +26,6 @@ const jwtCheck = auth({
 });
 app.use(jwtCheck);
 
-app.get('/authorized', function (req, res) {
-    console.trace(req);
-    res.send('Secured Resource');
-});
-
 // Custom middleware for logging requests
 app.use(morgan('combined'));
 
