@@ -16,12 +16,14 @@ import {
     Center,
     Loader,
     Stack,
+    TextInput,
 } from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
 import DiscogsAuthPrompt from './DiscogsAuthPrompt';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { Search } from 'lucide-react';
 
 type Props = {
     children?: ReactNode;
@@ -59,7 +61,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 .catch(err => console.log(err));
         }
     }, [userState.username]);
-    console.log(userState);
 
     if (userState.notAuthed) {
         return <DiscogsAuthPrompt />;
@@ -112,7 +113,25 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Text>
                         <a href="/auth/logout">Logout</a>
                     </Grid.Col>
-                    {placeholder && (
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 4 }}
+                        style={devStyle}
+                    >
+                        <TextInput
+                            placeholder="search..."
+                            size="lg"
+                            radius="md"
+                            leftSection={<Search size="1rem" />}
+                            styles={{
+                                input: {
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    borderColor: 'white',
+                                },
+                            }}
+                        />
+                    </Grid.Col>
+                    {/* {placeholder && (
                         <>
                             <Grid.Col
                                 span={{ base: 12, md: 6, lg: 4 }}
@@ -123,7 +142,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                 style={devStyle}
                             ></Grid.Col>
                         </>
-                    )}
+                    )} */}
                 </Grid>
 
                 <Grid mb="sm">

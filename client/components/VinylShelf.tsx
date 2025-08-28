@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useContext, useRef, FC } from 'react';
 import { getCollection } from '../api';
 import { Release, CollectionResponse } from '../interfaces';
-import {
-    ChevronLeft,
-    ChevronRight,
-    SkipBack,
-    SkipForward,
-    List,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { ReleaseContext } from '../context/releaseContext';
 import { Box, Group, ActionIcon, Text } from '@mantine/core';

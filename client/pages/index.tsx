@@ -10,7 +10,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
-    const { userState, dispatchUser } = useContext(UserContext);
+    const { dispatchUser } = useContext(UserContext);
     const router = useRouter();
     const [redirecting, setRedirecting] = useState(false);
     const bearerToken = useBearerToken();
@@ -66,7 +66,7 @@ const IndexPage = () => {
     }
 
     return (
-        <Layout title="Home | Next.js + TypeScript Example">
+        <Layout title="TuneCrook">
             <h1>TuneCrook</h1>
         </Layout>
     );
