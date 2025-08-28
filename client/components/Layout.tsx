@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect } from 'react';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import Head from 'next/head';
 import Controls from './Controls';
 import Volume from './Volume';
@@ -23,7 +23,7 @@ import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
 import DiscogsAuthPrompt from './DiscogsAuthPrompt';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { Search } from 'lucide-react';
+import Search from './Search';
 
 type Props = {
     children?: ReactNode;
@@ -117,19 +117,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
                     >
-                        <TextInput
-                            placeholder="search..."
-                            size="lg"
-                            radius="md"
-                            leftSection={<Search size="1rem" />}
-                            styles={{
-                                input: {
-                                    backgroundColor: 'transparent',
-                                    color: 'white',
-                                    borderColor: 'white',
-                                },
-                            }}
-                        />
+                        <Search />
                     </Grid.Col>
                     {/* {placeholder && (
                         <>
