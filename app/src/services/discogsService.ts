@@ -77,6 +77,7 @@ export const syncCollection = async (req: Request) => {
             Cover_Image: el.basic_information.cover_image,
             Date_Added: el.date_added,
         })),
+        'Release_Id',
     );
 
     const artistsPromise = syncData(
@@ -87,6 +88,7 @@ export const syncCollection = async (req: Request) => {
                 Name: artist.name,
             })),
         ),
+        'Artist_Id',
     );
 
     const labelsPromise = syncData(
@@ -98,6 +100,7 @@ export const syncCollection = async (req: Request) => {
                 Cat_No: label.catno,
             })),
         ),
+        'Label_Id',
     );
 
     const genresPromise = syncData(
@@ -107,6 +110,7 @@ export const syncCollection = async (req: Request) => {
                 Name: genre,
             })),
         ),
+        'Name',
     );
 
     const stylesPromise = syncData(
@@ -116,6 +120,7 @@ export const syncCollection = async (req: Request) => {
                 Name: style,
             })),
         ),
+        'Name',
     );
 
     const [

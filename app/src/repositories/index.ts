@@ -49,7 +49,19 @@ export const createCollection = async (userId: number) => {
     });
 };
 
-export const syncData = async (model: string, data: any[]) => {
+export const syncData = async (
+    model: string,
+    data: any[],
+    primaryKey?: string,
+) => {
+    if (primaryKey) {
+        await db[model].destroy({
+            where: {
+                [primaryKey]: { [Op.notIn]: data.map(d => d[primaryKey]) },
+            },
+        });
+    }
+
     return await db[model].bulkCreate(data, { ignoreDuplicates: true });
 };
 
