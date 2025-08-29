@@ -1,7 +1,14 @@
-import React, { useEffect, useContext, useRef } from 'react';
-import { TextInput, Tabs, Paper, ScrollArea, Box } from '@mantine/core';
+import React, { useEffect, useContext, useRef, useState } from 'react';
+import {
+    TextInput,
+    Tabs,
+    Paper,
+    ScrollArea,
+    Box,
+    Tooltip,
+} from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
-import { Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon, Sparkles } from 'lucide-react';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { searchCollection } from '../api';
@@ -15,6 +22,9 @@ const Search = () => {
     const bearerToken = useBearerToken();
     // Ref for the container of the search input + dropdown
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // todo.. implemnt AI mode
+    const [aiMode, setAiMode] = useState(false);
 
     // Effect: search when query changes
     useEffect(() => {
@@ -66,10 +76,32 @@ const Search = () => {
         <Box pos="relative" w="100%" ref={containerRef}>
             {/* Search input */}
             <TextInput
-                placeholder="search..."
+                placeholder={aiMode ? 'Ask a question..' : 'Search..'}
                 size="lg"
                 radius="lg"
-                leftSection={<SearchIcon size="1rem" />}
+                leftSection={
+                    <Tooltip
+                        label={aiMode ? 'Search mode' : 'AI mode'}
+                        position="left"
+                    >
+                        <Box
+                            onClick={() => setAiMode(!aiMode)}
+                            style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 4,
+                            }}
+                        >
+                            {aiMode ? (
+                                <Sparkles size="1rem" color="limegreen" />
+                            ) : (
+                                <SearchIcon size="1rem" />
+                            )}
+                        </Box>
+                    </Tooltip>
+                }
                 value={query}
                 onChange={e =>
                     dispatchSearch({
