@@ -59,6 +59,11 @@ const Search = () => {
                         payload: e.currentTarget.value,
                     })
                 }
+                onFocus={() => {
+                    if (query.trim().length > 0) {
+                        dispatchSearch({ type: 'SET_OPEN', payload: true });
+                    }
+                }}
                 styles={{
                     input: {
                         backgroundColor: 'transparent',
