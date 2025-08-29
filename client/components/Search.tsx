@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { TextInput, useRandomClassName } from '@mantine/core';
+import { TextInput, Tabs, Paper, ScrollArea, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { Search as SearchIcon } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
@@ -13,25 +13,40 @@ const Search = () => {
     const { dispatchCollection } = useContext(CollectionContext);
     const bearerToken = useBearerToken();
 
-    // Local input state
+    // Local state
     const [query, setQuery] = useState('');
-    const [debouncedQuery] = useDebouncedValue(query, 500);
+    const [debouncedQuery] = useDebouncedValue(query, 400);
+    const [results, setResults] = useState([]);
+    const [searchType, setSearchType] = useState<string>('all');
+    const [open, setOpen] = useState(false);
 
-    // Effect to trigger search + dispatch
+    // Effect: search when query changes
     useEffect(() => {
         if (debouncedQuery.trim().length > 0) {
-            console.log('Searching with:', debouncedQuery);
+            setOpen(true);
 
-            // TODO: Replace with real API call
-            searchCollection(debouncedQuery, userState?.username, bearerToken)
-                .then((collection: CollectionResponse) => {
+            searchCollection(
+                debouncedQuery,
+                searchType === 'all' ? undefined : searchType, // pass `type` param only if narrowed
+                userState?.username,
+                bearerToken,
+            )
+                .then(collection => {
+                    console.log(
+                        collection,
+                        'results',
+                        searchType,
+                        'searchType',
+                    );
+                    setResults(collection);
                     dispatchCollection({
-                        type: 'SET_COLLECTION',
+                        type: 'SET_SEARCH_RESULTS',
                         payload: collection,
                     });
                 })
                 .catch(err => {
                     console.error('Search failed:', err);
+                    setResults([]);
                     dispatchCollection({
                         type: 'SET_SEARCH_RESULTS',
                         payload: [],
@@ -39,26 +54,77 @@ const Search = () => {
                 });
             return;
         }
-        // else clear results if input is empty
+
+        // Clear results if no input
+        setOpen(false);
+        setResults([]);
         dispatchCollection({ type: 'SET_SEARCH_RESULTS', payload: [] });
-    }, [debouncedQuery]);
+    }, [debouncedQuery, searchType]);
 
     return (
-        <TextInput
-            placeholder="search..."
-            size="lg"
-            radius="lg"
-            leftSection={<SearchIcon size="1rem" />}
-            value={query}
-            onChange={e => setQuery(e.currentTarget.value)}
-            styles={{
-                input: {
-                    backgroundColor: 'transparent',
-                    color: 'white',
-                    borderColor: 'white',
-                },
-            }}
-        />
+        <Box pos="relative" w="100%">
+            {/* Search input */}
+            <TextInput
+                placeholder="search..."
+                size="lg"
+                radius="lg"
+                leftSection={<SearchIcon size="1rem" />}
+                value={query}
+                onChange={e => setQuery(e.currentTarget.value)}
+                styles={{
+                    input: {
+                        backgroundColor: 'transparent',
+                        color: 'white',
+                        borderColor: 'white',
+                    },
+                }}
+            />
+
+            {/* Dropdown results */}
+            {open && (
+                <Paper
+                    shadow="md"
+                    radius="md"
+                    mt="xs"
+                    withBorder
+                    style={{
+                        position: 'absolute',
+                        width: '100%',
+                        zIndex: 1000,
+                        backgroundColor: '#1a1a1a',
+                    }}
+                >
+                    {/* Tabs */}
+                    <Tabs
+                        value={searchType}
+                        onChange={tab => setSearchType(tab || 'all')}
+                    >
+                        <Tabs.List grow>
+                            <Tabs.Tab value="all">All</Tabs.Tab>
+                            <Tabs.Tab value="release">Releases</Tabs.Tab>
+                            <Tabs.Tab value="artist">Artists</Tabs.Tab>
+                            <Tabs.Tab value="label">Labels</Tabs.Tab>
+                        </Tabs.List>
+                    </Tabs>
+
+                    {/* Results list */}
+                    <ScrollArea.Autosize mah={300}>
+                        {results.length > 0
+                            ? results?.map(
+                                  (item, idx) => (
+                                      console.log(item, 'item'),
+                                      (
+                                          <Box key={idx} px="sm" py="xs">
+                                              {item?.Title || item?.Name}
+                                          </Box>
+                                      )
+                                  ),
+                              )
+                            : null}
+                    </ScrollArea.Autosize>
+                </Paper>
+            )}
+        </Box>
     );
 };
 

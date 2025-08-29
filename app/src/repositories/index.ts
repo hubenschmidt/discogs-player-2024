@@ -277,7 +277,13 @@ export const search = async (req: Request) => {
                 ],
             }),
         ]);
-        return { releases, artists, labels };
+
+        // flatten and normalize response
+        return [
+            ...releases.map((r: any) => ({ ...r.toJSON(), type: 'release' })),
+            ...artists.map((a: any) => ({ ...a.toJSON(), type: 'artist' })),
+            ...labels.map((l: any) => ({ ...l.toJSON(), type: 'label' })),
+        ];
     }
 
     if (type === 'artist') {

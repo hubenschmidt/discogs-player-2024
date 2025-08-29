@@ -48,14 +48,26 @@ export const syncCollection = async (username: string, token: BearerToken) => {
 
 export const searchCollection = async (
     query: string,
+    type: string | undefined,
     username: string,
     token: BearerToken,
-): Promise<CollectionResponse> => {
+): Promise<any> => {
+    const params = new URLSearchParams({
+        searchQuery: query,
+    });
+
+    if (type) {
+        params.append('type', type);
+    }
+
     const uri = `/api/app/search/${encodeURIComponent(
         username,
-    )}?searchQuery=${encodeURIComponent(query)}`;
+    )}?${params.toString()}`;
+
+    console.log('searchCollection ->', uri);
+
     const response = await requestHandler('GET', uri, null, token);
-    return response.data as CollectionResponse;
+    return response.data as any;
 };
 
 export const getCollection = async (
