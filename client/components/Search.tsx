@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { TextInput, Tabs, Paper, ScrollArea, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { Search as SearchIcon } from 'lucide-react';
@@ -120,12 +120,16 @@ const Search = () => {
                                           e.currentTarget.style.backgroundColor =
                                               'transparent';
                                       }}
-                                      onClick={() =>
+                                      onClick={() => {
                                           dispatchSearch({
                                               type: 'SET_SEARCH_SELECTION',
                                               payload: item,
-                                          })
-                                      }
+                                          });
+                                          dispatchSearch({
+                                              type: 'SET_OPEN',
+                                              payload: false,
+                                          });
+                                      }}
                                   >
                                       {item.Release_Id && (
                                           <Box className="flex items-center gap-2">
