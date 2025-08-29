@@ -76,19 +76,19 @@
 }
 
 /* Remove the rotation on mobile screens */
-@media (hover: none) and (pointer: coarse) {
-    .vinyl-record {
-        /* Cancel out the initial transform if needed */
-        transform: none !important;
-    }
-    .vinyl-record:hover {
-        /* No hover transform on touch devices */
-        transform: none !important;
+/* @media (hover: none) and (pointer: coarse) {
+    .vinyl-record { */
+/* Cancel out the initial transform if needed */
+/* transform: none !important;
+    } */
+/* .vinyl-record:hover { */
+/* No hover transform on touch devices */
+/* transform: none !important;
     }
     .shelf-controls {
         display: none;
     }
-}
+} */
 
 /* Circular record cover with neon border & chrome-like shadow */
 .record-cover {

@@ -162,9 +162,15 @@ const VinylShelf: FC = () => {
                         <Box
                             key={release.Release_Id}
                             className="vinyl-record"
-                            style={{
-                                transform: `rotateY(${angle.toFixed(2)}deg)`,
-                            }}
+                            // style={ // rotate records
+                            //     releases.length > 5
+                            //         ? {
+                            //               transform: `rotateY(${angle.toFixed(
+                            //                   2,
+                            //               )}deg)`,
+                            //           }
+                            //         : null
+                            // }
                             onClick={() => handleRecordClick(release, i)}
                         >
                             <Box
@@ -172,9 +178,7 @@ const VinylShelf: FC = () => {
                                     isSelected ? 'selected-record-cover' : ''
                                 }`}
                                 style={{
-                                    backgroundImage: `url(${
-                                        release.Thumb || '/default-img.jpg'
-                                    })`,
+                                    backgroundImage: `url(${release.Thumb})`,
                                 }}
                             />
                             <Text className="record-title">
