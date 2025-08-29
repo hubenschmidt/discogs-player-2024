@@ -6,7 +6,6 @@ import VinylShelf from './VinylShelf';
 import VideoPlaylist from './VideoPlaylist';
 import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
-import { ReleaseContext } from '../context/releaseContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import {
     Grid,
@@ -33,9 +32,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
-    const { releaseState } = useContext(ReleaseContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const { selectedRelease } = releaseState;
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
 
@@ -169,11 +166,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         span={{ base: 12, md: 6, lg: 4 }}
                         style={devStyle}
                     >
-                        {selectedRelease && (
-                            <VideoPlaylist
-                                releaseId={selectedRelease.Release_Id}
-                            />
-                        )}
+                        <VideoPlaylist />
                     </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 86, lg: 8 }}

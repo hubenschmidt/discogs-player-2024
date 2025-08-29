@@ -2,6 +2,8 @@ import React, { createContext, useReducer } from 'react';
 import discogsReleaseReducer from '../reducers/discogsReleaseReducer';
 
 const initialState = {
+    selectedRelease: null,
+    previewRelease: null,
     selectedDiscogsRelease: null,
     continuousPlay: false,
     selectedVideo: null,

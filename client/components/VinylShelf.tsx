@@ -3,7 +3,7 @@ import { getCollection } from '../api';
 import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
-import { ReleaseContext } from '../context/releaseContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { Box, Group, ActionIcon, Text } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
@@ -45,8 +45,10 @@ const VinylShelf: FC = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { releases, totalPages } = collectionState;
-    const { dispatchRelease, releaseState } = useContext(ReleaseContext);
-    const { selectedRelease } = releaseState;
+    const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
+        DiscogsReleaseContext,
+    );
+    const { selectedRelease, previewRelease } = discogsReleaseState;
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -92,14 +94,24 @@ const VinylShelf: FC = () => {
             type: 'SET_COLLECTION',
             payload: { releases: reorderedReleases },
         });
-        dispatchRelease({
-            type: 'SET_SELECTED_RELEASE',
-            payload: release,
-        });
 
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
         }
+
+        // if (!selectedRelease) {
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_RELEASE',
+            payload: release,
+        });
+        return;
+        // }
+
+        // // else if release is already playing, set preview
+        // dispatchDiscogsRelease({
+        //     type: 'SET_PREVIEW_RELEASE',
+        //     payload: release,
+        // });
     };
 
     const handleShelfPrev = () => {

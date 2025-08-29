@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, FC } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces';
 import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
@@ -6,42 +6,41 @@ import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { useBearerToken } from '../hooks/useBearerToken';
 
-interface VideoPlaylistProps {
-    releaseId: number;
-}
-
-const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
+const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
     const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
         discogsReleaseState;
-    const [loading, setLoading] = useState<boolean>(true);
+    const { selectedRelease, previewRelease } = discogsReleaseState;
+    const [loading, setLoading] = useState<boolean>(false);
     const bearerToken = useBearerToken();
 
     useEffect(() => {
-        setLoading(true);
-        getDiscogsRelease(releaseId, bearerToken)
-            .then((discogsRelease: DiscogsRelease) => {
-                dispatchDiscogsRelease({
-                    type: 'SET_SELECTED_DISCOGS_RELEASE',
-                    payload: discogsRelease,
-                });
-            })
-            .catch(error =>
-                console.error(
-                    'something went wrong with fetching discogs release,',
-                    error.response || error,
-                ),
-            )
-            .finally(() => setLoading(false));
-    }, [releaseId]);
+        if (selectedRelease?.Release_Id) {
+            setLoading(true);
+            getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
+                .then((discogsRelease: DiscogsRelease) => {
+                    dispatchDiscogsRelease({
+                        type: 'SET_SELECTED_DISCOGS_RELEASE',
+                        payload: discogsRelease,
+                    });
+                })
+                .catch(error =>
+                    console.error(
+                        'something went wrong with fetching discogs release,',
+                        error.response || error,
+                    ),
+                )
+                .finally(() => setLoading(false));
+        }
+    }, [selectedRelease?.Release_Id]);
 
     useEffect(() => {
         if (
             selectedDiscogsRelease &&
-            selectedDiscogsRelease.videos &&
-            selectedDiscogsRelease.videos.length > 0
+            selectedDiscogsRelease?.videos &&
+            selectedDiscogsRelease?.videos?.length > 0
         ) {
             const firstVideoId = extractYouTubeVideoId(
                 selectedDiscogsRelease.videos[0].uri,
@@ -56,9 +55,8 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
     if (loading) return <Loader />;
 
     if (
-        !selectedDiscogsRelease ||
-        !selectedDiscogsRelease.videos ||
-        selectedDiscogsRelease.videos.length === 0
+        selectedDiscogsRelease &&
+        selectedDiscogsRelease?.videos?.length === 0
     ) {
         return <Text>No videos available</Text>;
     }
@@ -80,7 +78,7 @@ const VideoPlaylist: FC<VideoPlaylistProps> = ({ releaseId }) => {
             </Group>
             {/* Playlist of videos */}
             <Stack>
-                {selectedDiscogsRelease.videos.map((video, index) => {
+                {selectedDiscogsRelease?.videos.map((video, index) => {
                     const videoId = extractYouTubeVideoId(video.uri);
                     const isSelected = videoId === selectedVideo;
 

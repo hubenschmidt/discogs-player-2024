@@ -1,5 +1,7 @@
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
-export const SET_SELECTED_DISCOGS_RELEASE = 'SET_SELECTED_DISCOGS_RELEASE';
+export const SET_SELECTED_RELEASE = 'SET_SELECTED_RELEASE';
+export const SET_PREVIEW_RELEASE = 'SET_PREVIEW_RELEASE';
+export const SET_SELECTED_DISCOGS_RELEASE = 'SET_SELECTED_DISCOGS_RELEASE'; // rename SET_DISCOGS_RELEASE_DATA
 export const SET_CONTINUOUS_PLAY = 'SET_CONTINUOUS_PLAY';
 export const SET_SELECTED_VIDEO = 'SET_SELECTED_VIDEO';
 export const SET_NEXT_VIDEO = 'SET_NEXT_VIDEO';
@@ -8,6 +10,10 @@ export const SET_PREV_VIDEO = 'SET_PREV_VIDEO';
 export default initialState => {
     return (state, action) => {
         switch (action.type) {
+            case SET_SELECTED_RELEASE:
+                return setSelectedRelease(state, action.payload);
+            case SET_PREVIEW_RELEASE:
+                return setPreviewRelease(state, action.payload);
             case SET_SELECTED_DISCOGS_RELEASE:
                 return setSelectedDiscogsRelease(state, action.payload);
             case SET_CONTINUOUS_PLAY:
@@ -22,6 +28,17 @@ export default initialState => {
                 return state;
         }
     };
+};
+
+const setSelectedRelease = (state, payload) => {
+    return {
+        ...state,
+        selectedRelease: payload,
+    };
+};
+
+const setPreviewRelease = (state, payload) => {
+    return { ...state, previewRelease: payload };
 };
 
 const setSelectedDiscogsRelease = (state, payload) => {

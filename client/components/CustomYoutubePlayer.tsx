@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useContext, FC } from 'react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { ReleaseContext } from '../context/releaseContext';
 import { PlayerContext } from '../context/playerContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
@@ -28,8 +27,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     );
     const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
         discogsReleaseState;
-    const { releaseState, dispatchRelease } = useContext(ReleaseContext);
-    const { selectedRelease } = releaseState;
+    const { selectedRelease } = discogsReleaseState;
 
     const handleNextRelease = () => {
         if (!selectedRelease || !releases || releases.length === 0) return;
@@ -38,7 +36,10 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         );
         const nextIndex = (currentIndex + 1) % releases.length;
         const nextRelease = releases[nextIndex];
-        dispatchRelease({ type: 'SET_SELECTED_RELEASE', payload: nextRelease });
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_RELEASE',
+            payload: nextRelease,
+        });
     };
 
     const handleVideoEnd = () => {
