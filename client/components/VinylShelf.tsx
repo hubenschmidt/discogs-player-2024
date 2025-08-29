@@ -184,7 +184,7 @@ const VinylShelf: FC = () => {
                     );
                 })}
             </div>
-
+            {}{' '}
             <div className="shelf-controls">
                 <ActionIcon
                     onClick={handleShelfPrev}
@@ -199,47 +199,48 @@ const VinylShelf: FC = () => {
                     <ChevronRight />
                 </ActionIcon>
             </div>
-
             {/* Server Pagination Controls */}
-            <Group className="shelf-pagination">
-                <ActionIcon
-                    onClick={handleFirstPage}
-                    disabled={currentPage <= 1}
-                >
-                    <SkipBack />
-                </ActionIcon>
-                <ActionIcon
-                    onClick={handlePrevPage}
-                    disabled={currentPage <= 1}
-                >
-                    <ChevronLeft />
-                </ActionIcon>
-                <Text>Pg: {currentPage}</Text>
-                <ActionIcon
-                    onClick={handleNextPage}
-                    disabled={currentPage >= totalPages}
-                >
-                    <ChevronRight />
-                </ActionIcon>
-                <ActionIcon
-                    onClick={handleLastPage}
-                    disabled={currentPage >= totalPages}
-                >
-                    <SkipForward />
-                </ActionIcon>
-                <Text>Per:</Text>
-                <select
-                    value={itemsPerPage}
-                    onChange={handleItemsPerPageChange}
-                >
-                    <option value={5}>5</option>
-                    <option value={10 + offset}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50 + offset}>50</option>
-                    <option value={100 + offset}>100</option>
-                    <option value={250 + offset}>250</option>
-                </select>
-            </Group>
+            {releases?.length > 1 && (
+                <Group className="shelf-pagination">
+                    <ActionIcon
+                        onClick={handleFirstPage}
+                        disabled={currentPage <= 1}
+                    >
+                        <SkipBack />
+                    </ActionIcon>
+                    <ActionIcon
+                        onClick={handlePrevPage}
+                        disabled={currentPage <= 1}
+                    >
+                        <ChevronLeft />
+                    </ActionIcon>
+                    <Text>Pg: {currentPage}</Text>
+                    <ActionIcon
+                        onClick={handleNextPage}
+                        disabled={currentPage >= totalPages}
+                    >
+                        <ChevronRight />
+                    </ActionIcon>
+                    <ActionIcon
+                        onClick={handleLastPage}
+                        disabled={currentPage >= totalPages}
+                    >
+                        <SkipForward />
+                    </ActionIcon>
+                    <Text>Per:</Text>
+                    <select
+                        value={itemsPerPage}
+                        onChange={handleItemsPerPageChange}
+                    >
+                        <option value={5}>5</option>
+                        <option value={10 + offset}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50 + offset}>50</option>
+                        <option value={100 + offset}>100</option>
+                        <option value={250 + offset}>250</option>
+                    </select>
+                </Group>
+            )}
         </div>
     );
 };
