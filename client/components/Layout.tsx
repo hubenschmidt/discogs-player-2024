@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import Controls from './Controls';
 import Volume from './Volume';
@@ -16,7 +16,6 @@ import {
     Center,
     Loader,
     Stack,
-    TextInput,
 } from '@mantine/core';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
@@ -40,7 +39,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
 
-    let placeholder = null;
     let borderStyle = '.5px solid black';
     let devStyle = {
         borderRight: borderStyle,
@@ -109,13 +107,16 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                 letterSpacing: '1px',
                             }}
                         >
-                            tuneCrook
+                            TuneCrook
                         </Text>
                     </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 9 }}
                         style={devStyle}
-                    ></Grid.Col>
+                    >
+                        {' '}
+                        <Search />
+                    </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 1 }}
                         style={devStyle}
@@ -130,8 +131,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         span={{ base: 12, md: 12, lg: 12 }}
                         style={devStyle}
                     >
-                        {' '}
-                        <Search />
+                        content placeholder for playlists, history, stats, genre
+                        and style explorer
                     </Grid.Col>
                 </Grid>
 
@@ -175,13 +176,11 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         )}
                     </Grid.Col>
                     <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
+                        span={{ base: 12, md: 86, lg: 8 }}
                         style={devStyle}
-                    ></Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    ></Grid.Col>
+                    >
+                        About this release/artist/label
+                    </Grid.Col>
                 </Grid>
 
                 {/* YouTube Player Section */}

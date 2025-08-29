@@ -28,7 +28,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
         <Box>
             {/* Top Box: Video Title */}
             <Box style={commonBoxStyles} mt="-2px">
-                <Text style={{ fontWeight: 900 }}>
+                <Text size="sm">
                     {controls?.videoTitle || 'No title available'}
                 </Text>
             </Box>
@@ -37,17 +37,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
             <Box style={commonBoxStyles} mt="4px" mb="-2px">
                 <Group align="left">
                     <Text size="sm">
-                        <strong>Release:</strong>{' '}
-                        {selectedDiscogsRelease?.title} (
+                        Release: {selectedDiscogsRelease?.title} (
                         {selectedDiscogsRelease?.year})
                     </Text>
                     <Text size="sm">
-                        <strong>Artist:</strong>{' '}
-                        {selectedDiscogsRelease?.artists_sort}
+                        Artist: {selectedDiscogsRelease?.artists_sort}
                     </Text>
-                    <Text size="sm">
-                        <strong>Year:</strong> {selectedDiscogsRelease?.year}
-                    </Text>
+                    <Text size="sm">Year: {selectedDiscogsRelease?.year}</Text>
                 </Group>
             </Box>
         </Box>
