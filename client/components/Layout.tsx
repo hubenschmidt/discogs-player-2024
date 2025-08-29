@@ -41,7 +41,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const bearerToken = useBearerToken();
 
     let placeholder = null;
-    let borderStyle = '.5px solid white';
+    let borderStyle = '.5px solid black';
     let devStyle = {
         borderRight: borderStyle,
         borderTop: borderStyle,
@@ -98,7 +98,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 {/* Header Section */}
                 <Grid mt="sm" mb="sm">
                     <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
+                        span={{ base: 12, md: 6, lg: 2 }}
                         style={devStyle}
                     >
                         <Text
@@ -111,29 +111,45 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         >
                             tuneCrook
                         </Text>
-                        <a href="/auth/logout">Logout</a>
                     </Grid.Col>
                     <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
+                        span={{ base: 12, md: 6, lg: 9 }}
+                        style={devStyle}
+                    ></Grid.Col>
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 1 }}
                         style={devStyle}
                     >
-                        <Search />
+                        {' '}
+                        <a href="/auth/logout">Logout</a>
                     </Grid.Col>
-                    {/* {placeholder && (
-                        <>
-                            <Grid.Col
-                                span={{ base: 12, md: 6, lg: 4 }}
-                                style={devStyle}
-                            ></Grid.Col>
-                            <Grid.Col
-                                span={{ base: 12, md: 6, lg: 4 }}
-                                style={devStyle}
-                            ></Grid.Col>
-                        </>
-                    )} */}
                 </Grid>
 
                 <Grid mb="sm">
+                    <Grid.Col
+                        span={{ base: 12, md: 12, lg: 12 }}
+                        style={devStyle}
+                    >
+                        {' '}
+                        <Search />
+                    </Grid.Col>
+                </Grid>
+
+                {/* Vinyl Shelf Section */}
+                <Grid mb="sm">
+                    <Grid.Col span={{ base: 12 }}>
+                        <VinylShelf />
+                    </Grid.Col>
+                </Grid>
+
+                <Grid mb="sm">
+                    <Grid.Col
+                        span={{ base: 12, md: 6, lg: 6 }}
+                        style={devStyle}
+                    >
+                        <Volume />
+                        <Controls />
+                    </Grid.Col>
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 6 }}
                         style={devStyle}
@@ -142,42 +158,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             selectedDiscogsRelease={selectedDiscogsRelease}
                         />
                     </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 6 }}
-                        style={devStyle}
-                    ></Grid.Col>
                 </Grid>
-            </Container>
 
-            {/* Vinyl Shelf Section */}
-            <Grid mb="sm">
-                <Grid.Col span={{ base: 12 }}>
-                    <VinylShelf />
-                </Grid.Col>
-            </Grid>
-
-            <Container fluid className="layout-container">
                 {/* Main Content Section */}
-                <Grid mb="sm">
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    >
-                        <Volume />
-                        <Controls />
-                    </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    ></Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    ></Grid.Col>
-                </Grid>
-            </Container>
 
-            <Container fluid className="layout-container">
                 {/* Video Playlist Section */}
                 <Grid mb="sm">
                     <Grid.Col
