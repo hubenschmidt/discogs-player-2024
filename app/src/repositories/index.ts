@@ -153,6 +153,11 @@ export const getCollection = async (req: Request) => {
                 },
                 {
                     model: db.Label,
+                    ...(req.query.labelId && {
+                        where: {
+                            Label_Id: { [Op.in]: [req.query.labelId] },
+                        },
+                    }),
                     through: { attributes: [] },
                 },
             ],

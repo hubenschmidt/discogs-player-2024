@@ -54,22 +54,22 @@ const VinylShelf: FC = () => {
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
     const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
-    console.log(searchSelection);
 
     useEffect(() => {
         const params: any = {
             username: userState.username,
             page: currentPage,
             limit: itemsPerPage,
+            ...(searchSelection?.Artist_Id && {
+                artistId: searchSelection.Artist_Id,
+            }),
+            ...(searchSelection?.Label_Id && {
+                labelId: searchSelection.Label_Id,
+            }),
+            ...(searchSelection?.Release_Id && {
+                releaseId: searchSelection.Release_Id,
+            }),
         };
-
-        if (searchSelection?.Artist_Id) {
-            params.artistId = searchSelection.Artist_Id;
-        } else if (searchSelection?.Label_Id) {
-            params.labelId = searchSelection.Label_Id;
-        } else if (searchSelection?.Release_Id) {
-            params.releaseId = searchSelection.Release_Id;
-        }
 
         getCollection(params, bearerToken)
             .then((collection: CollectionResponse) => {
