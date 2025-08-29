@@ -24,14 +24,16 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
         marginRight: '-2px',
     };
 
-    return (
+    return selectedDiscogsRelease ? (
         <Box>
             {/* Top Box: Video Title */}
-            <Box style={commonBoxStyles} mt="-2px">
-                <Text size="sm">
-                    {controls?.videoTitle || 'No title available'}
-                </Text>
-            </Box>
+            {controls?.videoTitle && (
+                <Box style={commonBoxStyles} mt="-2px">
+                    <Text size="sm">
+                        Playing: {controls?.videoTitle || 'No title available'}
+                    </Text>
+                </Box>
+            )}
 
             {/* Bottom Box: Release Details */}
             <Box style={commonBoxStyles} mt="4px" mb="-2px">
@@ -47,7 +49,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                 </Group>
             </Box>
         </Box>
-    );
+    ) : null;
 };
 
 export default TrackDetail;
