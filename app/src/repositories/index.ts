@@ -144,6 +144,11 @@ export const getCollection = async (req: Request) => {
                 },
                 {
                     model: db.Artist,
+                    ...(req.query.artistId && {
+                        where: {
+                            Artist_Id: { [Op.in]: [req.query.artistId] },
+                        },
+                    }),
                     through: { attributes: [] },
                 },
                 {
