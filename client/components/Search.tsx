@@ -110,16 +110,38 @@ const Search = () => {
                     {/* Results list */}
                     <ScrollArea.Autosize mah={300}>
                         {results.length > 0
-                            ? results?.map(
-                                  (item, idx) => (
-                                      console.log(item, 'item'),
-                                      (
-                                          <Box key={idx} px="sm" py="xs">
-                                              {item?.Title || item?.Name}
+                            ? results?.map((item, idx) => (
+                                  <Box key={idx} px="sm" py="xs">
+                                      {item.Release_Id && (
+                                          <Box>
+                                              <img
+                                                  src={item.Thumb}
+                                                  alt={item.Title}
+                                                  style={{
+                                                      width: 40,
+                                                      height: 40,
+                                                      objectFit: 'cover',
+                                                  }}
+                                              />{' '}
+                                              <span>{item.Title}</span>
                                           </Box>
-                                      )
-                                  ),
-                              )
+                                      )}
+
+                                      {item.Artist_Id && (
+                                          <Box>
+                                              <span>artist: </span>
+                                              {item.Name}
+                                          </Box>
+                                      )}
+
+                                      {item.Label_Id && (
+                                          <Box>
+                                              <span>label: </span>
+                                              {item.Name}
+                                          </Box>
+                                      )}
+                                  </Box>
+                              ))
                             : null}
                     </ScrollArea.Autosize>
                 </Paper>
