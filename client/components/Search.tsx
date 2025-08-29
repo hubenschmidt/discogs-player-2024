@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { TextInput, Tabs, Paper, ScrollArea, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { Search as SearchIcon } from 'lucide-react';
@@ -12,8 +12,9 @@ const Search = () => {
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
-
     const bearerToken = useBearerToken();
+    // Ref for the container of the search input + dropdown
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // Effect: search when query changes
     useEffect(() => {
@@ -44,8 +45,25 @@ const Search = () => {
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
     }, [debouncedQuery, searchType]);
 
+    // Effect: handle clicks outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
+                dispatchSearch({ type: 'SET_OPEN', payload: false });
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
-        <Box pos="relative" w="100%">
+        <Box pos="relative" w="100%" ref={containerRef}>
             {/* Search input */}
             <TextInput
                 placeholder="search..."
