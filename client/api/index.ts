@@ -11,6 +11,7 @@ interface CollectionParams {
     limit?: number;
     order?: string;
     orderBy?: string;
+    artistId?: string;
 }
 
 export const getUser = async (email: string, token: BearerToken) => {
@@ -64,8 +65,6 @@ export const searchCollection = async (
         username,
     )}?${params.toString()}`;
 
-    console.log('searchCollection ->', uri);
-
     const response = await requestHandler('GET', uri, null, token);
     return response.data as any;
 };
@@ -74,7 +73,8 @@ export const getCollection = async (
     params: CollectionParams,
     token: BearerToken,
 ): Promise<CollectionResponse> => {
-    const { username, genre, style, page, limit, order, orderBy } = params;
+    const { username, genre, style, page, limit, order, orderBy, artistId } =
+        params;
 
     let uri = `/api/app/collection/${username}`;
     if (genre) {
@@ -89,6 +89,8 @@ export const getCollection = async (
     if (limit !== undefined) queryParams.append('limit', limit.toString());
     if (order !== undefined) queryParams.append('order', order);
     if (orderBy !== undefined) queryParams.append('orderBy', orderBy);
+    if (artistId !== undefined)
+        queryParams.append('artistId', artistId.toString());
 
     const queryString = queryParams.toString();
     if (queryString) {

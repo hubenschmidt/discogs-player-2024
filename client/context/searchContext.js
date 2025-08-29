@@ -2,7 +2,7 @@ import React, { createContext, useReducer } from 'react';
 import searchReducer from '../reducers/searchReducer';
 
 const initialState = {
-    selectedRelease: null,
+    searchSelection: null,
     query: '',
     results: [],
     searchType: 'all',

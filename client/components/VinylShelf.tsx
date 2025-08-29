@@ -7,6 +7,7 @@ import { ReleaseContext } from '../context/releaseContext';
 import { Box, Group, ActionIcon, Text } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
+import { SearchContext } from '../context/searchContext';
 
 const reorderReleases = (
     records: Release[],
@@ -46,21 +47,31 @@ const VinylShelf: FC = () => {
     const { releases, totalPages } = collectionState;
     const { dispatchRelease, releaseState } = useContext(ReleaseContext);
     const { selectedRelease } = releaseState;
+    const { searchState, dispatchSearch } = useContext(SearchContext);
+    const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
     const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
+    console.log(searchSelection);
 
     useEffect(() => {
-        getCollection(
-            {
-                username: userState.username,
-                page: currentPage,
-                limit: itemsPerPage,
-            },
-            bearerToken,
-        )
+        const params: any = {
+            username: userState.username,
+            page: currentPage,
+            limit: itemsPerPage,
+        };
+
+        if (searchSelection?.Artist_Id) {
+            params.artistId = searchSelection.Artist_Id;
+        } else if (searchSelection?.Label_Id) {
+            params.labelId = searchSelection.Label_Id;
+        } else if (searchSelection?.Release_Id) {
+            params.releaseId = searchSelection.Release_Id;
+        }
+
+        getCollection(params, bearerToken)
             .then((collection: CollectionResponse) => {
                 dispatchCollection({
                     type: 'SET_COLLECTION',
@@ -73,7 +84,7 @@ const VinylShelf: FC = () => {
                     error.response,
                 ),
             );
-    }, [currentPage, itemsPerPage]);
+    }, [currentPage, itemsPerPage, searchSelection]);
 
     const handleRecordClick = (release: Release, index: number) => {
         const reorderedReleases = reorderReleases(releases, index);

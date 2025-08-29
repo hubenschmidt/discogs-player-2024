@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { TextInput, Tabs, Paper, ScrollArea, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { Search as SearchIcon } from 'lucide-react';
-import { CollectionContext } from '../context/collectionContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { searchCollection } from '../api';
@@ -10,7 +9,6 @@ import { SearchContext } from '../context/searchContext';
 
 const Search = () => {
     const { userState } = useContext(UserContext);
-    const { dispatchCollection } = useContext(CollectionContext);
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
@@ -105,10 +103,32 @@ const Search = () => {
                     {/* Results list */}
                     <ScrollArea.Autosize mah={300}>
                         {results.length > 0
-                            ? results?.map((item, idx) => (
-                                  <Box key={idx} px="sm" py="xs">
+                            ? results.map((item, idx) => (
+                                  <Box
+                                      key={idx}
+                                      px="sm"
+                                      py="xs"
+                                      style={{
+                                          cursor: 'pointer',
+                                          transition: 'background-color 0.2s',
+                                      }}
+                                      onMouseEnter={e => {
+                                          e.currentTarget.style.backgroundColor =
+                                              '#333';
+                                      }}
+                                      onMouseLeave={e => {
+                                          e.currentTarget.style.backgroundColor =
+                                              'transparent';
+                                      }}
+                                      onClick={() =>
+                                          dispatchSearch({
+                                              type: 'SET_SEARCH_SELECTION',
+                                              payload: item,
+                                          })
+                                      }
+                                  >
                                       {item.Release_Id && (
-                                          <Box>
+                                          <Box className="flex items-center gap-2">
                                               <img
                                                   src={item.Thumb}
                                                   alt={item.Title}
@@ -116,22 +136,37 @@ const Search = () => {
                                                       width: 40,
                                                       height: 40,
                                                       objectFit: 'cover',
+                                                      borderRadius: 4,
                                                   }}
-                                              />{' '}
+                                              />
                                               <span>{item.Title}</span>
                                           </Box>
                                       )}
 
                                       {item.Artist_Id && (
                                           <Box>
-                                              <span>artist: </span>
+                                              <span
+                                                  style={{
+                                                      color: 'gray',
+                                                      marginRight: 4,
+                                                  }}
+                                              >
+                                                  artist
+                                              </span>
                                               {item.Name}
                                           </Box>
                                       )}
 
                                       {item.Label_Id && (
                                           <Box>
-                                              <span>label: </span>
+                                              <span
+                                                  style={{
+                                                      color: 'gray',
+                                                      marginRight: 4,
+                                                  }}
+                                              >
+                                                  {item.Cat_No ?? 'label'}
+                                              </span>
                                               {item.Name}
                                           </Box>
                                       )}
