@@ -111,9 +111,13 @@ export const getCollection = async (req: Request) => {
             include: [{ model: db.Collection }],
         });
 
+        const releaseWhere: any = {};
+        if (req.query.releaseId) releaseWhere.Release_Id = req.query.releaseId;
+
         // Fetch releases with pagination and optional genre and style filtering
         const releases = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
+            where: releaseWhere,
             include: [
                 {
                     model: db.Collection,
