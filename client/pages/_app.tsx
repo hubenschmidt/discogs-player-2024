@@ -8,6 +8,7 @@ import { CollectionProvider } from '../context/collectionContext';
 import { ReleaseProvider } from '../context/releaseContext';
 import { DiscogsReleaseProvider } from '../context/discogsReleaseContext';
 import { PlayerProvider } from '../context/playerContext';
+import { SearchProvider } from '../context/searchContext';
 
 export default ({ Component, pageProps }: AppProps) => (
     <MantineProvider>
@@ -16,7 +17,9 @@ export default ({ Component, pageProps }: AppProps) => (
                 <ReleaseProvider>
                     <DiscogsReleaseProvider>
                         <PlayerProvider>
-                            <Component {...pageProps} />
+                            <SearchProvider>
+                                <Component {...pageProps} />
+                            </SearchProvider>
                         </PlayerProvider>
                     </DiscogsReleaseProvider>
                 </ReleaseProvider>

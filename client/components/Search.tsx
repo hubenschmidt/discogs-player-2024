@@ -6,59 +6,44 @@ import { CollectionContext } from '../context/collectionContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { searchCollection } from '../api';
-import { CollectionResponse } from '../interfaces';
+import { SearchContext } from '../context/searchContext';
 
 const Search = () => {
     const { userState } = useContext(UserContext);
     const { dispatchCollection } = useContext(CollectionContext);
-    const bearerToken = useBearerToken();
-
-    // Local state
-    const [query, setQuery] = useState('');
+    const { searchState, dispatchSearch } = useContext(SearchContext);
+    const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
-    const [results, setResults] = useState([]);
-    const [searchType, setSearchType] = useState<string>('all');
-    const [open, setOpen] = useState(false);
+
+    const bearerToken = useBearerToken();
 
     // Effect: search when query changes
     useEffect(() => {
         if (debouncedQuery.trim().length > 0) {
-            setOpen(true);
+            dispatchSearch({ type: 'SET_OPEN', payload: true });
 
             searchCollection(
                 debouncedQuery,
-                searchType === 'all' ? undefined : searchType, // pass `type` param only if narrowed
+                searchType === 'all' ? undefined : searchType,
                 userState?.username,
                 bearerToken,
             )
                 .then(collection => {
-                    console.log(
-                        collection,
-                        'results',
-                        searchType,
-                        'searchType',
-                    );
-                    setResults(collection);
-                    dispatchCollection({
-                        type: 'SET_SEARCH_RESULTS',
+                    dispatchSearch({
+                        type: 'SET_RESULTS',
                         payload: collection,
                     });
                 })
                 .catch(err => {
                     console.error('Search failed:', err);
-                    setResults([]);
-                    dispatchCollection({
-                        type: 'SET_SEARCH_RESULTS',
-                        payload: [],
-                    });
+                    dispatchSearch({ type: 'SET_RESULTS', payload: [] });
                 });
+
             return;
         }
 
-        // Clear results if no input
-        setOpen(false);
-        setResults([]);
-        dispatchCollection({ type: 'SET_SEARCH_RESULTS', payload: [] });
+        dispatchSearch({ type: 'SET_OPEN', payload: false });
+        dispatchSearch({ type: 'SET_RESULTS', payload: [] });
     }, [debouncedQuery, searchType]);
 
     return (
@@ -70,7 +55,12 @@ const Search = () => {
                 radius="lg"
                 leftSection={<SearchIcon size="1rem" />}
                 value={query}
-                onChange={e => setQuery(e.currentTarget.value)}
+                onChange={e =>
+                    dispatchSearch({
+                        type: 'SET_QUERY',
+                        payload: e.currentTarget.value,
+                    })
+                }
                 styles={{
                     input: {
                         backgroundColor: 'transparent',
@@ -97,7 +87,12 @@ const Search = () => {
                     {/* Tabs */}
                     <Tabs
                         value={searchType}
-                        onChange={tab => setSearchType(tab || 'all')}
+                        onChange={tab =>
+                            dispatchSearch({
+                                type: 'SET_SEARCH_TYPE',
+                                payload: tab || 'all',
+                            })
+                        }
                     >
                         <Tabs.List grow>
                             <Tabs.Tab value="all">All</Tabs.Tab>
