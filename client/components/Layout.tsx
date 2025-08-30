@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect } from 'react';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import Head from 'next/head';
 import Controls from './Controls';
 import Volume from './Volume';
@@ -22,6 +22,7 @@ import { syncCollection } from '../api';
 import DiscogsAuthPrompt from './DiscogsAuthPrompt';
 import { useBearerToken } from '../hooks/useBearerToken';
 import Search from './Search';
+import Navbar from './NavBar';
 
 type Props = {
     children?: ReactNode;
@@ -36,6 +37,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { previewDiscogsRelease, selectedDiscogsRelease, selectedVideo } =
         discogsReleaseState;
     const bearerToken = useBearerToken();
+    const [isCollapsed, setIsCollapsed] = useState(true);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -94,11 +96,17 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 />
             </Head>
 
+            <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
             <Container fluid className="layout-container">
                 {/* Header Section */}
                 <Grid mt="sm" mb="sm">
                     <Grid.Col
-                        span={{ base: 12, md: 6, lg: 2 }}
+                        span={{ base: 1, md: 1, lg: 1 }}
+                        style={devStyle}
+                    ></Grid.Col>
+                    <Grid.Col
+                        span={{ base: 11, md: 6, lg: 1 }}
                         style={devStyle}
                     >
                         <Text
