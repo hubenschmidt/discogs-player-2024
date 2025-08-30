@@ -11,6 +11,8 @@
     border-radius: 6px;
     text-decoration: none; /* remove underline */
     color: white; /* make links white */
+    background-color: black;
+    border: none;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 

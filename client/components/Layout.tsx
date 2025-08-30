@@ -29,6 +29,15 @@ type Props = {
     title?: string;
 };
 
+const History: React.FC = () => (
+    <Box>
+        <Text size="lg" fw={700} mb="sm">
+            History
+        </Text>
+        <Text>…your history component goes here…</Text>
+    </Box>
+);
+
 const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
@@ -38,6 +47,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
+    const [activePanel, setActivePanel] = useState<string | null>(null);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -96,7 +106,12 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 />
             </Head>
 
-            <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            <Navbar
+                isCollapsed={isCollapsed}
+                setIsCollapsed={setIsCollapsed}
+                activePanel={activePanel}
+                onSelect={panel => setActivePanel(panel || null)}
+            />
 
             <Container fluid className="layout-container">
                 {/* Header Section */}
@@ -137,13 +152,19 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid.Col>
                 </Grid>
 
+                {/* This is the column BELOW Search. Show the selected panel here. */}
                 <Grid mb="sm">
-                    <Grid.Col
-                        span={{ base: 12, md: 12, lg: 12 }}
-                        style={devStyle}
-                    >
-                        content placeholder for playlists, history, stats, genre
-                        and style explorer
+                    <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                        {activePanel === 'history' && <History />}
+                        {activePanel === 'playlists' && <Text>Playlists…</Text>}
+                        {activePanel === 'genres' && <Text>Genres…</Text>}
+                        {activePanel === 'styles' && <Text>Styles…</Text>}
+                        {!activePanel && (
+                            <Text>
+                                content placeholder for playlists, history,
+                                stats, genre and style explorer
+                            </Text>
+                        )}
                     </Grid.Col>
                 </Grid>
 

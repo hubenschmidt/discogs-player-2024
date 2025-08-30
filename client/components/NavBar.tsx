@@ -1,54 +1,64 @@
-import React, { useState } from 'react';
-import {
-    Stack,
-    Text,
-    NavLink,
-    Group,
-    Image,
-    ActionIcon,
-    Tooltip,
-} from '@mantine/core';
-import { useRouter } from 'next/router';
+// NavBar.tsx
+import React from 'react';
+import { Stack, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { Menu, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
 
-const SidebarLink = ({ label, href, active, collapsed }) => {
-    return (
-        <Tooltip
-            label={label}
-            position="right"
-            withArrow
-            disabled={!collapsed ? true : false}
-            transitionProps={{ duration: 0 }}
-        >
-            <Link
-                href={href}
-                className="sidebar-link"
-                data-active={active || undefined}
-            >
-                {!collapsed && (
-                    <span className="sidebar-link__label">{label}</span>
-                )}
-            </Link>
-        </Tooltip>
-    );
+type SidebarLinkProps = {
+    label: string;
+    active?: boolean;
+    collapsed: boolean;
+    onClick: () => void;
 };
 
-const NavBar = ({ isCollapsed, setIsCollapsed }) => {
-    const router = useRouter();
+const SidebarLink: React.FC<SidebarLinkProps> = ({
+    label,
+    active,
+    collapsed,
+    onClick,
+}) => (
+    <Tooltip
+        label={label}
+        position="right"
+        withArrow
+        disabled={!collapsed}
+        transitionProps={{ duration: 0 }}
+    >
+        <button
+            type="button"
+            className="sidebar-link"
+            data-active={active || undefined}
+            onClick={onClick}
+        >
+            {!collapsed && <span className="sidebar-link__label">{label}</span>}
+        </button>
+    </Tooltip>
+);
 
+type NavBarProps = {
+    isCollapsed: boolean;
+    setIsCollapsed: (v: boolean) => void;
+    activePanel: string | null;
+    onSelect: (panel: string) => void;
+};
+
+const NavBar: React.FC<NavBarProps> = ({
+    isCollapsed,
+    setIsCollapsed,
+    activePanel,
+    onSelect,
+}) => {
     const navLinks = [
-        { href: '/history', label: 'History' },
-        { href: '/playlists', label: 'Playlists' },
-        { href: '/genres', label: 'Genres' },
-        { href: '/styles', label: 'Styles' },
+        { key: 'history', label: 'History' },
+        { key: 'playlists', label: 'Playlists' },
+        { key: 'genres', label: 'Genres' },
+        { key: 'styles', label: 'Styles' },
     ];
 
     return (
         <Stack
             pos="fixed"
-            w={isCollapsed ? '10px' : '120px'}
-            p={4}
+            w={isCollapsed ? '30px' : '120px'}
+            p={isCollapsed ? 0 : 4}
             h="100vh"
             align="flex-start"
             style={{
@@ -56,9 +66,9 @@ const NavBar = ({ isCollapsed, setIsCollapsed }) => {
                 top: 0,
                 background: isCollapsed ? 'transparent' : 'black',
                 zIndex: 1000,
+                overflow: 'hidden', // <-- keep stragglers hidden
             }}
         >
-            {/* Logo with Toggle */}
             <Group justify="space-between" w="100%" align="center">
                 <ActionIcon
                     variant="subtle"
@@ -68,26 +78,34 @@ const NavBar = ({ isCollapsed, setIsCollapsed }) => {
                     color="white"
                 >
                     {isCollapsed ? (
-                        <Menu size={20} />
+                        <Menu size={30} />
                     ) : (
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={30} />
                     )}
                 </ActionIcon>
             </Group>
 
-            {/* Navigation Links */}
-            <Stack align="flex-start" display={isCollapsed ? 'none' : 'flex'}>
-                <Stack gap={4} px={6}>
-                    {navLinks.map(l => (
-                        <SidebarLink
-                            key={l.href}
-                            {...l}
-                            active={router.pathname === l.href}
-                            collapsed={isCollapsed}
-                        />
-                    ))}
+            {/* Unmount instead of display:none */}
+            {!isCollapsed && (
+                <Stack align="flex-start">
+                    <Stack gap={4} px={6}>
+                        {navLinks.map(l => (
+                            <SidebarLink
+                                key={l.key}
+                                label={l.label}
+                                active={activePanel === l.key}
+                                collapsed={isCollapsed}
+                                onClick={() => {
+                                    onSelect(
+                                        activePanel === l.key ? '' : l.key,
+                                    );
+                                    setIsCollapsed(true); // collapse after selecting
+                                }}
+                            />
+                        ))}
+                    </Stack>
                 </Stack>
-            </Stack>
+            )}
         </Stack>
     );
 };
