@@ -8,7 +8,6 @@ export const extractYouTubeVideoId = (url: string): string | null => {
         if (parsedUrl.hostname === 'youtu.be') {
             return parsedUrl.pathname.slice(1);
         }
-        return null;
     } catch (error) {
         console.error('Invalid URL:', url);
         return null;

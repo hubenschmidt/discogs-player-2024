@@ -112,45 +112,85 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 activePanel={activePanel}
                 onSelect={panel => setActivePanel(panel || null)}
             />
-
-            <Container fluid className="layout-container">
-                {/* Header Section */}
-                <Grid mt="sm" mb="sm">
-                    <Grid.Col
-                        span={{ base: 1, md: 1, lg: 1 }}
-                        style={devStyle}
-                    ></Grid.Col>
-                    <Grid.Col
-                        span={{ base: 11, md: 6, lg: 1 }}
-                        style={devStyle}
-                    >
-                        <Text
+            <Box component="header"></Box>
+            <Container fluid className="layout-container" ml="5px" mr="5px">
+                <Box
+                    pos="sticky"
+                    top={0}
+                    style={{
+                        position: 'sticky',
+                        top: 8, // a little gap from the top
+                        zIndex: 900, // below your NavBar's 1000, above content
+                        background: 'rgba(0,0,0,0.9)',
+                        backdropFilter: 'blur(2px)',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                        borderRadius: 6,
+                    }}
+                >
+                    {/* Header Section */}
+                    <Grid mt="sm" mb="sm">
+                        <Grid.Col
+                            span={{ base: 11, md: 6, lg: 1.5 }}
                             style={{
-                                fontFamily: '"Orbitron", sans-serif',
-                                fontSize: '1rem',
-                                textAlign: 'left',
-                                letterSpacing: '1px',
-                                color: 'red',
+                                ...devStyle,
+                                position: 'relative',
+                                zIndex: 1000,
                             }}
                         >
-                            TuneCrook
-                        </Text>
-                    </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 9 }}
-                        style={devStyle}
-                    >
-                        {' '}
-                        <Search />
-                    </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 1 }}
-                        style={devStyle}
-                    >
-                        {' '}
-                        <a href="/auth/logout">Logout</a>
-                    </Grid.Col>
-                </Grid>
+                            {/* Right-anchored container */}
+                            <Box
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    marginTop: '0px',
+                                }}
+                            >
+                                {/* Fixed-width inner box so first letters align */}
+                                <Box
+                                    style={{
+                                        width: '5.5ch',
+                                        textAlign: 'left',
+                                        marginRight: '12px',
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontFamily:
+                                                '"Orbitron", sans-serif',
+                                            fontSize: '1.2rem',
+                                            letterSpacing: '1px',
+                                            color: 'red',
+                                            lineHeight: 1.2,
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        tune
+                                    </Text>
+                                    <Text
+                                        style={{
+                                            fontFamily:
+                                                '"Orbitron", sans-serif',
+                                            fontSize: '1.2rem',
+                                            letterSpacing: '1px',
+                                            color: 'red',
+                                            lineHeight: 1.2,
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        Crook
+                                    </Text>
+                                </Box>
+                            </Box>
+                        </Grid.Col>
+
+                        <Grid.Col
+                            span={{ base: 12, md: 6, lg: 10 }}
+                            style={devStyle}
+                        >
+                            <Search />
+                        </Grid.Col>
+                    </Grid>
+                </Box>
 
                 {/* This is the column BELOW Search. Show the selected panel here. */}
                 <Grid mb="sm">

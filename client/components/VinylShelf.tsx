@@ -232,7 +232,7 @@ const VinylShelf: FC = () => {
                     >
                         <ChevronLeft />
                     </ActionIcon>
-                    <Text>Pg: {currentPage}</Text>
+                    <Text>{currentPage}</Text>
                     <ActionIcon
                         onClick={handleNextPage}
                         disabled={currentPage >= totalPages}
@@ -245,7 +245,6 @@ const VinylShelf: FC = () => {
                     >
                         <SkipForward />
                     </ActionIcon>
-                    <Text>Per:</Text>
                     <select
                         value={itemsPerPage}
                         onChange={handleItemsPerPageChange}

@@ -28,11 +28,6 @@ body {
         ui-monospace, Monaco, Cascadia Mono, Segoe UI Mono, Roboto Mono,
         Oxygen Mono, Ubuntu Mono, Source Code Pro, Fira Mono, Droid Sans Mono,
         Consolas, Courier New, monospace;
-    /* Neon glow reminiscent of retro arcade screens */
-    /* text-shadow: 0 0 8px #5e6000, 0 0 4px #d5ff3d; */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* letter-spacing: 0.05em; */
-    /* Optional: Remove for a crisper, more defined look */
-    /* filter: blur(0.1px); */
 }

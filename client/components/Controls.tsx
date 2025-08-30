@@ -46,11 +46,6 @@ const Controls = () => {
         setIsPlaying(false);
     };
 
-    const handleStop = () => {
-        controls?.stop();
-        setIsPlaying(false);
-    };
-
     const handleFastForward = () => {
         if (controls?.getCurrentTime && controls?.seekTo) {
             const currentTime = controls.getCurrentTime();
@@ -87,15 +82,6 @@ const Controls = () => {
                 mb="10px"
             >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <label
-                        style={{
-                            color: '#fff',
-                            marginRight: '5px',
-                            fontSize: '0.8rem',
-                        }}
-                    >
-                        Speed:
-                    </label>
                     <select
                         value={playbackRate}
                         onChange={e => handlePlaybackRateChange(e.target.value)}
@@ -104,8 +90,9 @@ const Controls = () => {
                             color: '#fff',
                             border: '1px solid #fff',
                             padding: '4px',
-                            borderRadius: '4px',
+                            borderRadius: '0px',
                             fontSize: '0.8rem',
+                            width: '60px',
                         }}
                     >
                         {availableRates.length > 0 ? (
@@ -118,7 +105,7 @@ const Controls = () => {
                             <>
                                 <option value="0.25">0.25x</option>
                                 <option value="0.5">0.5x</option>
-                                <option value="1">Normal</option>
+                                <option value="1">1x</option>
                                 <option value="1.25">1.25x</option>
                                 <option value="1.5">1.5x</option>
                                 <option value="2">2x</option>
@@ -142,9 +129,7 @@ const Controls = () => {
                         <Play />
                     </ActionIcon>
                 )}
-                <ActionIcon color="blue" onClick={handleStop}>
-                    <StopCircle />
-                </ActionIcon>
+
                 <ActionIcon color="blue" onClick={handleNextVideo}>
                     <ChevronRight />
                 </ActionIcon>
@@ -154,7 +139,6 @@ const Controls = () => {
                 </ActionIcon>
 
                 <Switch
-                    label="Continuous Play"
                     checked={continuousPlay}
                     onChange={e =>
                         dispatchDiscogsRelease({

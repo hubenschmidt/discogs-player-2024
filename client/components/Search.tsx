@@ -76,7 +76,7 @@ const Search = () => {
         <Box pos="relative" w="100%" ref={containerRef}>
             {/* Search input */}
             <TextInput
-                placeholder={aiMode ? 'Ask a question..' : 'Search..'}
+                placeholder={aiMode ? 'Ask' : 'Search'}
                 size="lg"
                 radius="lg"
                 leftSection={
