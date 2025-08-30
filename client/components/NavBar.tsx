@@ -1,7 +1,38 @@
 import React, { useState } from 'react';
-import { Stack, Text, NavLink, Group, Image, ActionIcon } from '@mantine/core';
+import {
+    Stack,
+    Text,
+    NavLink,
+    Group,
+    Image,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { useRouter } from 'next/router';
 import { Menu, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+
+const SidebarLink = ({ label, href, active, collapsed }) => {
+    return (
+        <Tooltip
+            label={label}
+            position="right"
+            withArrow
+            disabled={!collapsed ? true : false}
+            transitionProps={{ duration: 0 }}
+        >
+            <Link
+                href={href}
+                className="sidebar-link"
+                data-active={active || undefined}
+            >
+                {!collapsed && (
+                    <span className="sidebar-link__label">{label}</span>
+                )}
+            </Link>
+        </Tooltip>
+    );
+};
 
 const NavBar = ({ isCollapsed, setIsCollapsed }) => {
     const router = useRouter();
@@ -12,25 +43,6 @@ const NavBar = ({ isCollapsed, setIsCollapsed }) => {
         { href: '/genres', label: 'Genres' },
         { href: '/styles', label: 'Styles' },
     ];
-
-    const renderNavLinks = links => {
-        return links.map(({ href, label }) => (
-            <Stack key={href} align="flex-start">
-                <Text>
-                    <NavLink
-                        href={href}
-                        label={label}
-                        styles={{
-                            label: {
-                                fontWeight:
-                                    router.pathname === href ? 700 : 400, // Mantine expects numbers here
-                            },
-                        }}
-                    />
-                </Text>
-            </Stack>
-        ));
-    };
 
     return (
         <Stack
@@ -65,7 +77,16 @@ const NavBar = ({ isCollapsed, setIsCollapsed }) => {
 
             {/* Navigation Links */}
             <Stack align="flex-start" display={isCollapsed ? 'none' : 'flex'}>
-                {renderNavLinks(navLinks)}
+                <Stack gap={4} px={6}>
+                    {navLinks.map(l => (
+                        <SidebarLink
+                            key={l.href}
+                            {...l}
+                            active={router.pathname === l.href}
+                            collapsed={isCollapsed}
+                        />
+                    ))}
+                </Stack>
             </Stack>
         </Stack>
     );

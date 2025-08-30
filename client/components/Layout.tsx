@@ -115,6 +115,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                 fontSize: '1rem',
                                 textAlign: 'left',
                                 letterSpacing: '1px',
+                                color: 'red',
                             }}
                         >
                             TuneCrook
@@ -206,7 +207,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Footer */}
                 <Box pt="lg" style={{ textAlign: 'center' }}>
-                    <Text>WiLliⒶMr0y</Text>
+                    <Text color="red">Copyright PinaColada.co</Text>
                 </Box>
             </Container>
         </Box>

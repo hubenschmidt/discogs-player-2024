@@ -3,6 +3,27 @@
     --foreground: #d5ff3d;
 }
 
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none; /* remove underline */
+    color: white; /* make links white */
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+    background-color: red; /* background on hover */
+    color: black; /* text color on hover */
+}
+
+.sidebar-link[data-active] {
+    background-color: #e94560; /* active background */
+    color: white; /* active text */
+}
+
 body {
     color: var(--foreground);
     background: var(--background);
