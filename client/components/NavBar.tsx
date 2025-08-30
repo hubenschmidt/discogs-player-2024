@@ -63,7 +63,7 @@ const NavBar: React.FC<NavBarProps> = ({
             align="flex-start"
             style={{
                 position: 'sticky',
-                top: 0,
+                top: 5,
                 background: isCollapsed ? 'transparent' : 'black',
                 zIndex: 1000,
                 overflow: 'hidden', // <-- keep stragglers hidden
