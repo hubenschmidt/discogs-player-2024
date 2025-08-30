@@ -19,11 +19,6 @@
     color: black; /* text color on hover */
 }
 
-.sidebar-link[data-active] {
-    background-color: #e94560; /* active background */
-    color: white; /* active text */
-}
-
 body {
     color: var(--foreground);
     background: var(--background);
