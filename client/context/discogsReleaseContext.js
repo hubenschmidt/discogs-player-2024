@@ -5,6 +5,7 @@ const initialState = {
     selectedRelease: null,
     previewRelease: null,
     selectedDiscogsRelease: null,
+    previewDiscogsRelease: null,
     continuousPlay: false,
     selectedVideo: null,
 };

@@ -4,17 +4,18 @@ import { PlayerContext } from '../context/playerContext';
 
 interface TrackDetailProps {
     selectedDiscogsRelease: any;
+    preview?: boolean;
 }
 
 const TrackDetail: React.FC<TrackDetailProps> = ({
     selectedDiscogsRelease,
+    preview,
 }) => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
 
-    // Common styles for both boxes
     const commonBoxStyles = {
-        backgroundColor: 'black',
+        backgroundColor: preview ? 'blue' : 'black',
         color: 'white',
         paddingTop: '8px',
         paddingBottom: '8px',
@@ -27,8 +28,8 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
     return selectedDiscogsRelease ? (
         <Box>
             {/* Top Box: Video Title */}
-            {controls?.videoTitle && (
-                <Box style={commonBoxStyles} mt="-2px">
+            {!preview && (
+                <Box style={commonBoxStyles} mt="0px">
                     <Text size="sm">
                         Playing: {controls?.videoTitle || 'No title available'}
                     </Text>
@@ -36,12 +37,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
             )}
 
             {/* Bottom Box: Release Details */}
-            <Box style={commonBoxStyles} mt="4px" mb="-2px">
+            <Box style={commonBoxStyles} mt="0px" mb="0px">
                 <Group align="left">
                     <Text size="sm">
-                        Release: {selectedDiscogsRelease?.title} (
+                        {selectedDiscogsRelease?.title} (
                         {selectedDiscogsRelease?.year})
                     </Text>
+
                     <Text size="sm">
                         Artist: {selectedDiscogsRelease?.artists_sort}
                     </Text>

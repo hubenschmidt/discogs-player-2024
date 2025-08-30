@@ -8,6 +8,7 @@ import { Box, Group, ActionIcon, Text } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
+import TrackDetail from './TrackDetail';
 
 const reorderReleases = (
     records: Release[],
@@ -48,7 +49,8 @@ const VinylShelf: FC = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedRelease, previewRelease } = discogsReleaseState;
+    const { selectedRelease, selectedDiscogsRelease, previewRelease } =
+        discogsReleaseState;
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -99,19 +101,19 @@ const VinylShelf: FC = () => {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
         }
 
-        // if (!selectedRelease) {
+        if (!selectedRelease) {
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_RELEASE',
+                payload: release,
+            });
+            return;
+        }
+
+        // else if release is already playing, set preview
         dispatchDiscogsRelease({
-            type: 'SET_SELECTED_RELEASE',
+            type: 'SET_PREVIEW_RELEASE',
             payload: release,
         });
-        return;
-        // }
-
-        // // else if release is already playing, set preview
-        // dispatchDiscogsRelease({
-        //     type: 'SET_PREVIEW_RELEASE',
-        //     payload: release,
-        // });
     };
 
     const handleShelfPrev = () => {
@@ -160,7 +162,7 @@ const VinylShelf: FC = () => {
 
     return (
         <div className="vinyl-shelf-container">
-            {/* The shelf itself, with ref */}
+            <TrackDetail selectedDiscogsRelease={selectedDiscogsRelease} />
             <div className="vinyl-shelf" ref={shelfRef}>
                 {releases?.map((release, i) => {
                     const n = releases?.length;
@@ -170,25 +172,26 @@ const VinylShelf: FC = () => {
                     }
                     const isSelected =
                         selectedRelease?.Release_Id === release.Release_Id;
+
+                    // preview highlight only if preview exists AND it's not the same as selected
+                    const isPreview =
+                        previewRelease &&
+                        previewRelease.Release_Id === release.Release_Id &&
+                        previewRelease.Release_Id !==
+                            selectedRelease?.Release_Id;
+
+                    console.log(isPreview);
+
                     return (
                         <Box
                             key={release.Release_Id}
                             className="vinyl-record"
-                            // style={ // rotate records
-                            //     releases.length > 5
-                            //         ? {
-                            //               transform: `rotateY(${angle.toFixed(
-                            //                   2,
-                            //               )}deg)`,
-                            //           }
-                            //         : null
-                            // }
                             onClick={() => handleRecordClick(release, i)}
                         >
                             <Box
                                 className={`record-cover ${
                                     isSelected ? 'selected-record-cover' : ''
-                                }`}
+                                } ${isPreview ? 'preview-record-cover' : ''}`}
                                 style={{
                                     backgroundImage: `url(${release.Thumb})`,
                                 }}
@@ -200,7 +203,6 @@ const VinylShelf: FC = () => {
                     );
                 })}
             </div>
-            {}{' '}
             <div className="shelf-controls">
                 <ActionIcon
                     onClick={handleShelfPrev}

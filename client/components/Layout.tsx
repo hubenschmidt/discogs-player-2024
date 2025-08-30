@@ -33,7 +33,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const { selectedDiscogsRelease, selectedVideo } = discogsReleaseState;
+    const { previewDiscogsRelease, selectedDiscogsRelease, selectedVideo } =
+        discogsReleaseState;
     const bearerToken = useBearerToken();
 
     let borderStyle = '.5px solid black';
@@ -43,6 +44,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         borderBottom: borderStyle,
         borderLeft: borderStyle,
     };
+
+    const showPreviewTrackDetail =
+        previewDiscogsRelease &&
+        previewDiscogsRelease.id !== selectedDiscogsRelease?.id;
 
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
@@ -151,14 +156,22 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     <Grid.Col
                         span={{ base: 12, md: 6, lg: 6 }}
                         style={devStyle}
-                    >
-                        <TrackDetail
-                            selectedDiscogsRelease={selectedDiscogsRelease}
-                        />
-                    </Grid.Col>
+                    ></Grid.Col>
                 </Grid>
 
-                {/* Main Content Section */}
+                {showPreviewTrackDetail && (
+                    <Grid mb="sm">
+                        <Grid.Col
+                            span={{ base: 12, md: 12, lg: 12 }}
+                            style={devStyle}
+                        >
+                            <TrackDetail
+                                selectedDiscogsRelease={previewDiscogsRelease}
+                                preview={true}
+                            />
+                        </Grid.Col>
+                    </Grid>
+                )}
 
                 {/* Video Playlist Section */}
                 <Grid mb="sm">
@@ -169,7 +182,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         <VideoPlaylist />
                     </Grid.Col>
                     <Grid.Col
-                        span={{ base: 12, md: 86, lg: 8 }}
+                        span={{ base: 12, md: 6, lg: 8 }}
                         style={devStyle}
                     >
                         About this release/artist/label

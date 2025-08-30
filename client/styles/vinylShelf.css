@@ -4,9 +4,8 @@
 .vinyl-shelf-container {
     position: relative; /* allows absolutely-positioned children */
     width: 100%;
-    text-align: center;
+    /* text-align: center; */
     background: linear-gradient(135deg, #1a1a2e, #16213e);
-    padding-top: 47px;
     border-top: 0.5px solid #e94560;
     border-bottom: 0.5px solid #e94560;
     box-shadow: 0 0 15px rgba(#1a1a2e, 69, 96, 0.8);
@@ -103,7 +102,16 @@
 
 /* When the record cover is hovered, add a neon ring */
 .record-cover:hover {
-    box-shadow: 0 0 20px yellowgreen, 0 0 20px #e94560;
+    box-shadow: 0 0 10px yellowgreen, 0 0 20px #e94560;
+}
+
+/* Yellow-only glow for previewed record (different from the one playing) */
+.preview-record-cover {
+    box-shadow: 0 0 10px rgba(20, 20, 12, 0.911), 0 0 20px yellow;
+}
+
+.selected-record-cover {
+    box-shadow: 0 0 10px greenyellow, 0 0 20px greenyellow;
 }
 
 /* Record title styling */
@@ -115,12 +123,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-/* Alternatively, if prefer to highlight only the record cover */
-.selected-record-cover {
-    border: 4px solid #e94560; /* Adjust thickness and color as needed */
-    box-shadow: 0 0 10px #e94560, 0 0 20px #e94560;
 }
 
 /* Pagination controls styled with neon accents */

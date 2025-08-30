@@ -10,15 +10,22 @@ const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
-        discogsReleaseState;
-    const { selectedRelease, previewRelease } = discogsReleaseState;
-    const [loading, setLoading] = useState<boolean>(false);
+    const {
+        selectedDiscogsRelease,
+        previewRelease,
+        selectedRelease,
+        continuousPlay,
+        selectedVideo,
+        previewDiscogsRelease,
+    } = discogsReleaseState;
+    const [loadingSel, setLoadingSel] = useState(false);
+    const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
 
+    // Fetch Discogs data for the currently playing (selected) release
     useEffect(() => {
         if (selectedRelease?.Release_Id) {
-            setLoading(true);
+            setLoadingSel(true);
             getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
                 .then((discogsRelease: DiscogsRelease) => {
                     dispatchDiscogsRelease({
@@ -32,9 +39,42 @@ const VideoPlaylist = () => {
                         error.response || error,
                     ),
                 )
-                .finally(() => setLoading(false));
+                .finally(() => setLoadingSel(false));
         }
     }, [selectedRelease?.Release_Id]);
+
+    // Choose which discogs release to render in the playlist:
+    const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
+    const loading = loadingPrev || loadingSel;
+
+    // Only set auto-selected video when the **active** discogs changes,
+    // and only if no selectedVideo is currently set
+    useEffect(() => {
+        if (!activeDiscogs?.videos?.length) return;
+        if (selectedVideo) return; // respect existing choice
+        const first = extractYouTubeVideoId(activeDiscogs.videos[0].uri);
+        dispatchDiscogsRelease({ type: 'SET_SELECTED_VIDEO', payload: first });
+    }, [activeDiscogs]);
+
+    // Fetch Discogs data for the preview release (browsing)
+    useEffect(() => {
+        if (!previewRelease?.Release_Id) return;
+        setLoadingPrev(true);
+        getDiscogsRelease(previewRelease.Release_Id, bearerToken)
+            .then((full: DiscogsRelease) => {
+                dispatchDiscogsRelease({
+                    type: 'SET_PREVIEW_DISCOGS_RELEASE',
+                    payload: full,
+                });
+            })
+            .catch(err =>
+                console.error(
+                    'fetch preview discogs failed',
+                    err?.response || err,
+                ),
+            )
+            .finally(() => setLoadingPrev(false));
+    }, [previewRelease?.Release_Id]);
 
     useEffect(() => {
         if (
@@ -78,38 +118,54 @@ const VideoPlaylist = () => {
             </Group>
             {/* Playlist of videos */}
             <Stack>
-                {selectedDiscogsRelease?.videos.map((video, index) => {
+                {activeDiscogs?.videos.map((video, idx) => {
                     const videoId = extractYouTubeVideoId(video.uri);
                     const isSelected = videoId === selectedVideo;
-
                     return (
                         <Button
-                            key={index}
+                            key={idx}
                             variant="filled"
-                            onClick={() =>
+                            onClick={() => {
+                                // Promote preview to selected if we are browsing
+                                if (previewRelease) {
+                                    dispatchDiscogsRelease({
+                                        type: 'SET_SELECTED_RELEASE',
+                                        payload: previewRelease,
+                                    });
+                                    dispatchDiscogsRelease({
+                                        type: 'SET_SELECTED_DISCOGS_RELEASE',
+                                        payload: activeDiscogs,
+                                    });
+                                    // Optional: clear preview now that it’s “promoted”
+                                    dispatchDiscogsRelease({
+                                        type: 'SET_PREVIEW_RELEASE',
+                                        payload: null,
+                                    });
+                                    dispatchDiscogsRelease({
+                                        type: 'SET_PREVIEW_DISCOGS_RELEASE',
+                                        payload: null,
+                                    });
+                                }
+                                // Set the chosen video
                                 dispatchDiscogsRelease({
                                     type: 'SET_SELECTED_VIDEO',
                                     payload: videoId,
-                                })
-                            }
+                                });
+                            }}
                             mt="-15px"
                             styles={() => ({
                                 root: {
-                                    // White background with black text if selected;
-                                    // black background with white text if not selected
                                     backgroundColor: isSelected
                                         ? '#fff'
                                         : '#40343d',
                                     color: isSelected ? '#000' : '#fff',
                                     fontWeight: '100',
-                                    // Optional hover states:
                                     '&:hover': {
                                         backgroundColor: isSelected
                                             ? '#f0f0f0'
                                             : '#000',
                                     },
                                 },
-                                // Left-align label
                                 label: {
                                     justifyContent: 'flex-start',
                                     width: '100%',
