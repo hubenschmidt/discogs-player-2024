@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces';
-import { Box, Stack, Button, Text, Loader, Group, Switch } from '@mantine/core';
+import { Box, Stack, Button, Text, Loader } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { useBearerToken } from '../hooks/useBearerToken';
@@ -14,7 +14,6 @@ const VideoPlaylist = () => {
         selectedDiscogsRelease,
         previewRelease,
         selectedRelease,
-        continuousPlay,
         selectedVideo,
         previewDiscogsRelease,
     } = discogsReleaseState;
@@ -47,15 +46,6 @@ const VideoPlaylist = () => {
     const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
     const loading = loadingPrev || loadingSel;
 
-    // Only set auto-selected video when the **active** discogs changes,
-    // and only if no selectedVideo is currently set
-    useEffect(() => {
-        if (!activeDiscogs?.videos?.length) return;
-        if (selectedVideo) return; // respect existing choice
-        const first = extractYouTubeVideoId(activeDiscogs.videos[0].uri);
-        dispatchDiscogsRelease({ type: 'SET_SELECTED_VIDEO', payload: first });
-    }, [activeDiscogs]);
-
     // Fetch Discogs data for the preview release (browsing)
     useEffect(() => {
         if (!previewRelease?.Release_Id) return;
@@ -76,22 +66,24 @@ const VideoPlaylist = () => {
             .finally(() => setLoadingPrev(false));
     }, [previewRelease?.Release_Id]);
 
+    // Auto-select first video ONLY for the selected release (not preview) and
+    // ONLY if selectedVideo is missing or invalid for this release.
     useEffect(() => {
-        if (
-            selectedDiscogsRelease &&
-            selectedDiscogsRelease?.videos &&
-            selectedDiscogsRelease?.videos?.length > 0
-        ) {
-            const firstVideoId = extractYouTubeVideoId(
-                selectedDiscogsRelease.videos[0].uri,
-            );
+        // don't auto-select if we are browsing a preview
+        if (previewDiscogsRelease) return;
+
+        const vids = selectedDiscogsRelease?.videos;
+        if (!vids?.length) return;
+
+        const ids = vids.map(v => extractYouTubeVideoId(v.uri));
+        const hasCurrent = selectedVideo && ids.includes(selectedVideo);
+        if (!hasCurrent) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_VIDEO',
-                payload: firstVideoId,
+                payload: ids[0],
             });
         }
-    }, [selectedDiscogsRelease]);
-
+    }, [selectedDiscogsRelease, previewDiscogsRelease, selectedVideo]);
     if (loading) return <Loader />;
 
     if (
@@ -103,19 +95,6 @@ const VideoPlaylist = () => {
 
     return (
         <Box>
-            {/* Toggle Continuous Play Mode */}
-            <Group mb="lg">
-                <Switch
-                    label="Continuous Play"
-                    checked={continuousPlay}
-                    onChange={e =>
-                        dispatchDiscogsRelease({
-                            type: 'SET_CONTINUOUS_PLAY',
-                            payload: e.currentTarget.checked,
-                        })
-                    }
-                />
-            </Group>
             {/* Playlist of videos */}
             <Stack>
                 {activeDiscogs?.videos.map((video, idx) => {
@@ -136,7 +115,7 @@ const VideoPlaylist = () => {
                                         type: 'SET_SELECTED_DISCOGS_RELEASE',
                                         payload: activeDiscogs,
                                     });
-                                    // Optional: clear preview now that it’s “promoted”
+                                    // Clear preview now that it’s “promoted”
                                     dispatchDiscogsRelease({
                                         type: 'SET_PREVIEW_RELEASE',
                                         payload: null,
@@ -152,7 +131,7 @@ const VideoPlaylist = () => {
                                     payload: videoId,
                                 });
                             }}
-                            mt="-15px"
+                            mt="-16px"
                             styles={() => ({
                                 root: {
                                     backgroundColor: isSelected

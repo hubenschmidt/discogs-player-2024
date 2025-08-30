@@ -40,13 +40,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
             <Box style={commonBoxStyles} mt="0px" mb="0px">
                 <Group align="left">
                     <Text size="sm">
-                        {selectedDiscogsRelease?.title} (
+                        Artist: {selectedDiscogsRelease?.artists_sort}
+                    </Text>
+                    <Text size="sm">
+                        Release: {selectedDiscogsRelease?.title} (
                         {selectedDiscogsRelease?.year})
                     </Text>
 
-                    <Text size="sm">
-                        Artist: {selectedDiscogsRelease?.artists_sort}
-                    </Text>
                     <Text size="sm">Year: {selectedDiscogsRelease?.year}</Text>
                 </Group>
             </Box>

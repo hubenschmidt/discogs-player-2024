@@ -51,7 +51,7 @@ const VinylShelf: FC = () => {
     );
     const { selectedRelease, selectedDiscogsRelease, previewRelease } =
         discogsReleaseState;
-    const { searchState, dispatchSearch } = useContext(SearchContext);
+    const { searchState } = useContext(SearchContext);
     const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel

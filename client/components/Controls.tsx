@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { PlayerContext } from '../context/playerContext';
-import { ActionIcon, Group } from '@mantine/core';
+import { ActionIcon, Group, Switch } from '@mantine/core';
 import {
     ChevronLeft,
     ChevronRight,
@@ -18,7 +18,7 @@ const Controls = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedVideo } = discogsReleaseState;
+    const { selectedVideo, continuousPlay } = discogsReleaseState;
     const [playbackRate, setPlaybackRate] = useState('1');
     const [availableRates, setAvailableRates] = useState<number[]>([]);
     const [isPlaying, setIsPlaying] = useState(true);
@@ -82,7 +82,10 @@ const Controls = () => {
     return selectedVideo ? (
         <>
             {/* Slider wrapped in a container to push it to the right */}
-            <Group style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
+            <Group
+                style={{ flexWrap: 'nowrap', alignItems: 'center' }}
+                mb="10px"
+            >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <label
                         style={{
@@ -149,6 +152,17 @@ const Controls = () => {
                 <ActionIcon color="blue" onClick={handleFastForward}>
                     <FastForward />
                 </ActionIcon>
+
+                <Switch
+                    label="Continuous Play"
+                    checked={continuousPlay}
+                    onChange={e =>
+                        dispatchDiscogsRelease({
+                            type: 'SET_CONTINUOUS_PLAY',
+                            payload: e.currentTarget.checked,
+                        })
+                    }
+                />
             </Group>
         </>
     ) : null;
