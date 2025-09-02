@@ -1,0 +1,17 @@
+.track {
+    background-color: black;
+}
+
+.track::before {
+    background-color: black;
+    border: 2px solid white;
+}
+
+.bar {
+    background-color: white;
+}
+
+.thumb {
+    border: 2px solid white;
+    background-color: black;
+}

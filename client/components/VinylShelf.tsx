@@ -230,7 +230,7 @@ const VinylShelf: FC = () => {
                     >
                         <ChevronLeft />
                     </ActionIcon>
-                    <Text>{currentPage}</Text>
+                    <Text c={'white'}>{currentPage}</Text>
                     <ActionIcon
                         onClick={handleNextPage}
                         disabled={currentPage >= totalPages}

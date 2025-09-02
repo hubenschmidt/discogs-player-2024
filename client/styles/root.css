@@ -70,6 +70,27 @@
     }
 }
 
+/* Base track (unfilled portion) */
+.mantine-Slider-track {
+    background-color: rgb(95, 86, 86);
+    /* border: 2px solid white; */
+    /* border-radius: 4px; */
+}
+
+/* Filled portion (progress bar) */
+.volume-bar {
+    background-color: grey;
+    border-radius: 4px;
+}
+
+/* Thumb (the handle) */
+.volume-thumb {
+    border: 2px solid white;
+    background-color: black;
+    width: 14px;
+    height: 14px;
+}
+
 body {
     color: var(--foreground);
     background: var(--background);
