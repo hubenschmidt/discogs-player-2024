@@ -21,15 +21,54 @@
     color: black; /* text color on hover */
 }
 
-/* .track-detail-group {
-    justify-content: flex-start; 
+/* TrackDetail.css */
+
+/* TrackDetail.css */
+
+/* Container styles you already had */
+.track-detail-box {
+    background-color: rgb(183, 180, 180);
+    color: black;
+    padding: 8px 2px 8px 4px;
+    margin-left: -2px;
+    margin-right: -2px;
 }
 
+.track-detail-box.preview {
+    background-color: rgb(44, 168, 30);
+}
+
+.track-detail-content {
+    display: flex;
+    flex-direction: column; /* mobile stacked */
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+/* Text sizing (mobile first) */
+.track-detail-text {
+    /* Mantine sm ~ 0.875rem; use exact value to avoid token differences */
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+/* Optional: gray label look via class instead of prop */
+.track-detail-muted {
+    color: rgb(0, 0, 0);
+}
+
+/* Desktop breakpoint (≥768px) */
 @media (min-width: 768px) {
-    .track-detail-group {
-        justify-content: center; 
+    .track-detail-content {
+        flex-direction: row; /* inline on desktop */
+        justify-content: center; /* centered line on desktop */
     }
-} */
+
+    .track-detail-text {
+        /* Mantine md ~ 1rem */
+        font-size: 1rem;
+    }
+}
 
 body {
     color: var(--foreground);

@@ -1,6 +1,6 @@
+// TrackDetail.tsx
 import React, { useContext } from 'react';
 import { Box, Text, Group } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
 import { PlayerContext } from '../context/playerContext';
 
 interface TrackDetailProps {
@@ -14,52 +14,41 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 }) => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
-    const isDesktop = useMediaQuery('(min-width: 768px)');
 
-    const commonBoxStyles = {
-        backgroundColor: preview ? 'blue' : 'black',
-        color: 'white',
-        paddingTop: '8px',
-        paddingBottom: '8px',
-        paddingRight: '2px',
-        paddingLeft: '4px',
-        marginLeft: '-2px',
-        marginRight: '-2px',
-    };
+    if (!selectedDiscogsRelease) return null;
 
-    return selectedDiscogsRelease ? (
-        <Box m={'0 3.5 3 3'}>
-            <Box style={commonBoxStyles}>
-                <Box
-                    style={{
-                        display: 'flex',
-                        flexDirection: isDesktop ? 'row' : 'column',
-                        justifyContent: isDesktop ? 'center' : 'flex-start',
-                        gap: 10,
-                    }}
-                >
+    return (
+        <Box m="0 3.5 3 3">
+            <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>
+                <Box className="track-detail-content">
                     {!preview && (
-                        <Text size="sm" lh={1}>
+                        <Text className="track-detail-text" lh={1}>
                             ♪ {controls?.videoTitle || 'No title available'}
                         </Text>
                     )}
 
                     {/* Artist */}
                     <Group gap={2}>
-                        <Text size="sm" c="gray" lh={1}>
+                        <Text
+                            className="track-detail-text track-detail-muted"
+                            lh={1}
+                        >
                             a:
                         </Text>
-                        <Text size="sm" lh={1}>
+                        <Text className="track-detail-text" lh={1}>
                             {selectedDiscogsRelease?.artists_sort}
                         </Text>
                     </Group>
 
                     {/* Release */}
                     <Group gap={2}>
-                        <Text size="sm" c="gray" lh={1}>
+                        <Text
+                            className="track-detail-text track-detail-muted"
+                            lh={1}
+                        >
                             r:
                         </Text>
-                        <Text size="sm" lh={1}>
+                        <Text className="track-detail-text" lh={1}>
                             {selectedDiscogsRelease?.title} (
                             {selectedDiscogsRelease?.year})
                         </Text>
@@ -67,10 +56,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 
                     {/* Label + Catalog number */}
                     <Group gap={2}>
-                        <Text size="sm" c="gray" lh={1}>
+                        <Text
+                            className="track-detail-text track-detail-muted"
+                            lh={1}
+                        >
                             #:
                         </Text>
-                        <Text size="sm" lh={1}>
+                        <Text className="track-detail-text" lh={1}>
                             {selectedDiscogsRelease?.labels?.[0]?.catno || ''} (
                             {selectedDiscogsRelease?.labels?.[0]?.name || ''})
                         </Text>
@@ -78,7 +70,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                 </Box>
             </Box>
         </Box>
-    ) : null;
+    );
 };
 
 export default TrackDetail;
