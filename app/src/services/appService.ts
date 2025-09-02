@@ -18,6 +18,7 @@ export const getStylesByGenre = async (req: Request) => {
 };
 
 export const updateVideoPlayCount = async (req: Request) => {
-    const video = await repos.updateVideoPlayCount(req);
+    const userId = await repos.getUserId(req);
+    const video = await repos.updateVideoPlayCount(req, userId);
     return video;
 };

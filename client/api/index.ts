@@ -142,9 +142,10 @@ export const getDiscogsRelease = async (
 export const updateVideoPlayCount = async (
     releaseId: number,
     selectedVideo: any,
+    username: string,
     token: BearerToken,
 ): Promise<any> => {
-    const uri = `/api/app/release/${releaseId}/video`;
+    const uri = `/api/app/${username}/release/${releaseId}/video`;
     const response: AxiosResponse<any> = await requestHandler(
         'POST',
         uri,

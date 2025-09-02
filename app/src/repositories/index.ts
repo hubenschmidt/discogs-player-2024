@@ -4,6 +4,10 @@ import { Op } from 'sequelize';
 import { Transaction } from 'sequelize';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
+export interface AuthenticatedRequest extends Request {
+    user: any;
+}
+
 export const createRequestToken = async (token: string, secret: string) => {
     const requestTokenEntry = await db.RequestToken.create({
         OAuth_Request_Token: token,
@@ -51,40 +55,33 @@ export const createCollection = async (userId: number) => {
     });
 };
 
-export const updateVideoPlayCount = async (req: Request) => {
-    console.log('update video playlist gets called');
+export const getUserId = async (req: Request) => {
+    const user = await db.User.findOne({
+        where: { Username: req.params.username },
+    });
+    return user.get();
+};
+
+export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { release_id } = req.params;
     const { uri, title, duration } = req.body;
 
     return db.sequelize.transaction(async (t: Transaction) => {
-        // Find or create Video
+        // Normalize URI (YouTube videoId preferred)
         const extractedUri = extractYouTubeVideoId(uri);
-        const [video, created] = await db.Video.findOrCreate({
+
+        // Ensure Video exists
+        const [video] = await db.Video.findOrCreate({
             where: { URI: extractedUri },
             defaults: {
                 URI: extractedUri,
                 Title: title ?? null,
                 Duration: duration ?? null,
-                Play_Count: 1, // first play
             },
             transaction: t,
         });
 
-        if (!created) {
-            // Increment atomically
-            await video.increment('Play_Count', { by: 1, transaction: t });
-
-            // update metadata if changed
-            const updates: Record<string, any> = {};
-            if (title && title !== video.Title) updates.Title = title;
-            if (duration && duration !== video.Duration)
-                updates.Duration = duration;
-            if (Object.keys(updates).length) {
-                await video.update(updates, { transaction: t });
-            }
-        }
-
-        // Ensure ReleaseVideo join row exists
+        // Ensure ReleaseVideo join exists
         let releaseVideo = null;
         if (release_id) {
             const [rv] = await db.ReleaseVideo.findOrCreate({
@@ -95,11 +92,34 @@ export const updateVideoPlayCount = async (req: Request) => {
             releaseVideo = rv;
         }
 
-        const freshVideo = await video.reload({ transaction: t });
+        // Ensure UserVideo join exists
+        const [uv] = await db.UserVideo.findOrCreate({
+            where: { User_Id: user.User_Id, Video_Id: video.Video_Id },
+            defaults: {
+                User_Id: user.User_Id,
+                Video_Id: video.Video_Id,
+                Play_Count: 0,
+            },
+            transaction: t,
+        });
+
+        // Increment user-specific Play_Count
+        await uv.increment('Play_Count', { by: 1, transaction: t });
+        await uv.update({ Last_Played_At: new Date() }, { transaction: t });
+
+        // Optionally update Video metadata if it changed
+        const updates: Record<string, any> = {};
+        if (title && title !== video.Title) updates.Title = title;
+        if (duration && duration !== video.Duration)
+            updates.Duration = duration;
+        if (Object.keys(updates).length) {
+            await video.update(updates, { transaction: t });
+        }
 
         return {
-            video: freshVideo.toJSON(),
+            video: await video.reload({ transaction: t }),
             releaseVideo: releaseVideo ? releaseVideo.toJSON() : null,
+            userVideo: await uv.reload({ transaction: t }),
         };
     });
 };

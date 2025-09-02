@@ -16,9 +16,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Duration: {
                 type: DataTypes.STRING,
             },
-            Play_Count: {
-                type: DataTypes.INTEGER,
-            },
         },
         {
             tableName: 'Video',
@@ -31,6 +28,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
             through: 'ReleaseVideo',
             foreignKey: 'Video_Id',
             otherKey: 'Release_Id',
+        });
+
+        Video.belongsToMany(models.User, {
+            through: 'UserVideo',
+            foreignKey: 'Video_Id',
+            otherKey: 'User_Id',
         });
     };
 

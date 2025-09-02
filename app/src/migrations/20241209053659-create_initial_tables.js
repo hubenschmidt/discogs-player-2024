@@ -164,10 +164,6 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-            Play_Count: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
@@ -177,6 +173,51 @@ module.exports = {
                 allowNull: false,
             },
         });
+
+        await queryInterface.createTable(
+            'UserVideo',
+            {
+                User_Id: {
+                    type: Sequelize.INTEGER,
+                    references: {
+                        model: 'User',
+                        key: 'User_Id',
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'CASCADE',
+                    allowNull: false,
+                },
+                Video_Id: {
+                    type: Sequelize.INTEGER,
+                    references: {
+                        model: 'Video',
+                        key: 'Video_Id',
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'CASCADE',
+                    allowNull: false,
+                },
+                Play_Count: {
+                    type: Sequelize.INTEGER,
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                uniqueKeys: {
+                    unique_user_video: {
+                        fields: ['User_Id', 'Video_Id'],
+                    },
+                },
+            },
+        );
 
         await queryInterface.createTable(
             'ReleaseVideo',

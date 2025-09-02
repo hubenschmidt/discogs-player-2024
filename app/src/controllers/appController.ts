@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import * as appService from '../services/appService';
 
 export const search = async (
@@ -57,7 +57,7 @@ export const getStylesByGenre = async (
     }
 };
 
-export const updateVideoPlayCount = async (
+export const updateVideoPlayCount: RequestHandler = async (
     req: Request,
     res: Response,
     next: NextFunction,

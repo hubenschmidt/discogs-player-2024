@@ -10,7 +10,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 type: DataTypes.STRING,
             },
             Email: {
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
             },
             OAuth_Access_Token: {
                 type: DataTypes.STRING,
@@ -28,6 +28,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
     User.associate = (models: any) => {
         User.hasOne(models.Collection, {
             foreignKey: 'User_Id',
+        });
+
+        User.belongsToMany(models.Video, {
+            through: 'UserVideo',
+            foreignKey: 'User_Id',
+            otherKey: 'Video_Id',
         });
     };
 

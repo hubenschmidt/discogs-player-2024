@@ -12,6 +12,7 @@ import {
     rgba,
 } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 
@@ -45,6 +46,8 @@ const VideoPlaylist = () => {
         selectedVideo, // expect this to be the full video object (with .uri)
         previewDiscogsRelease,
     } = discogsReleaseState;
+    const { userState } = useContext(UserContext);
+    const { username } = userState;
 
     const [loadingSel, setLoadingSel] = useState(false);
     const [loadingPrev, setLoadingPrev] = useState(false);
@@ -119,9 +122,12 @@ const VideoPlaylist = () => {
         const videoUri = selectedVideo?.uri;
         if (!releaseId || !videoUri) return;
 
-        updateVideoPlayCount(releaseId, selectedVideo, bearerToken).catch(
-            console.error,
-        );
+        updateVideoPlayCount(
+            releaseId,
+            selectedVideo,
+            username,
+            bearerToken,
+        ).catch(console.error);
     }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
 
     if (loading) return <Loader />;
