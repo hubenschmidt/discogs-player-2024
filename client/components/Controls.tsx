@@ -113,28 +113,28 @@ const Controls = () => {
                         )}
                     </select>
                 </div>
-                <ActionIcon color="blue" onClick={handleRewind}>
+                <ActionIcon color="transparent" onClick={handleRewind}>
                     <Rewind />
                 </ActionIcon>
-                <ActionIcon color="blue" onClick={handlePrevVideo}>
+                <ActionIcon color="transparent" onClick={handlePrevVideo}>
                     <ChevronLeft />
                 </ActionIcon>
 
                 {isPlaying ? (
-                    <ActionIcon color="blue" onClick={handlePause}>
+                    <ActionIcon color="transparent" onClick={handlePause}>
                         <Pause />
                     </ActionIcon>
                 ) : (
-                    <ActionIcon color="blue" onClick={handlePlay}>
+                    <ActionIcon color="transparent" onClick={handlePlay}>
                         <Play />
                     </ActionIcon>
                 )}
 
-                <ActionIcon color="blue" onClick={handleNextVideo}>
+                <ActionIcon color="transparent" onClick={handleNextVideo}>
                     <ChevronRight />
                 </ActionIcon>
 
-                <ActionIcon color="blue" onClick={handleFastForward}>
+                <ActionIcon color="transparent" onClick={handleFastForward}>
                     <FastForward />
                 </ActionIcon>
 

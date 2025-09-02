@@ -118,10 +118,9 @@
 
 .shelf-pagination button {
     margin: 10px 10px 10px 10px;
-    background-color: #e94560;
+    background-color: transparent;
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 0 5px rgba(233, 69, 96, 0.8);
 }
 .shelf-pagination button:disabled {
     opacity: 0.5;
