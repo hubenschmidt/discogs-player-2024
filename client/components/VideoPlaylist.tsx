@@ -143,13 +143,13 @@ const VideoPlaylist = () => {
                                 root: {
                                     backgroundColor: isSelected
                                         ? '#fff'
-                                        : '#40343d',
+                                        : 'transparent',
                                     color: isSelected ? '#000' : '#fff',
                                     fontWeight: '100',
                                     '&:hover': {
                                         backgroundColor: isSelected
                                             ? '#f0f0f0'
-                                            : '#000',
+                                            : 'transparent',
                                     },
                                 },
                                 label: {
