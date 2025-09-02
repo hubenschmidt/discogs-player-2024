@@ -67,7 +67,6 @@ const NavBar: React.FC<NavBarProps> = ({
         { key: 'playlists', label: 'Playlists' },
         { key: 'genres', label: 'Genres' },
         { key: 'styles', label: 'Styles' },
-        // special case: add href
         { key: 'logout', label: 'Logout', href: '/auth/logout' },
     ];
 

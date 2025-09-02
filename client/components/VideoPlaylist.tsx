@@ -73,6 +73,7 @@ const VideoPlaylist = () => {
         if (previewDiscogsRelease) return;
 
         const vids = selectedDiscogsRelease?.videos;
+        console.log(vids);
         if (!vids?.length) return;
 
         const ids = vids.map(v => extractYouTubeVideoId(v.uri));

@@ -59,6 +59,8 @@ const VinylShelf: FC = () => {
     const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
 
+    console.log(discogsReleaseState, 'discogsReleaseState');
+
     useEffect(() => {
         const params: any = {
             username: userState.username,
@@ -179,8 +181,6 @@ const VinylShelf: FC = () => {
                         previewRelease.Release_Id === release.Release_Id &&
                         previewRelease.Release_Id !==
                             selectedRelease?.Release_Id;
-
-                    console.log(isPreview);
 
                     return (
                         <Box
