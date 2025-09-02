@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getDiscogsRelease } from '../api';
-import { DiscogsRelease } from '../interfaces';
 import { Box, Stack, Button, Text, Loader } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { updateVideoPlayCount } from '../api';
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -14,44 +12,40 @@ const VideoPlaylist = () => {
         selectedDiscogsRelease,
         previewRelease,
         selectedRelease,
-        selectedVideo,
+        selectedVideo, // expect this to be the full video object (with .uri)
         previewDiscogsRelease,
     } = discogsReleaseState;
+
     const [loadingSel, setLoadingSel] = useState(false);
     const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
 
-    // Fetch Discogs data for the currently playing (selected) release
+    // ---- Fetch full discogs for selected release
     useEffect(() => {
-        if (selectedRelease?.Release_Id) {
-            setLoadingSel(true);
-            getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
-                .then((discogsRelease: DiscogsRelease) => {
-                    dispatchDiscogsRelease({
-                        type: 'SET_SELECTED_DISCOGS_RELEASE',
-                        payload: discogsRelease,
-                    });
-                })
-                .catch(error =>
-                    console.error(
-                        'something went wrong with fetching discogs release,',
-                        error.response || error,
-                    ),
-                )
-                .finally(() => setLoadingSel(false));
-        }
+        if (!selectedRelease?.Release_Id) return;
+        setLoadingSel(true);
+        getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
+            .then(full => {
+                dispatchDiscogsRelease({
+                    type: 'SET_SELECTED_DISCOGS_RELEASE',
+                    payload: full,
+                });
+            })
+            .catch(err =>
+                console.error(
+                    'fetch selected discogs failed',
+                    err?.response || err,
+                ),
+            )
+            .finally(() => setLoadingSel(false));
     }, [selectedRelease?.Release_Id]);
 
-    // Choose which discogs release to render in the playlist:
-    const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
-    const loading = loadingPrev || loadingSel;
-
-    // Fetch Discogs data for the preview release (browsing)
+    // ---- Fetch full discogs for preview release
     useEffect(() => {
         if (!previewRelease?.Release_Id) return;
         setLoadingPrev(true);
         getDiscogsRelease(previewRelease.Release_Id, bearerToken)
-            .then((full: DiscogsRelease) => {
+            .then(full => {
                 dispatchDiscogsRelease({
                     type: 'SET_PREVIEW_DISCOGS_RELEASE',
                     payload: full,
@@ -66,35 +60,41 @@ const VideoPlaylist = () => {
             .finally(() => setLoadingPrev(false));
     }, [previewRelease?.Release_Id]);
 
-    // Auto-select first video ONLY for the selected release (not preview) and
-    // ONLY if selectedVideo is missing or invalid for this release.
+    // Which release's videos to show
+    const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
+    const loading = loadingPrev || loadingSel;
+
+    // ---- A) Auto-select first video (no API call here)
     useEffect(() => {
-        // don't auto-select if we are browsing a preview
+        // Only auto-select when we are on the playing (selected) release and not previewing
         if (previewDiscogsRelease) return;
 
         const vids = selectedDiscogsRelease?.videos;
         if (!vids?.length) return;
 
-        const hasCurrent = selectedVideo && vids.includes(selectedVideo);
+        const hasCurrent =
+            selectedVideo && vids.some((v: any) => v.uri === selectedVideo.uri);
+
         if (!hasCurrent) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_VIDEO',
                 payload: vids[0],
             });
         }
+    }, [selectedDiscogsRelease, previewDiscogsRelease]); // intentionally NOT watching selectedVideo
 
-        if (selectedVideo) {
-            updateVideoPlayCount(
-                selectedRelease.Release_Id,
-                selectedVideo,
-                bearerToken,
-            )
-                .then(res => console.log(res))
-                .catch(err => console.log(err));
-        }
-    }, [selectedDiscogsRelease, previewDiscogsRelease, selectedVideo]);
+    // ---- B) Count plays exactly once per (releaseId|videoUri)
+    useEffect(() => {
+        const releaseId = selectedRelease?.Release_Id;
+        const videoUri = selectedVideo?.uri;
+        if (!releaseId || !videoUri) return;
+
+        updateVideoPlayCount(releaseId, selectedVideo, bearerToken).catch(
+            console.error,
+        );
+    }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
+
     if (loading) return <Loader />;
-
     if (
         selectedDiscogsRelease &&
         selectedDiscogsRelease?.videos?.length === 0
@@ -104,17 +104,15 @@ const VideoPlaylist = () => {
 
     return (
         <Box>
-            {/* Playlist of videos */}
             <Stack>
-                {activeDiscogs?.videos.map((video, idx) => {
-                    const videoId = video.uri;
-                    const isSelected = videoId === selectedVideo?.uri;
+                {activeDiscogs?.videos.map((video: any, idx: number) => {
+                    const isSelected = selectedVideo?.uri === video.uri;
                     return (
                         <Button
                             key={idx}
                             variant="filled"
                             onClick={() => {
-                                // Promote preview to selected if we are browsing
+                                // Promote preview to selected if browsing
                                 if (previewRelease) {
                                     dispatchDiscogsRelease({
                                         type: 'SET_SELECTED_RELEASE',
@@ -124,7 +122,7 @@ const VideoPlaylist = () => {
                                         type: 'SET_SELECTED_DISCOGS_RELEASE',
                                         payload: activeDiscogs,
                                     });
-                                    // Clear preview now that it’s “promoted”
+                                    // Clear preview
                                     dispatchDiscogsRelease({
                                         type: 'SET_PREVIEW_RELEASE',
                                         payload: null,
@@ -133,16 +131,8 @@ const VideoPlaylist = () => {
                                         type: 'SET_PREVIEW_DISCOGS_RELEASE',
                                         payload: null,
                                     });
-
-                                    updateVideoPlayCount(
-                                        selectedRelease.Release_Id,
-                                        selectedVideo,
-                                        bearerToken,
-                                    )
-                                        .then(res => console.log(res))
-                                        .catch(err => console.log(err));
                                 }
-                                // Set the chosen video
+                                // Select the chosen video (Effect B will count it once)
                                 dispatchDiscogsRelease({
                                     type: 'SET_SELECTED_VIDEO',
                                     payload: video,

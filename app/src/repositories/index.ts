@@ -52,6 +52,7 @@ export const createCollection = async (userId: number) => {
 };
 
 export const updateVideoPlayCount = async (req: Request) => {
+    console.log('update video playlist gets called');
     const { release_id } = req.params;
     const { uri, title, duration } = req.body;
 
