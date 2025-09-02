@@ -21,6 +21,16 @@
     color: black; /* text color on hover */
 }
 
+/* .track-detail-group {
+    justify-content: flex-start; 
+}
+
+@media (min-width: 768px) {
+    .track-detail-group {
+        justify-content: center; 
+    }
+} */
+
 body {
     color: var(--foreground);
     background: var(--background);
