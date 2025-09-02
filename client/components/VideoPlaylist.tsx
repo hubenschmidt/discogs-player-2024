@@ -1,8 +1,38 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Stack, Button, Text, Loader } from '@mantine/core';
+import {
+    Box,
+    Stack,
+    Button,
+    Text,
+    Loader,
+    MantineProvider,
+    defaultVariantColorsResolver,
+    VariantColorsResolver,
+    parseThemeColor,
+    rgba,
+} from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
+
+const variantColorResolver: VariantColorsResolver = input => {
+    const defaultResolvedColors = defaultVariantColorsResolver(input);
+    const parsedColor = parseThemeColor({
+        color: input.color || input.theme.primaryColor,
+        theme: input.theme,
+    });
+
+    if (input.variant === 'light') {
+        return {
+            background: rgba(parsedColor.value, 0.1),
+            hover: rgba(parsedColor.value, 0.15),
+            border: `0px solid ${parsedColor.value}`,
+            color: 'white',
+        };
+    }
+
+    return defaultResolvedColors;
+};
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -102,69 +132,124 @@ const VideoPlaylist = () => {
         return <Text>No videos available</Text>;
     }
 
+    // return (
+    //     <Box>
+    //         <Stack>
+    //             {activeDiscogs?.videos.map((video: any, idx: number) => {
+    //                 const isSelected = selectedVideo?.uri === video.uri;
+    //                 return (
+    //                     <Button
+    //                         key={idx}
+    //                         variant="filled"
+    //                         onClick={() => {
+    //                             // Promote preview to selected if browsing
+    //                             if (previewRelease) {
+    //                                 dispatchDiscogsRelease({
+    //                                     type: 'SET_SELECTED_RELEASE',
+    //                                     payload: previewRelease,
+    //                                 });
+    //                                 dispatchDiscogsRelease({
+    //                                     type: 'SET_SELECTED_DISCOGS_RELEASE',
+    //                                     payload: activeDiscogs,
+    //                                 });
+    //                                 // Clear preview
+    //                                 dispatchDiscogsRelease({
+    //                                     type: 'SET_PREVIEW_RELEASE',
+    //                                     payload: null,
+    //                                 });
+    //                                 dispatchDiscogsRelease({
+    //                                     type: 'SET_PREVIEW_DISCOGS_RELEASE',
+    //                                     payload: null,
+    //                                 });
+    //                             }
+    //                             // Select the chosen video (Effect B will count it once)
+    //                             dispatchDiscogsRelease({
+    //                                 type: 'SET_SELECTED_VIDEO',
+    //                                 payload: video,
+    //                             });
+    //                         }}
+    //                         mt="-16px"
+    //                         styles={() => ({
+    //                             root: {
+    //                                 backgroundColor: isSelected
+    //                                     ? '#fff'
+    //                                     : 'transparent',
+    //                                 color: isSelected ? '#000' : '#fff',
+    //                                 fontWeight: '100',
+    //                             },
+    //                             label: {
+    //                                 justifyContent: 'flex-start',
+    //                                 width: '100%',
+    //                                 textAlign: 'left',
+    //                             },
+    //                             hoverColor: 'var(--mantine-color-black)',
+    //                         })}
+    //                     >
+    //                         {video.title}
+    //                     </Button>
+    //                 );
+    //             })}
+    //         </Stack>
+    //     </Box>
+    // );
+
     return (
-        <Box>
-            <Stack>
-                {activeDiscogs?.videos.map((video: any, idx: number) => {
-                    const isSelected = selectedVideo?.uri === video.uri;
-                    return (
-                        <Button
-                            key={idx}
-                            variant="filled"
-                            onClick={() => {
-                                // Promote preview to selected if browsing
-                                if (previewRelease) {
+        <MantineProvider theme={{ variantColorResolver }}>
+            <Box>
+                <Stack>
+                    {activeDiscogs?.videos.map((video: any, idx: number) => {
+                        const isSelected = selectedVideo?.uri === video.uri;
+
+                        return (
+                            <Button
+                                key={idx}
+                                variant={isSelected ? 'filled' : 'light'}
+                                color="gray"
+                                onClick={() => {
+                                    if (previewRelease) {
+                                        dispatchDiscogsRelease({
+                                            type: 'SET_SELECTED_RELEASE',
+                                            payload: previewRelease,
+                                        });
+                                        dispatchDiscogsRelease({
+                                            type: 'SET_SELECTED_DISCOGS_RELEASE',
+                                            payload: activeDiscogs,
+                                        });
+                                        dispatchDiscogsRelease({
+                                            type: 'SET_PREVIEW_RELEASE',
+                                            payload: null,
+                                        });
+                                        dispatchDiscogsRelease({
+                                            type: 'SET_PREVIEW_DISCOGS_RELEASE',
+                                            payload: null,
+                                        });
+                                    }
                                     dispatchDiscogsRelease({
-                                        type: 'SET_SELECTED_RELEASE',
-                                        payload: previewRelease,
+                                        type: 'SET_SELECTED_VIDEO',
+                                        payload: video,
                                     });
-                                    dispatchDiscogsRelease({
-                                        type: 'SET_SELECTED_DISCOGS_RELEASE',
-                                        payload: activeDiscogs,
-                                    });
-                                    // Clear preview
-                                    dispatchDiscogsRelease({
-                                        type: 'SET_PREVIEW_RELEASE',
-                                        payload: null,
-                                    });
-                                    dispatchDiscogsRelease({
-                                        type: 'SET_PREVIEW_DISCOGS_RELEASE',
-                                        payload: null,
-                                    });
-                                }
-                                // Select the chosen video (Effect B will count it once)
-                                dispatchDiscogsRelease({
-                                    type: 'SET_SELECTED_VIDEO',
-                                    payload: video,
-                                });
-                            }}
-                            mt="-16px"
-                            styles={() => ({
-                                root: {
-                                    backgroundColor: isSelected
-                                        ? '#fff'
-                                        : 'transparent',
-                                    color: isSelected ? '#000' : '#fff',
-                                    fontWeight: '100',
-                                    '&:hover': {
-                                        backgroundColor: isSelected
-                                            ? '#f0f0f0'
-                                            : 'transparent',
+                                }}
+                                mt="-16px"
+                                styles={{
+                                    root: {
+                                        fontWeight: 100,
+                                        // keep the whole row clickable & left-aligned like before
+                                        justifyContent: 'flex-start',
                                     },
-                                },
-                                label: {
-                                    justifyContent: 'flex-start',
-                                    width: '100%',
-                                    textAlign: 'left',
-                                },
-                            })}
-                        >
-                            {video.title}
-                        </Button>
-                    );
-                })}
-            </Stack>
-        </Box>
+                                    label: {
+                                        justifyContent: 'flex-start',
+                                        width: '100%',
+                                        textAlign: 'left',
+                                    },
+                                }}
+                            >
+                                {video.title}
+                            </Button>
+                        );
+                    })}
+                </Stack>
+            </Box>
+        </MantineProvider>
     );
 };
 

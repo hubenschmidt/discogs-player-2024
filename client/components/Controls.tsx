@@ -140,6 +140,15 @@ const Controls = () => {
 
                 <Switch
                     checked={continuousPlay}
+                    styles={{
+                        track: {
+                            backgroundColor: continuousPlay ? 'gray' : 'black', // ON vs OFF
+                            border: continuousPlay ? 'none' : '1px solid white', // white border when OFF
+                        },
+                        thumb: {
+                            backgroundColor: 'white',
+                        },
+                    }}
                     onChange={e =>
                         dispatchDiscogsRelease({
                             type: 'SET_CONTINUOUS_PLAY',

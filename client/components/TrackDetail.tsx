@@ -1,4 +1,3 @@
-// TrackDetail.tsx
 import React, { useContext } from 'react';
 import { Box, Text, Group } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
@@ -29,40 +28,23 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 
                     {/* Artist */}
                     <Group gap={2}>
-                        <Text
-                            className="track-detail-text track-detail-muted"
-                            lh={1}
-                        >
-                            a:
-                        </Text>
                         <Text className="track-detail-text" lh={1}>
-                            {selectedDiscogsRelease?.artists_sort}
+                            a: {selectedDiscogsRelease?.artists_sort}
                         </Text>
                     </Group>
 
                     {/* Release */}
                     <Group gap={2}>
-                        <Text
-                            className="track-detail-text track-detail-muted"
-                            lh={1}
-                        >
-                            r:
-                        </Text>
                         <Text className="track-detail-text" lh={1}>
-                            {selectedDiscogsRelease?.title} (
+                            r: {selectedDiscogsRelease?.title} (
                             {selectedDiscogsRelease?.year})
                         </Text>
                     </Group>
 
                     {/* Label + Catalog number */}
                     <Group gap={2}>
-                        <Text
-                            className="track-detail-text track-detail-muted"
-                            lh={1}
-                        >
-                            #:
-                        </Text>
                         <Text className="track-detail-text" lh={1}>
+                            #:{' '}
                             {selectedDiscogsRelease?.labels?.[0]?.catno || ''} (
                             {selectedDiscogsRelease?.labels?.[0]?.name || ''})
                         </Text>
