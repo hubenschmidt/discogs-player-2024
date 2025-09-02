@@ -146,6 +146,79 @@ module.exports = {
             },
         );
 
+        await queryInterface.createTable('Video', {
+            Video_Id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            URI: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            Title: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            Duration: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            Play_Count: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+        });
+
+        await queryInterface.createTable(
+            'ReleaseVideo',
+            {
+                Release_Id: {
+                    type: Sequelize.INTEGER,
+                    references: {
+                        model: 'Release',
+                        key: 'Release_Id',
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'CASCADE',
+                    allowNull: false,
+                },
+                Video_Id: {
+                    type: Sequelize.INTEGER,
+                    references: {
+                        model: 'Video',
+                        key: 'Video_Id',
+                    },
+                    onUpdate: 'CASCADE',
+                    onDelete: 'CASCADE',
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                uniqueKeys: {
+                    unique_release_video: {
+                        fields: ['Release_Id', 'Video_Id'],
+                    },
+                },
+            },
+        );
+
         await queryInterface.createTable('Artist', {
             Artist_Id: {
                 type: Sequelize.INTEGER,
@@ -198,7 +271,7 @@ module.exports = {
             },
             {
                 uniqueKeys: {
-                    unique_release_label: {
+                    unique_release_artist: {
                         fields: ['Release_Id', 'Artist_Id'],
                     },
                 },
@@ -260,7 +333,7 @@ module.exports = {
             },
             {
                 uniqueKeys: {
-                    unique_release_artist: {
+                    unique_release_label: {
                         fields: ['Release_Id', 'Label_Id'],
                     },
                 },

@@ -5,9 +5,9 @@ export const search = async (req: Request) => {
     return await repos.search(req);
 };
 
-export const getUser = async(req:Request)=>{
+export const getUser = async (req: Request) => {
     return await repos.getUser(req);
-}
+};
 
 export const getCollection = async (req: Request) => {
     return await repos.getCollection(req);
@@ -15,4 +15,9 @@ export const getCollection = async (req: Request) => {
 
 export const getStylesByGenre = async (req: Request) => {
     return await repos.getStylesByGenre(req);
+};
+
+export const updateVideoPlayCount = async (req: Request) => {
+    const video = await repos.updateVideoPlayCount(req);
+    return video;
 };

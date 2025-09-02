@@ -4,6 +4,7 @@ import {
     getStylesByGenre,
     search,
     getUser,
+    updateVideoPlayCount,
 } from '../../controllers/appController';
 
 export const router: Router = Router();
@@ -12,5 +13,6 @@ router.get('/collection/:username/:genre?/:style?', getCollection);
 router.get('/styles/:genre', getStylesByGenre);
 router.get('/search/:username', search);
 router.get('/user/:email', getUser);
+router.post('/release/:release_id/video', updateVideoPlayCount);
 
 export default router;

@@ -59,8 +59,6 @@ const VinylShelf: FC = () => {
     const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
 
-    console.log(discogsReleaseState, 'discogsReleaseState');
-
     useEffect(() => {
         const params: any = {
             username: userState.username,

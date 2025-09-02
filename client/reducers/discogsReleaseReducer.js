@@ -77,7 +77,7 @@ const setNextVideo = state => {
     if (!videos || videos.length === 0) return state;
 
     const currentIndex = videos.findIndex(
-        video => extractYouTubeVideoId(video.uri) === state.selectedVideo,
+        video => video.uri === state.selectedVideo.uri,
     );
 
     // Advance if not last, otherwise loop back
@@ -88,7 +88,7 @@ const setNextVideo = state => {
 
     return {
         ...state,
-        selectedVideo: extractYouTubeVideoId(videos[nextIndex].uri),
+        selectedVideo: videos[nextIndex],
     };
 };
 
@@ -97,7 +97,7 @@ const setPrevVideo = state => {
     if (!videos || videos.length === 0) return state;
 
     const currentIndex = videos.findIndex(
-        video => extractYouTubeVideoId(video.uri) === state.selectedVideo,
+        video => video.uri === state.selectedVideo.uri,
     );
 
     // Go back if not first, otherwise loop to last
@@ -105,6 +105,6 @@ const setPrevVideo = state => {
 
     return {
         ...state,
-        selectedVideo: extractYouTubeVideoId(videos[prevIndex].uri),
+        selectedVideo: videos[prevIndex],
     };
 };

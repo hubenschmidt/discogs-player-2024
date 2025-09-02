@@ -1,6 +1,8 @@
 const db = require('../models');
 import { Request } from 'express';
 import { Op } from 'sequelize';
+import { Transaction } from 'sequelize';
+import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 export const createRequestToken = async (token: string, secret: string) => {
     const requestTokenEntry = await db.RequestToken.create({
@@ -46,6 +48,58 @@ export const createCollection = async (userId: number) => {
     return await db.Collection.findOrCreate({
         where: { User_Id: userId },
         defaults: { User_Id: userId },
+    });
+};
+
+export const updateVideoPlayCount = async (req: Request) => {
+    const { release_id } = req.params;
+    const { uri, title, duration } = req.body;
+
+    return db.sequelize.transaction(async (t: Transaction) => {
+        // Find or create Video
+        const extractedUri = extractYouTubeVideoId(uri);
+        const [video, created] = await db.Video.findOrCreate({
+            where: { URI: extractedUri },
+            defaults: {
+                URI: extractedUri,
+                Title: title ?? null,
+                Duration: duration ?? null,
+                Play_Count: 1, // first play
+            },
+            transaction: t,
+        });
+
+        if (!created) {
+            // Increment atomically
+            await video.increment('Play_Count', { by: 1, transaction: t });
+
+            // update metadata if changed
+            const updates: Record<string, any> = {};
+            if (title && title !== video.Title) updates.Title = title;
+            if (duration && duration !== video.Duration)
+                updates.Duration = duration;
+            if (Object.keys(updates).length) {
+                await video.update(updates, { transaction: t });
+            }
+        }
+
+        // Ensure ReleaseVideo join row exists
+        let releaseVideo = null;
+        if (release_id) {
+            const [rv] = await db.ReleaseVideo.findOrCreate({
+                where: { Release_Id: release_id, Video_Id: video.Video_Id },
+                defaults: { Release_Id: release_id, Video_Id: video.Video_Id },
+                transaction: t,
+            });
+            releaseVideo = rv;
+        }
+
+        const freshVideo = await video.reload({ transaction: t });
+
+        return {
+            video: freshVideo.toJSON(),
+            releaseVideo: releaseVideo ? releaseVideo.toJSON() : null,
+        };
     });
 };
 

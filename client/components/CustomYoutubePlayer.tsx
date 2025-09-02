@@ -51,9 +51,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
             return;
 
         const videos = selectedDiscogsRelease.videos;
-        const currentIndex = videos.findIndex(
-            v => extractYouTubeVideoId(v.uri) === selectedVideo,
-        );
+        const currentIndex = videos.findIndex(v => v.uri === selectedVideo.uri);
 
         const isLastVideo = currentIndex === videos.length - 1;
 
@@ -80,11 +78,11 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
 
     // Function to create the YouTube player
     const createPlayer = () => {
-        if (playerRef.current) {
+        if (playerRef.current && selectedVideo.uri) {
             playerInstance.current = new window.YT.Player(playerRef.current, {
                 height,
                 width,
-                videoId: selectedVideo,
+                videoId: extractYouTubeVideoId(selectedVideo.uri),
                 playerVars: {
                     autoplay: 1,
                     controls: 1,

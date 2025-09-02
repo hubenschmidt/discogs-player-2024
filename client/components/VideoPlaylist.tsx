@@ -3,8 +3,8 @@ import { getDiscogsRelease } from '../api';
 import { DiscogsRelease } from '../interfaces';
 import { Box, Stack, Button, Text, Loader } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { updateVideoPlayCount } from '../api';
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -73,16 +73,24 @@ const VideoPlaylist = () => {
         if (previewDiscogsRelease) return;
 
         const vids = selectedDiscogsRelease?.videos;
-        console.log(vids);
         if (!vids?.length) return;
 
-        const ids = vids.map(v => extractYouTubeVideoId(v.uri));
-        const hasCurrent = selectedVideo && ids.includes(selectedVideo);
+        const hasCurrent = selectedVideo && vids.includes(selectedVideo);
         if (!hasCurrent) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_VIDEO',
-                payload: ids[0],
+                payload: vids[0],
             });
+        }
+
+        if (selectedVideo) {
+            updateVideoPlayCount(
+                selectedRelease.Release_Id,
+                selectedVideo,
+                bearerToken,
+            )
+                .then(res => console.log(res))
+                .catch(err => console.log(err));
         }
     }, [selectedDiscogsRelease, previewDiscogsRelease, selectedVideo]);
     if (loading) return <Loader />;
@@ -99,8 +107,8 @@ const VideoPlaylist = () => {
             {/* Playlist of videos */}
             <Stack>
                 {activeDiscogs?.videos.map((video, idx) => {
-                    const videoId = extractYouTubeVideoId(video.uri);
-                    const isSelected = videoId === selectedVideo;
+                    const videoId = video.uri;
+                    const isSelected = videoId === selectedVideo?.uri;
                     return (
                         <Button
                             key={idx}
@@ -125,11 +133,19 @@ const VideoPlaylist = () => {
                                         type: 'SET_PREVIEW_DISCOGS_RELEASE',
                                         payload: null,
                                     });
+
+                                    updateVideoPlayCount(
+                                        selectedRelease.Release_Id,
+                                        selectedVideo,
+                                        bearerToken,
+                                    )
+                                        .then(res => console.log(res))
+                                        .catch(err => console.log(err));
                                 }
                                 // Set the chosen video
                                 dispatchDiscogsRelease({
                                     type: 'SET_SELECTED_VIDEO',
-                                    payload: videoId,
+                                    payload: video,
                                 });
                             }}
                             mt="-16px"

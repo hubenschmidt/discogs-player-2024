@@ -138,3 +138,19 @@ export const getDiscogsRelease = async (
 
     return response.data;
 };
+
+export const updateVideoPlayCount = async (
+    releaseId: number,
+    selectedVideo: any,
+    token: BearerToken,
+): Promise<any> => {
+    const uri = `/api/app/release/${releaseId}/video`;
+    const response: AxiosResponse<any> = await requestHandler(
+        'POST',
+        uri,
+        selectedVideo,
+        token,
+    );
+
+    return response.data;
+};

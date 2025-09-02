@@ -56,3 +56,17 @@ export const getStylesByGenre = async (
         next(error);
     }
 };
+
+export const updateVideoPlayCount = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const video = await appService.updateVideoPlayCount(req);
+        res.status(200).json(video);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
