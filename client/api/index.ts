@@ -169,3 +169,21 @@ export const getPlaylists = async (
     );
     return response.data;
 };
+
+export const createPlaylist = async (
+    username: string,
+    token: BearerToken,
+    name: string,
+    description?: string | null,
+) => {
+    const uri = `/api/app/${username}/playlist/create`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'POST',
+        uri,
+        { name: name, description: description },
+        token,
+    );
+
+    return response.data;
+};
