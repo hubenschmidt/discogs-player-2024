@@ -10,7 +10,10 @@ import {
     VariantColorsResolver,
     parseThemeColor,
     rgba,
+    ActionIcon,
+    Tooltip,
 } from '@mantine/core';
+import { Plus } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
@@ -52,6 +55,8 @@ const VideoPlaylist = () => {
     const [loadingSel, setLoadingSel] = useState(false);
     const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
+
+    const handleAdd = async (video: any) => {};
 
     // ---- Fetch full discogs for selected release
     useEffect(() => {
@@ -147,6 +152,25 @@ const VideoPlaylist = () => {
 
                         return (
                             <Button
+                                rightSection={
+                                    <Tooltip
+                                        label="Add to playlist"
+                                        withArrow
+                                        openDelay={400}
+                                        closeDelay={100}
+                                        withinPortal
+                                    >
+                                        <ActionIcon
+                                            variant="subtle"
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                handleAdd(video);
+                                            }}
+                                        >
+                                            <Plus size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                }
                                 key={idx}
                                 variant={isSelected ? 'filled' : 'light'}
                                 color="gray"
@@ -173,7 +197,6 @@ const VideoPlaylist = () => {
                                 styles={{
                                     root: {
                                         fontWeight: 100,
-                                        // keep the whole row clickable & left-aligned like before
                                         justifyContent: 'flex-start',
                                     },
                                     label: {
