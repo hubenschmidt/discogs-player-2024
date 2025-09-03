@@ -3,6 +3,7 @@ import playlistReducer from '../reducers/playlistReducer';
 
 const initialState = {
     showPlaylistView: false,
+    playlists: null,
 };
 
 export const PlaylistContext = createContext(initialState);

@@ -19,6 +19,7 @@ import { PlaylistContext } from '../context/playlistContext';
 import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { getPlaylists } from '../api';
 
 const variantColorResolver: VariantColorsResolver = input => {
     const defaultResolvedColors = defaultVariantColorsResolver(input);
@@ -43,7 +44,7 @@ const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
+    const { dispatchPlaylist } = useContext(PlaylistContext);
     const {
         selectedDiscogsRelease,
         previewRelease,
@@ -58,8 +59,16 @@ const VideoPlaylist = () => {
     const bearerToken = useBearerToken();
 
     const handleAdd = async (video: any) => {
-        // update openPlaylist to true
-        dispatchPlaylist({ type: 'SET_OPEN_PLAYLIST_VIEW', payload: true });
+        getPlaylists(userState?.username, bearerToken)
+            .then(res => {
+                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
+
+                dispatchPlaylist({
+                    type: 'SET_SHOW_PLAYLIST_VIEW',
+                    payload: true,
+                });
+            })
+            .catch(err => console.log(err));
     };
 
     // ---- Fetch full discogs for selected release
