@@ -1,4 +1,3 @@
-import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 export const SET_SELECTED_RELEASE = 'SET_SELECTED_RELEASE';
 export const SET_PREVIEW_RELEASE = 'SET_PREVIEW_RELEASE';
 export const SET_SELECTED_DISCOGS_RELEASE = 'SET_SELECTED_DISCOGS_RELEASE';
@@ -7,6 +6,7 @@ export const SET_CONTINUOUS_PLAY = 'SET_CONTINUOUS_PLAY';
 export const SET_SELECTED_VIDEO = 'SET_SELECTED_VIDEO';
 export const SET_NEXT_VIDEO = 'SET_NEXT_VIDEO';
 export const SET_PREV_VIDEO = 'SET_PREV_VIDEO';
+export const MERGE_STATE = 'MERGE_STATE';
 
 export default initialState => {
     return (state, action) => {
@@ -27,6 +27,8 @@ export default initialState => {
                 return setNextVideo(state);
             case SET_PREV_VIDEO:
                 return setPrevVideo(state);
+            case MERGE_STATE:
+                return mergeState(state, action.payload);
             default:
                 return state;
         }
@@ -106,5 +108,12 @@ const setPrevVideo = state => {
     return {
         ...state,
         selectedVideo: videos[prevIndex],
+    };
+};
+
+const mergeState = (state, payload) => {
+    return {
+        ...state,
+        ...payload, // merge payload keys to current state without overwriting
     };
 };

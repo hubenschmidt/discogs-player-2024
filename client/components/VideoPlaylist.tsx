@@ -138,67 +138,6 @@ const VideoPlaylist = () => {
         return <Text>No videos available</Text>;
     }
 
-    // return (
-    //     <Box>
-    //         <Stack>
-    //             {activeDiscogs?.videos.map((video: any, idx: number) => {
-    //                 const isSelected = selectedVideo?.uri === video.uri;
-    //                 return (
-    //                     <Button
-    //                         key={idx}
-    //                         variant="filled"
-    //                         onClick={() => {
-    //                             // Promote preview to selected if browsing
-    //                             if (previewRelease) {
-    //                                 dispatchDiscogsRelease({
-    //                                     type: 'SET_SELECTED_RELEASE',
-    //                                     payload: previewRelease,
-    //                                 });
-    //                                 dispatchDiscogsRelease({
-    //                                     type: 'SET_SELECTED_DISCOGS_RELEASE',
-    //                                     payload: activeDiscogs,
-    //                                 });
-    //                                 // Clear preview
-    //                                 dispatchDiscogsRelease({
-    //                                     type: 'SET_PREVIEW_RELEASE',
-    //                                     payload: null,
-    //                                 });
-    //                                 dispatchDiscogsRelease({
-    //                                     type: 'SET_PREVIEW_DISCOGS_RELEASE',
-    //                                     payload: null,
-    //                                 });
-    //                             }
-    //                             // Select the chosen video (Effect B will count it once)
-    //                             dispatchDiscogsRelease({
-    //                                 type: 'SET_SELECTED_VIDEO',
-    //                                 payload: video,
-    //                             });
-    //                         }}
-    //                         mt="-16px"
-    //                         styles={() => ({
-    //                             root: {
-    //                                 backgroundColor: isSelected
-    //                                     ? '#fff'
-    //                                     : 'transparent',
-    //                                 color: isSelected ? '#000' : '#fff',
-    //                                 fontWeight: '100',
-    //                             },
-    //                             label: {
-    //                                 justifyContent: 'flex-start',
-    //                                 width: '100%',
-    //                                 textAlign: 'left',
-    //                             },
-    //                             hoverColor: 'var(--mantine-color-black)',
-    //                         })}
-    //                     >
-    //                         {video.title}
-    //                     </Button>
-    //                 );
-    //             })}
-    //         </Stack>
-    //     </Box>
-    // );
-
     return (
         <MantineProvider theme={{ variantColorResolver }}>
             <Box>
@@ -214,22 +153,17 @@ const VideoPlaylist = () => {
                                 onClick={() => {
                                     if (previewRelease) {
                                         dispatchDiscogsRelease({
-                                            type: 'SET_SELECTED_RELEASE',
-                                            payload: previewRelease,
-                                        });
-                                        dispatchDiscogsRelease({
-                                            type: 'SET_SELECTED_DISCOGS_RELEASE',
-                                            payload: activeDiscogs,
-                                        });
-                                        dispatchDiscogsRelease({
-                                            type: 'SET_PREVIEW_RELEASE',
-                                            payload: null,
-                                        });
-                                        dispatchDiscogsRelease({
-                                            type: 'SET_PREVIEW_DISCOGS_RELEASE',
-                                            payload: null,
+                                            type: 'MERGE_STATE',
+                                            payload: {
+                                                selectedRelease: previewRelease,
+                                                selectedDiscogsRelease:
+                                                    activeDiscogs,
+                                                previewRelease: null, // clear the preview states
+                                                previewDiscogsRelease: null,
+                                            },
                                         });
                                     }
+
                                     dispatchDiscogsRelease({
                                         type: 'SET_SELECTED_VIDEO',
                                         payload: video,

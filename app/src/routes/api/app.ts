@@ -15,6 +15,6 @@ router.get('/styles/:genre', getStylesByGenre);
 router.get('/search/:username', search);
 router.get('/user/:email', getUser);
 router.post('/:username/release/:release_id/video', updatePlayHistory);
-router.post('/playlist/create/:username', createPlaylist);
+router.post('/:username/playlist/create', createPlaylist);
 
 export default router;
