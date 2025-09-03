@@ -1,5 +1,5 @@
 import { requestHandler } from '../lib/request-handler';
-import { AxiosResponse } from 'axios';
+import { Axios, AxiosResponse } from 'axios';
 import { CollectionResponse } from '../interfaces';
 import type { BearerToken } from '../types/types';
 
@@ -153,5 +153,19 @@ export const updateVideoPlayCount = async (
         token,
     );
 
+    return response.data;
+};
+
+export const getPlaylists = async (
+    username: string,
+    token: BearerToken,
+): Promise<any> => {
+    const uri = `/api/app/${username}/playlist/all`;
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        token,
+    );
     return response.data;
 };

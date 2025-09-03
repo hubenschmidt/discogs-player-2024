@@ -24,6 +24,7 @@ import DiscogsAuthPrompt from './DiscogsAuthPrompt';
 import { useBearerToken } from '../hooks/useBearerToken';
 import Search from './Search';
 import Navbar from './NavBar';
+import Playlists from './Playlists';
 
 type Props = {
     children?: ReactNode;
@@ -48,7 +49,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         discogsReleaseState;
     const { playlistState } = useContext(PlaylistContext);
     const { showPlaylistView } = playlistState;
-    console.log(showPlaylistView);
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -253,7 +253,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             span={{ base: 12, md: 12, lg: 12 }}
                             style={devStyle}
                         >
-                            this is a playlist picker
+                            <Playlists />
                         </Grid.Col>
                     </Grid>
                 )}

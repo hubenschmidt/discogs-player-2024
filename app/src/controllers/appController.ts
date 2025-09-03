@@ -84,3 +84,17 @@ export const createPlaylist = async (
         next(error);
     }
 };
+
+export const getPlaylists = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const playlists = await appService.getPlaylists(req);
+        res.status(200).json(playlists);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};

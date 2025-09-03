@@ -29,3 +29,9 @@ export const createPlaylist = async (req: Request) => {
     const playlist = await repos.createPlaylist(req, user);
     return playlist;
 };
+
+export const getPlaylists = async (req: Request) => {
+    const user = await repos.getUser(req);
+    const playlists = await repos.getPlaylists(req, user);
+    return playlists;
+};

@@ -88,7 +88,10 @@ export const updatePlaylistMeta = async () => {};
 
 export const getPlayist = async (req: Request, user: any) => {};
 
-export const getAllPlaylists = async (req: Request, user: any) => {};
+export const getPlaylists = async (req: Request, user: any) => {
+    const playlists = await db.Playlist.findAll();
+    return playlists;
+};
 
 export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { release_id } = req.params;
