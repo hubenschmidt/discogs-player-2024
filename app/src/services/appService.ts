@@ -17,8 +17,9 @@ export const getStylesByGenre = async (req: Request) => {
     return await repos.getStylesByGenre(req);
 };
 
-export const updateVideoPlayCount = async (req: Request) => {
-    const userId = await repos.getUserId(req);
+export const updatePlayHistory = async (req: Request) => {
+    const userId = await repos.getUser(req);
     const video = await repos.updateVideoPlayCount(req, userId);
-    return video;
+    const historyEntry = await repos.createHistoryEntry(req, userId, video);
+    return { video, historyEntry };
 };

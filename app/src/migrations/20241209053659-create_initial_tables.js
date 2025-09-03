@@ -278,6 +278,47 @@ module.exports = {
             },
         });
 
+        await queryInterface.createTable('History', {
+            History_Id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            User_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'User', key: 'User_Id' },
+                onUpdate: 'CASCADE',
+                onDelete: 'CASCADE',
+            },
+            Video_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'Video', key: 'Video_Id' },
+                onUpdate: 'CASCADE',
+                onDelete: 'CASCADE',
+            },
+            Release_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'Release', key: 'Release_Id' },
+                onUpdate: 'CASCADE',
+                onDelete: 'SET NULL',
+            },
+            Played_At: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+        });
+
         await queryInterface.createTable(
             'ReleaseArtist',
             {

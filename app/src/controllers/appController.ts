@@ -57,13 +57,13 @@ export const getStylesByGenre = async (
     }
 };
 
-export const updateVideoPlayCount: RequestHandler = async (
+export const updatePlayHistory: RequestHandler = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const video = await appService.updateVideoPlayCount(req);
+        const video = await appService.updatePlayHistory(req);
         res.status(200).json(video);
     } catch (error) {
         console.error(error);

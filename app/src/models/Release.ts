@@ -58,6 +58,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
             foreignKey: 'Release_Id',
             otherKey: 'Collection_Id',
         });
+
+        Release.hasMany(models.History, { foreignKey: 'Release_Id' });
     };
 
     return Release;

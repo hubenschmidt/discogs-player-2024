@@ -55,11 +55,18 @@ export const createCollection = async (userId: number) => {
     });
 };
 
-export const getUserId = async (req: Request) => {
-    const user = await db.User.findOne({
-        where: { Username: req.params.username },
+export const createHistoryEntry = async (
+    req: Request,
+    user: any,
+    video: any,
+) => {
+    const { release_id } = req.params;
+    return await db.History.create({
+        User_Id: user.User_Id,
+        Video_Id: video.Video_Id,
+        Release_Id: release_id,
+        Played_At: new Date(),
     });
-    return user.get();
 };
 
 export const updateVideoPlayCount = async (req: Request, user: any) => {
@@ -75,18 +82,25 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
             where: { URI: extractedUri },
             defaults: {
                 URI: extractedUri,
-                Title: title ?? null,
-                Duration: duration ?? null,
+                Title: title,
+                Duration: duration,
             },
             transaction: t,
         });
+        const plainVideo = video.get(); // extract plain object
 
         // Ensure ReleaseVideo join exists
         let releaseVideo = null;
         if (release_id) {
             const [rv] = await db.ReleaseVideo.findOrCreate({
-                where: { Release_Id: release_id, Video_Id: video.Video_Id },
-                defaults: { Release_Id: release_id, Video_Id: video.Video_Id },
+                where: {
+                    Release_Id: release_id,
+                    Video_Id: plainVideo.Video_Id,
+                },
+                defaults: {
+                    Release_Id: release_id,
+                    Video_Id: plainVideo.Video_Id,
+                },
                 transaction: t,
             });
             releaseVideo = rv;
@@ -105,7 +119,6 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
 
         // Increment user-specific Play_Count
         await uv.increment('Play_Count', { by: 1, transaction: t });
-        await uv.update({ Last_Played_At: new Date() }, { transaction: t });
 
         // Optionally update Video metadata if it changed
         const updates: Record<string, any> = {};
@@ -116,11 +129,7 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
             await video.update(updates, { transaction: t });
         }
 
-        return {
-            video: await video.reload({ transaction: t }),
-            releaseVideo: releaseVideo ? releaseVideo.toJSON() : null,
-            userVideo: await uv.reload({ transaction: t }),
-        };
+        return await video.get();
     });
 };
 
@@ -163,7 +172,7 @@ export const getUser = async (req: Request) => {
         },
     });
 
-    return userEntry;
+    return userEntry?.get();
 };
 export const getCollection = async (req: Request) => {
     try {
