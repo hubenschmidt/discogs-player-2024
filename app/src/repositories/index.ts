@@ -69,6 +69,27 @@ export const createHistoryEntry = async (
     });
 };
 
+export const createPlaylist = async (req: Request, user: any, video?: any) => {
+    const [playlist, created] = await db.Playlist.create({
+        User_Id: user.User_Id,
+        Name: req.body.name,
+        Description: req.body.Description ?? null,
+    });
+    return { playlist, created };
+};
+
+export const addVideoToPlaylist = async (
+    req: Request,
+    user: any,
+    video: any,
+) => {};
+
+export const updatePlaylistMeta = async () => {};
+
+export const getPlayist = async (req: Request, user: any) => {};
+
+export const getAllPlaylists = async (req: Request, user: any) => {};
+
 export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { release_id } = req.params;
     const { uri, title, duration } = req.body;

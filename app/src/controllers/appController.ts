@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
 
 export const search = async (
@@ -57,7 +57,7 @@ export const getStylesByGenre = async (
     }
 };
 
-export const updatePlayHistory: RequestHandler = async (
+export const updatePlayHistory = async (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -65,6 +65,20 @@ export const updatePlayHistory: RequestHandler = async (
     try {
         const video = await appService.updatePlayHistory(req);
         res.status(200).json(video);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const createPlaylist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const playlist = await appService.createPlaylist(req);
+        res.status(200).json(playlist);
     } catch (error) {
         console.error(error);
         next(error);

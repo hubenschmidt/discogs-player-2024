@@ -37,6 +37,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
         });
 
         Video.hasMany(models.History, { foreignKey: 'Video_Id' });
+
+        Video.belongsToMany(models.Playlist, {
+            through: 'PlaylistVideo',
+            foreignKey: 'Video_Id',
+            otherKey: 'Playlist_Id',
+        });
     };
 
     return Video;

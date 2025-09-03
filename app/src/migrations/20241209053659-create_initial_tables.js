@@ -535,6 +535,78 @@ module.exports = {
                 },
             },
         );
+
+        await queryInterface.createTable('Playlist', {
+            Playlist_Id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            User_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'User', key: 'User_Id' },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE',
+            },
+            Name: {
+                type: Sequelize.STRING(255),
+                allowNull: false,
+            },
+            Description: {
+                type: Sequelize.TEXT,
+                allowNull: true,
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn('NOW'),
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn('NOW'),
+            },
+        });
+
+        await queryInterface.createTable('PlaylistVideo', {
+            PlaylistVideo_Id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            Playlist_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'Playlist', key: 'Playlist_Id' },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE',
+            },
+            Video_Id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: { model: 'Video', key: 'Video_Id' },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE',
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn('NOW'),
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn('NOW'),
+            },
+        });
+
+        // Prevent the same video being added twice to the same playlist
+        await queryInterface.addConstraint('PlaylistVideo', {
+            fields: ['Playlist_Id', 'Video_Id'],
+            type: 'unique',
+            name: 'playlistvideo_unique_playlist_video',
+        });
     },
 
     down: async (queryInterface, Sequelize) => {},

@@ -18,8 +18,14 @@ export const getStylesByGenre = async (req: Request) => {
 };
 
 export const updatePlayHistory = async (req: Request) => {
-    const userId = await repos.getUser(req);
-    const video = await repos.updateVideoPlayCount(req, userId);
-    const historyEntry = await repos.createHistoryEntry(req, userId, video);
+    const user = await repos.getUser(req);
+    const video = await repos.updateVideoPlayCount(req, user);
+    const historyEntry = await repos.createHistoryEntry(req, user, video);
     return { video, historyEntry };
+};
+
+export const createPlaylist = async (req: Request) => {
+    const user = await repos.getUser(req);
+    const playlist = await repos.createPlaylist(req, user);
+    return playlist;
 };

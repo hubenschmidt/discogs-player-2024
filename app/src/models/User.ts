@@ -37,6 +37,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
         });
 
         User.hasMany(models.History, { foreignKey: 'User_Id' });
+
+        User.hasMany(models.Playlist, {
+            foreignKey: 'User_Id',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+        });
     };
 
     return User;
