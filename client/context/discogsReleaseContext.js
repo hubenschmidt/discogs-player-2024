@@ -1,4 +1,4 @@
-import React, { createContext, useReducer } from 'react';
+import { createContext, useReducer } from 'react';
 import discogsReleaseReducer from '../reducers/discogsReleaseReducer';
 
 const initialState = {

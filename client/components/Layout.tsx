@@ -7,6 +7,7 @@ import VideoPlaylist from './VideoPlaylist';
 import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { PlaylistContext } from '../context/playlistContext';
 import {
     Grid,
     Container,
@@ -45,6 +46,9 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { previewDiscogsRelease, selectedDiscogsRelease, selectedVideo } =
         discogsReleaseState;
+    const { playlistState } = useContext(PlaylistContext);
+    const { showPlaylistView } = playlistState;
+    console.log(showPlaylistView);
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -239,6 +243,17 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                 selectedDiscogsRelease={previewDiscogsRelease}
                                 preview={true}
                             />
+                        </Grid.Col>
+                    </Grid>
+                )}
+
+                {showPlaylistView && (
+                    <Grid mb="sm">
+                        <Grid.Col
+                            span={{ base: 12, md: 12, lg: 12 }}
+                            style={devStyle}
+                        >
+                            this is a playlist picker
                         </Grid.Col>
                     </Grid>
                 )}

@@ -15,6 +15,7 @@ import {
 } from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { PlaylistContext } from '../context/playlistContext';
 import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
@@ -42,21 +43,24 @@ const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
+    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const {
         selectedDiscogsRelease,
         previewRelease,
         selectedRelease,
-        selectedVideo, // expect this to be the full video object (with .uri)
+        selectedVideo,
         previewDiscogsRelease,
     } = discogsReleaseState;
     const { userState } = useContext(UserContext);
     const { username } = userState;
-
     const [loadingSel, setLoadingSel] = useState(false);
     const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
 
-    const handleAdd = async (video: any) => {};
+    const handleAdd = async (video: any) => {
+        // update openPlaylist to true
+        dispatchPlaylist({ type: 'SET_OPEN_PLAYLIST_VIEW', payload: true });
+    };
 
     // ---- Fetch full discogs for selected release
     useEffect(() => {
