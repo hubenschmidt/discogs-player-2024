@@ -1,6 +1,7 @@
 export const SET_SHOW_PLAYLIST_VIEW = 'SET_SHOW_PLAYLIST_VIEW';
 export const SET_PLAYLISTS = 'SET_PLAYLISTS';
 export const PLAYLISTS_PAGE_REQUESTED = 'PLAYLISTS_PAGE_REQUESTED';
+export const PLAYLISTS_PAGE_SIZE_REQUESTED = 'PLAYLISTS_PAGE_SIZE_REQUESTED';
 export const PLAYLISTS_LOADING = 'PLAYLISTS_LOADING';
 
 export default initialState => {
@@ -12,6 +13,8 @@ export default initialState => {
                 return setPlaylists(state, action.payload);
             case PLAYLISTS_PAGE_REQUESTED:
                 return playlistsPageRequested(state, action.payload);
+            case PLAYLISTS_PAGE_SIZE_REQUESTED:
+                return playlistsPageSizeRequested(state, action.payload);
             case PLAYLISTS_LOADING:
                 return playlistsLoading(state, action.payload);
             default:
@@ -41,6 +44,13 @@ const playlistsPageRequested = (state, payload) => {
         isLoadingPlaylists: true,
     };
 };
+
+const playlistsPageSizeRequested = (state, payload) => ({
+    ...state,
+    pendingLimit: payload.limit,
+    pendingPage: payload.page ?? 1, // reset to page 1 on size change
+    isLoadingPlaylists: true,
+});
 
 const playlistsLoading = (state, payload) => {
     return {

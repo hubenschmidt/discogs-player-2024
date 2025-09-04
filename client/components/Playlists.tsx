@@ -36,8 +36,13 @@ const Playlists = () => {
     const [creating, setCreating] = useState(false);
 
     useEffect(() => {
-        const nextPage = playlistState.pendingPage; // <-- use the requested page
-        if (nextPage == null) return;
+        const page = playlistState.pendingPage;
+        const limit =
+            playlistState.pendingLimit ??
+            playlistState.playlists?.pageSize ??
+            10;
+
+        if (page == null) return;
 
         (async () => {
             try {
@@ -45,18 +50,22 @@ const Playlists = () => {
                 const res = await getPlaylists(
                     userState.username,
                     bearerToken,
-                    { page: nextPage, limit: 1 }, // pass a limit/pageSize
+                    { page, limit },
                 );
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
-            } catch (error) {
+            } catch (err: any) {
                 dispatchPlaylist({
                     type: 'PLAYLISTS_ERROR',
-                    payload: (error as any)?.message,
+                    payload: err?.message,
                 });
             }
         })();
-        // include deps so values aren't stale
-    }, [playlistState.pendingPage, userState.username, bearerToken]);
+    }, [
+        playlistState.pendingPage,
+        playlistState.pendingLimit,
+        userState.username,
+        bearerToken,
+    ]);
 
     const onSubmit = async () => {
         setCreating(true);

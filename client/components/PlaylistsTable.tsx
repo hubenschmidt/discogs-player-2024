@@ -47,23 +47,32 @@ const PlaylistsTable = () => {
 
     return (
         <DataTable<Playlist>
-            data={data}
+            data={playlistState.playlists}
             columns={columns}
+            pageValue={
+                playlistState.pendingPage ??
+                playlistState.playlists?.currentPage ??
+                1
+            }
             onPageChange={page =>
                 dispatchPlaylist({
                     type: 'PLAYLISTS_PAGE_REQUESTED',
                     payload: { page },
                 })
             }
-            rowKey={p => p.Playlist_Id}
-            emptyText="No playlists yet"
-            // Optional look-and-feel overrides:
-            withTableBorder
-            withColumnBorders
-            scrollMinWidth={340}
-            tableStyle={{ tableLayout: 'fixed', width: '100%' }}
-            // Optional row click:
-            // onRowClick={(row) => console.log('open modal', row)}
+            pageSizeValue={
+                playlistState.pendingLimit ??
+                playlistState.playlists?.pageSize ??
+                10
+            }
+            onPageSizeChange={limit => {
+                // usually reset to page 1 when page size changes
+                dispatchPlaylist({
+                    type: 'PLAYLISTS_PAGE_SIZE_REQUESTED',
+                    payload: { limit, page: 1 },
+                });
+            }}
+            pageSizeOptions={[5, 10, 20, 25, 50]}
         />
     );
 };

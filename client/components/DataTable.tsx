@@ -5,8 +5,59 @@ import {
     Pagination,
     Table,
     Text,
+    NativeSelect,
     type MantineBreakpoint,
 } from '@mantine/core';
+
+// export type PageData<T> = {
+//     items: T[];
+//     currentPage: number;
+//     totalPages: number;
+//     total?: number;
+//     pageSize?: number;
+// };
+
+// export type Column<T> = {
+//     /** Header label/node */
+//     header: React.ReactNode;
+//     /** Render cell (preferred) */
+//     render?: (row: T) => React.ReactNode;
+//     /** Fallback accessor if you don’t provide render */
+//     accessor?: keyof T | ((row: T) => React.ReactNode);
+//     /** Optional header/cell width */
+//     width?: number | string;
+//     /** Show this column from breakpoint and up (hidden on smaller screens) */
+//     visibleFrom?: MantineBreakpoint; // 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+//     /** Extra props for header/cell if you need them */
+//     thProps?: React.ComponentProps<typeof Table.Th>;
+//     tdProps?: React.ComponentProps<typeof Table.Td>;
+// };
+
+export type DataTableProps<T> = {
+    data?: PageData<T> | null;
+    columns: Column<T>[];
+
+    // paging
+    onPageChange?: (page: number) => void;
+    pageValue?: number; // optional: requested/controlled page
+    onPageSizeChange?: (size: number) => void;
+    pageSizeValue?: number; // requested/controlled page size
+    pageSizeOptions?: number[]; // defaults below
+
+    // rows
+    rowKey?: (row: T, index: number) => React.Key;
+    onRowClick?: (row: T) => void;
+
+    // UI
+    emptyText?: string;
+    highlightOnHover?: boolean;
+    withTableBorder?: boolean;
+    withColumnBorders?: boolean;
+    scrollMinWidth?: number | string;
+    tableStyle?: React.CSSProperties;
+    topRight?: React.ReactNode;
+    bottomRight?: React.ReactNode;
+};
 
 export type PageData<T> = {
     items: T[];
@@ -17,54 +68,27 @@ export type PageData<T> = {
 };
 
 export type Column<T> = {
-    /** Header label/node */
     header: React.ReactNode;
-    /** Render cell (preferred) */
     render?: (row: T) => React.ReactNode;
-    /** Fallback accessor if you don’t provide render */
     accessor?: keyof T | ((row: T) => React.ReactNode);
-    /** Optional header/cell width */
     width?: number | string;
-    /** Show this column from breakpoint and up (hidden on smaller screens) */
-    visibleFrom?: MantineBreakpoint; // 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-    /** Extra props for header/cell if you need them */
+    visibleFrom?: MantineBreakpoint;
     thProps?: React.ComponentProps<typeof Table.Th>;
     tdProps?: React.ComponentProps<typeof Table.Td>;
-};
-
-export type DataTableProps<T> = {
-    data?: PageData<T> | null;
-    columns: Column<T>[];
-    onPageChange?: (page: number) => void;
-
-    /** Row key extractor; defaults to index */
-    rowKey?: (row: T, index: number) => React.Key;
-    /** Optional row click */
-    onRowClick?: (row: T) => void;
-
-    /** Text shown when items is empty */
-    emptyText?: string;
-
-    /** Table look-and-feel */
-    highlightOnHover?: boolean;
-    withTableBorder?: boolean;
-    withColumnBorders?: boolean;
-
-    /** Scroll/size */
-    scrollMinWidth?: number | string;
-    tableStyle?: React.CSSProperties;
-
-    /** Top/bottom extra controls (e.g., page size selector) */
-    topRight?: React.ReactNode;
-    bottomRight?: React.ReactNode;
 };
 
 export const DataTable = <T,>({
     data,
     columns,
     onPageChange,
+    pageValue,
+    onPageSizeChange,
+    pageSizeValue,
+    pageSizeOptions = [5, 10, 20, 25, 50, 100],
+
     rowKey,
     onRowClick,
+
     emptyText = 'No records',
     highlightOnHover = true,
     withTableBorder = true,
@@ -72,10 +96,16 @@ export const DataTable = <T,>({
     scrollMinWidth = 340,
     tableStyle = { tableLayout: 'fixed', width: '100%' },
     topRight,
+    bottomRight,
 }: DataTableProps<T>) => {
     const items = data?.items ?? [];
     const page = data?.currentPage ?? 1;
-    const totalPages = data?.totalPages ?? 1;
+    const totalPages = Math.max(data?.totalPages ?? 1, 1);
+    const effectivePage = Math.min(pageValue ?? page, totalPages);
+
+    const sizeFromData = data?.pageSize ?? items.length;
+    const effectivePageSize =
+        pageSizeValue ?? sizeFromData ?? pageSizeOptions[0];
 
     const getCellContent = (col: Column<T>, row: T) => {
         if (col.render) return col.render(row);
@@ -96,15 +126,40 @@ export const DataTable = <T,>({
                         ? `Showing ${items.length} item(s)`
                         : emptyText}
                 </Text>
-                <Group gap="xs">
+
+                <Group gap="xs" align="center">
+                    {onPageSizeChange && (
+                        <Group gap={6} align="center">
+                            <Text c="dimmed" size="xs">
+                                Rows
+                            </Text>
+                            <NativeSelect
+                                size="xs"
+                                aria-label="Rows per page"
+                                value={String(effectivePageSize)}
+                                onChange={e =>
+                                    onPageSizeChange?.(
+                                        parseInt(e.currentTarget.value, 10),
+                                    )
+                                }
+                                data={pageSizeOptions.map(n => ({
+                                    value: String(n),
+                                    label: String(n),
+                                }))}
+                                className="pg-select" // optional: style via CSS if you want it translucent
+                            />
+                        </Group>
+                    )}
                     {topRight}
                     <Pagination
                         total={totalPages}
-                        value={page}
-                        onChange={onPageChange}
+                        value={effectivePage}
+                        onChange={next => onPageChange?.(next)}
+                        withControls
+                        withEdges
                         size="sm"
-                        disabled={totalPages <= 1}
-                        classNames={{ control: 'pg-control' }}
+                        radius="md"
+                        classNames={{ control: 'pg-control' }} // you already style these
                     />
                 </Group>
             </Group>
@@ -175,6 +230,13 @@ export const DataTable = <T,>({
                     </Table.Tbody>
                 </Table>
             </Table.ScrollContainer>
+
+            {/* Bottom area (optional) */}
+            {bottomRight && (
+                <Group justify="flex-end" mt="sm">
+                    {bottomRight}
+                </Group>
+            )}
         </Box>
     );
 };
