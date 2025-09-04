@@ -35,7 +35,7 @@ const VideoPlaylist = () => {
     const bearerToken = useBearerToken();
 
     const handleAdd = async (video: any) => {
-        getPlaylists(userState?.username, bearerToken)
+        getPlaylists(userState?.username, bearerToken, { limit: 1 })
             .then(res => {
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
 

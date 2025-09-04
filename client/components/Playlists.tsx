@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     Button,
     Modal,
@@ -20,6 +20,7 @@ import { Play, X } from 'lucide-react';
 import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist } from '../api';
+import { getPlaylists } from '../api';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
@@ -33,6 +34,29 @@ const Playlists = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [creating, setCreating] = useState(false);
+
+    useEffect(() => {
+        const nextPage = playlistState.pendingPage; // <-- use the requested page
+        if (nextPage == null) return;
+
+        (async () => {
+            try {
+                dispatchPlaylist({ type: 'PLAYLISTS_LOADING' });
+                const res = await getPlaylists(
+                    userState.username,
+                    bearerToken,
+                    { page: nextPage, limit: 1 }, // pass a limit/pageSize
+                );
+                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
+            } catch (error) {
+                dispatchPlaylist({
+                    type: 'PLAYLISTS_ERROR',
+                    payload: (error as any)?.message,
+                });
+            }
+        })();
+        // include deps so values aren't stale
+    }, [playlistState.pendingPage, userState.username, bearerToken]);
 
     const onSubmit = async () => {
         setCreating(true);
