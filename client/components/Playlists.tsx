@@ -16,7 +16,8 @@ import { UserContext } from '../context/userContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { X } from 'lucide-react';
+import { Play, X } from 'lucide-react';
+import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist } from '../api';
 
@@ -78,21 +79,18 @@ const Playlists = () => {
                 <Box>
                     {/* TODO: render your playlists list/grid here */}
                     {/* Example placeholder: */}
-                    <Divider my="sm" />
-                    <Text c="dimmed">
-                        You have {playlists.length} playlist(s).
-                    </Text>
+                    <PlaylistsTable />
                 </Box>
-            ) : null}
-
-            <Center mih={160}>
-                <Stack align="center" gap="xs">
-                    <Text c="dimmed">No playlists yet</Text>
-                    <Button variant="light" onClick={() => setOpen(true)}>
-                        Create
-                    </Button>
-                </Stack>
-            </Center>
+            ) : (
+                <Center mih={160}>
+                    <Stack align="center" gap="xs">
+                        <Text c="dimmed">No playlists yet</Text>
+                        <Button variant="light" onClick={() => setOpen(true)}>
+                            Create
+                        </Button>
+                    </Stack>
+                </Center>
+            )}
 
             <Modal
                 opened={open}

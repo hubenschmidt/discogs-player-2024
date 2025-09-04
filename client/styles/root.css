@@ -1,6 +1,47 @@
 :root {
     --background: rgb(0, 0, 0);
-    --foreground: #d5ff3d;
+    --foreground: white;
+}
+
+/* 1) Set a base weight for the whole app */
+:root {
+    --fw-base: 200;
+}
+
+/* 2) Apply it app-wide */
+html,
+body {
+    font-weight: var(--fw-base);
+}
+
+/* 3) Reset common elements to inherit the base (helps defeat UA defaults) */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+li,
+a,
+button,
+input,
+label,
+th,
+td {
+    font-weight: inherit;
+}
+
+/* 4) Keep semantic bolds actually bold (optional) */
+strong,
+b {
+    font-weight: 600; /* or 700 */
+}
+
+html {
+    font-variation-settings: 'wght' var(--fw-base);
 }
 
 .sidebar-link {
@@ -9,23 +50,18 @@
     gap: 8px;
     padding: 8px 10px;
     border-radius: 6px;
-    text-decoration: none; /* remove underline */
-    color: white; /* make links white */
+    text-decoration: none;
+    color: white;
     background-color: black;
     border: none;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .sidebar-link:hover {
-    background-color: red; /* background on hover */
-    color: black; /* text color on hover */
+    background-color: red;
+    color: black;
 }
 
-/* TrackDetail.css */
-
-/* TrackDetail.css */
-
-/* Container styles you already had */
 .track-detail-box {
     background-color: rgb(219, 219, 219);
     color: black;
@@ -40,50 +76,40 @@
 
 .track-detail-content {
     display: flex;
-    flex-direction: column; /* mobile stacked */
+    flex-direction: column;
     justify-content: flex-start;
     gap: 10px;
 }
 
-/* Text sizing (mobile first) */
 .track-detail-text {
-    /* Mantine sm ~ 0.875rem; use exact value to avoid token differences */
     font-size: 0.875rem;
     line-height: 1;
 }
 
-/* Optional: gray label look via class instead of prop */
 .track-detail-muted {
     color: rgb(0, 0, 0);
 }
 
-/* Desktop breakpoint (≥768px) */
 @media (min-width: 768px) {
     .track-detail-content {
-        flex-direction: row; /* inline on desktop */
-        justify-content: center; /* centered line on desktop */
+        flex-direction: row;
+        justify-content: center;
     }
 
     .track-detail-text {
-        /* Mantine md ~ 1rem */
         font-size: 1rem;
     }
 }
 
-/* Base track (unfilled portion) */
 .mantine-Slider-track {
     background-color: rgb(95, 86, 86);
-    /* border: 2px solid white; */
-    /* border-radius: 4px; */
 }
 
-/* Filled portion (progress bar) */
 .volume-bar {
     background-color: grey;
     border-radius: 4px;
 }
 
-/* Thumb (the handle) */
 .volume-thumb {
     border: 2px solid white;
     background-color: black;

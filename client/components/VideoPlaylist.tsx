@@ -188,7 +188,6 @@ const VideoPlaylist = () => {
                             mt="-16px"
                             styles={{
                                 root: {
-                                    fontWeight: 100,
                                     justifyContent: 'flex-start',
                                 },
                                 label: {

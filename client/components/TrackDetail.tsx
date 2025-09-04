@@ -21,21 +21,39 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
             <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>
                 <Box className="track-detail-content">
                     {!preview && (
-                        <Text className="track-detail-text" lh={1}>
+                        <Text
+                            className="track-detail-text"
+                            lh={1}
+                            style={{
+                                fontVariationSettings: '"wght" 600',
+                            }}
+                        >
                             ♪ {controls?.videoTitle || 'No title available'}
                         </Text>
                     )}
 
                     {/* Artist */}
                     <Group gap={2}>
-                        <Text className="track-detail-text" lh={1}>
+                        <Text
+                            className="track-detail-text"
+                            lh={1}
+                            style={{
+                                fontVariationSettings: '"wght" 600',
+                            }}
+                        >
                             a: {selectedDiscogsRelease?.artists_sort}
                         </Text>
                     </Group>
 
                     {/* Release */}
                     <Group gap={2}>
-                        <Text className="track-detail-text" lh={1}>
+                        <Text
+                            className="track-detail-text"
+                            lh={1}
+                            style={{
+                                fontVariationSettings: '"wght" 600',
+                            }}
+                        >
                             r: {selectedDiscogsRelease?.title} (
                             {selectedDiscogsRelease?.year})
                         </Text>
@@ -43,7 +61,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 
                     {/* Label + Catalog number */}
                     <Group gap={2}>
-                        <Text className="track-detail-text" lh={1}>
+                        <Text
+                            className="track-detail-text"
+                            lh={1}
+                            style={{
+                                fontVariationSettings: '"wght" 600',
+                            }}
+                        >
                             #:{' '}
                             {selectedDiscogsRelease?.labels?.[0]?.catno || ''} (
                             {selectedDiscogsRelease?.labels?.[0]?.name || ''})
