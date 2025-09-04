@@ -59,7 +59,7 @@ export type DataTableProps<T> = {
     bottomRight?: React.ReactNode;
 };
 
-export function DataTable<T>({
+export const DataTable = <T,>({
     data,
     columns,
     onPageChange,
@@ -72,8 +72,7 @@ export function DataTable<T>({
     scrollMinWidth = 340,
     tableStyle = { tableLayout: 'fixed', width: '100%' },
     topRight,
-    bottomRight,
-}: DataTableProps<T>) {
+}: DataTableProps<T>) => {
     const items = data?.items ?? [];
     const page = data?.currentPage ?? 1;
     const totalPages = data?.totalPages ?? 1;
@@ -178,4 +177,4 @@ export function DataTable<T>({
             </Table.ScrollContainer>
         </Box>
     );
-}
+};
