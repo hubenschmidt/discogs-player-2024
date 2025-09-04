@@ -13,7 +13,6 @@ import {
 } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
 import { X } from 'lucide-react';
-import classes from '../styles/PlaylistsTable.module.css';
 
 const PlaylistsTable = () => {
     const { playlistState } = useContext(PlaylistContext);
@@ -48,13 +47,20 @@ const PlaylistsTable = () => {
             <Divider my="sm" />
             <Text c="dimmed">You have {playlists.length} playlist(s).</Text>
 
-            <Table.ScrollContainer minWidth={640} mt="sm">
-                <Table highlightOnHover withTableBorder withColumnBorders>
+            <Table.ScrollContainer minWidth="340" mt="sm">
+                <Table
+                    highlightOnHover
+                    withTableBorder
+                    withColumnBorders
+                    style={{ tableLayout: 'fixed', width: '100%' }}
+                >
                     <Table.Thead>
                         <Table.Tr>
                             <Table.Th style={{ width: '32%' }}>Name</Table.Th>
                             <Table.Th>Description</Table.Th>
-                            <Table.Th style={{ width: 140 }}>Updated</Table.Th>
+                            <Table.Th visibleFrom="sm" style={{ width: 140 }}>
+                                Updated
+                            </Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -77,7 +83,7 @@ const PlaylistsTable = () => {
                                         {pl.Description || '—'}
                                     </Text>
                                 </Table.Td>
-                                <Table.Td>
+                                <Table.Td visibleFrom="sm">
                                     <Text>
                                         {fmtDate(pl.updatedAt || pl.createdAt)}
                                     </Text>
