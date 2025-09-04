@@ -174,8 +174,8 @@ export const createPlaylist = async (
     username: string,
     token: BearerToken,
     name: string,
-    description?: string | null,
-    video?: string | null,
+    description?: string,
+    video?: string,
 ) => {
     const uri = `/api/app/${username}/playlist/create`;
 

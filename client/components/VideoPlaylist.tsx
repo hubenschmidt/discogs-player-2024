@@ -152,6 +152,10 @@ const VideoPlaylist = () => {
                                         variant="light-transparent"
                                         onClick={e => {
                                             e.stopPropagation();
+                                            dispatchDiscogsRelease({
+                                                type: 'SET_SELECTED_VIDEO',
+                                                payload: video,
+                                            });
                                             handleAdd(video);
                                         }}
                                     >

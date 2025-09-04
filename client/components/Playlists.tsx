@@ -41,7 +41,7 @@ const Playlists = () => {
                 bearerToken,
                 name.trim(),
                 description?.trim(),
-                selectedVideo?.title,
+                selectedVideo,
             );
             setOpen(false);
             setName('');
@@ -144,9 +144,7 @@ const Playlists = () => {
                             Save
                         </Button>
                     </Group>
-                    {selectedVideo && (
-                        <Text>Adding: {selectedVideo.title}</Text>
-                    )}
+                    {selectedVideo && <Text>{selectedVideo.title}</Text>}
                 </Stack>
             </Modal>
         </>

@@ -26,7 +26,12 @@ export const updatePlayHistory = async (req: Request) => {
 
 export const createPlaylist = async (req: Request) => {
     const user = await repos.getUser(req);
-    const playlist = await repos.createPlaylist(req, user);
+
+    let video = undefined;
+    if (req.body?.video) video = await repos.getVideo(req);
+    console.log(video);
+
+    const playlist = await repos.createPlaylist(req, user, video);
     return playlist;
 };
 

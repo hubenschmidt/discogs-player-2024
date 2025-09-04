@@ -73,7 +73,11 @@ export const createPlaylist = async (req: Request, user: any, video?: any) => {
     const playlist = await db.Playlist.create({
         User_Id: user.User_Id,
         Name: req.body.name,
-        ...(req.body?.description && { Description: req.body.description }),
+        Description: req.body.description,
+    });
+    await db.PlaylistVideo.create({
+        Playlist_Id: playlist.Playlist_Id,
+        Video_Id: video.Video_Id,
     });
     return playlist.get();
 };
@@ -86,11 +90,19 @@ export const addVideoToPlaylist = async (
 
 export const updatePlaylistMeta = async () => {};
 
-export const getPlayist = async (req: Request, user: any) => {};
+export const getPlaylist = async (req: Request, user: any) => {};
 
 export const getPlaylists = async (req: Request, user: any) => {
     const playlists = await db.Playlist.findAll();
     return playlists;
+};
+
+export const getVideo = async (req: Request) => {
+    const uri = extractYouTubeVideoId(req.body.video.uri);
+    return await db.Video.findOne({
+        where: { URI: uri },
+        raw: true,
+    });
 };
 
 export const updateVideoPlayCount = async (req: Request, user: any) => {
@@ -98,10 +110,8 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { uri, title, duration } = req.body;
 
     return db.sequelize.transaction(async (t: Transaction) => {
-        // Normalize URI (YouTube videoId preferred)
         const extractedUri = extractYouTubeVideoId(uri);
 
-        // Ensure Video exists
         const [video] = await db.Video.findOrCreate({
             where: { URI: extractedUri },
             defaults: {
@@ -111,27 +121,21 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
             },
             transaction: t,
         });
-        const plainVideo = video.get(); // extract plain object
+        const plainVideo = video.get(); // convert to pojo so video.update can be used on video model below
 
-        // Ensure ReleaseVideo join exists
-        let releaseVideo = null;
-        if (release_id) {
-            const [rv] = await db.ReleaseVideo.findOrCreate({
-                where: {
-                    Release_Id: release_id,
-                    Video_Id: plainVideo.Video_Id,
-                },
-                defaults: {
-                    Release_Id: release_id,
-                    Video_Id: plainVideo.Video_Id,
-                },
-                transaction: t,
-            });
-            releaseVideo = rv;
-        }
+        await db.ReleaseVideo.findOrCreate({
+            where: {
+                Release_Id: release_id,
+                Video_Id: plainVideo.Video_Id,
+            },
+            defaults: {
+                Release_Id: release_id,
+                Video_Id: plainVideo.Video_Id,
+            },
+            transaction: t,
+        });
 
-        // Ensure UserVideo join exists
-        const [uv] = await db.UserVideo.findOrCreate({
+        const [userVideo] = await db.UserVideo.findOrCreate({
             where: { User_Id: user.User_Id, Video_Id: video.Video_Id },
             defaults: {
                 User_Id: user.User_Id,
@@ -141,8 +145,7 @@ export const updateVideoPlayCount = async (req: Request, user: any) => {
             transaction: t,
         });
 
-        // Increment user-specific Play_Count
-        await uv.increment('Play_Count', { by: 1, transaction: t });
+        await userVideo.increment('Play_Count', { by: 1, transaction: t });
 
         // Optionally update Video metadata if it changed
         const updates: Record<string, any> = {};
@@ -198,6 +201,7 @@ export const getUser = async (req: Request) => {
 
     return userEntry?.get();
 };
+
 export const getCollection = async (req: Request) => {
     try {
         const { username, genre, style } = req.params;
