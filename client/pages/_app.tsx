@@ -9,9 +9,10 @@ import { DiscogsReleaseProvider } from '../context/discogsReleaseContext';
 import { PlayerProvider } from '../context/playerContext';
 import { SearchProvider } from '../context/searchContext';
 import { PlaylistProvider } from '../context/playlistContext';
+import { variantColorResolver } from '../lib/variantColorResolver';
 
 export default ({ Component, pageProps }: AppProps) => (
-    <MantineProvider>
+    <MantineProvider theme={{ variantColorResolver }}>
         <UserProvider>
             <CollectionProvider>
                 <DiscogsReleaseProvider>

@@ -1,0 +1,9 @@
+.root {
+    /* The following styles will be applied only when button is disabled */
+    &[data-disabled] {
+        background: var(--button-bg);
+        color: var(--button-color);
+        opacity: 0.45;
+        filter: none;
+    }
+}

@@ -5,7 +5,6 @@ import {
     Button,
     Text,
     Loader,
-    MantineProvider,
     ActionIcon,
     Tooltip,
 } from '@mantine/core';
@@ -16,7 +15,6 @@ import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
-import { variantColorResolver } from '../lib/variantColorResolver';
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -135,75 +133,73 @@ const VideoPlaylist = () => {
     }
 
     return (
-        <MantineProvider theme={{ variantColorResolver }}>
-            <Box>
-                <Stack>
-                    {activeDiscogs?.videos.map((video: any, idx: number) => {
-                        const isSelected = selectedVideo?.uri === video.uri;
+        <Box>
+            <Stack>
+                {activeDiscogs?.videos.map((video: any, idx: number) => {
+                    const isSelected = selectedVideo?.uri === video.uri;
 
-                        return (
-                            <Button
-                                rightSection={
-                                    <Tooltip
-                                        label="Add to playlist"
-                                        withArrow
-                                        openDelay={400}
-                                        closeDelay={100}
-                                        withinPortal
+                    return (
+                        <Button
+                            rightSection={
+                                <Tooltip
+                                    label="Add to playlist"
+                                    withArrow
+                                    openDelay={400}
+                                    closeDelay={100}
+                                    withinPortal
+                                >
+                                    <ActionIcon
+                                        variant="light-transparent"
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            handleAdd(video);
+                                        }}
                                     >
-                                        <ActionIcon
-                                            variant="light-transparent"
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                handleAdd(video);
-                                            }}
-                                        >
-                                            <Plus size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
-                                }
-                                key={idx}
-                                variant={isSelected ? 'filled' : 'light'}
-                                color="gray"
-                                onClick={() => {
-                                    if (previewRelease) {
-                                        dispatchDiscogsRelease({
-                                            type: 'MERGE_STATE',
-                                            payload: {
-                                                selectedRelease: previewRelease,
-                                                selectedDiscogsRelease:
-                                                    activeDiscogs,
-                                                previewRelease: null, // clear the preview states
-                                                previewDiscogsRelease: null,
-                                            },
-                                        });
-                                    }
-
+                                        <Plus size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+                            }
+                            key={idx}
+                            variant={isSelected ? 'filled' : 'light'}
+                            color="gray"
+                            onClick={() => {
+                                if (previewRelease) {
                                     dispatchDiscogsRelease({
-                                        type: 'SET_SELECTED_VIDEO',
-                                        payload: video,
+                                        type: 'MERGE_STATE',
+                                        payload: {
+                                            selectedRelease: previewRelease,
+                                            selectedDiscogsRelease:
+                                                activeDiscogs,
+                                            previewRelease: null, // clear the preview states
+                                            previewDiscogsRelease: null,
+                                        },
                                     });
-                                }}
-                                mt="-16px"
-                                styles={{
-                                    root: {
-                                        fontWeight: 100,
-                                        justifyContent: 'flex-start',
-                                    },
-                                    label: {
-                                        justifyContent: 'flex-start',
-                                        width: '100%',
-                                        textAlign: 'left',
-                                    },
-                                }}
-                            >
-                                {video.title}
-                            </Button>
-                        );
-                    })}
-                </Stack>
-            </Box>
-        </MantineProvider>
+                                }
+
+                                dispatchDiscogsRelease({
+                                    type: 'SET_SELECTED_VIDEO',
+                                    payload: video,
+                                });
+                            }}
+                            mt="-16px"
+                            styles={{
+                                root: {
+                                    fontWeight: 100,
+                                    justifyContent: 'flex-start',
+                                },
+                                label: {
+                                    justifyContent: 'flex-start',
+                                    width: '100%',
+                                    textAlign: 'left',
+                                },
+                            }}
+                        >
+                            {video.title}
+                        </Button>
+                    );
+                })}
+            </Stack>
+        </Box>
     );
 };
 

@@ -11,13 +11,12 @@ import {
     Divider,
     Box,
     ActionIcon,
-    MantineProvider,
 } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { X } from 'lucide-react';
-import { variantColorResolver } from '../lib/variantColorResolver';
+import classes from '../styles/Playlists.module.css';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
@@ -38,7 +37,7 @@ const Playlists = () => {
     };
 
     return (
-        <MantineProvider theme={{ variantColorResolver }}>
+        <>
             <Group justify="space-between" mb="sm">
                 <Text fw={700} size="lg">
                     Playlists
@@ -63,27 +62,37 @@ const Playlists = () => {
                         You have {playlists.length} playlist(s).
                     </Text>
                 </Box>
-            ) : (
-                <Center mih={160}>
-                    <Stack align="center" gap="xs">
-                        <Text c="dimmed">No playlists yet</Text>
-                        <Button onClick={() => setOpen(true)}>
-                            Create your first playlist
-                        </Button>
-                    </Stack>
-                </Center>
-            )}
+            ) : null}
+
+            <Center mih={160}>
+                <Stack align="center" gap="xs">
+                    <Text c="dimmed">No playlists yet</Text>
+                    <Button variant="light" onClick={() => setOpen(true)}>
+                        Create
+                    </Button>
+                </Stack>
+            </Center>
 
             <Modal
                 opened={open}
                 onClose={() => setOpen(false)}
                 title="Create playlist"
                 centered
+                styles={{
+                    content: { backgroundColor: 'var(--mantine-color-dark-7)' },
+                    header: { backgroundColor: 'var(--mantine-color-dark-7)' },
+                    body: {
+                        backgroundColor: 'var(--mantine-color-dark-7)',
+                        color: 'white',
+                    },
+                    title: { color: 'white' },
+                    close: { color: 'white' },
+                }}
             >
                 <Stack>
                     <TextInput
                         label="Name"
-                        placeholder="Late Night Dubs"
+                        placeholder="Name"
                         value={name}
                         onChange={e => setName(e.currentTarget.value)}
                         withAsterisk
@@ -99,23 +108,25 @@ const Playlists = () => {
                     {error && <Text c="red">{error}</Text>}
                     <Group justify="flex-end" mt="xs">
                         <Button
-                            variant="default"
+                            variant="light-transparent"
                             onClick={() => setOpen(false)}
                             disabled={creating}
                         >
                             Cancel
                         </Button>
                         <Button
+                            variant="light-transparent"
                             onClick={onSubmit}
                             loading={creating}
                             disabled={!name.trim()}
+                            classNames={classes}
                         >
-                            Create
+                            Save
                         </Button>
                     </Group>
                 </Stack>
             </Modal>
-        </MantineProvider>
+        </>
     );
 };
 
