@@ -61,6 +61,43 @@ html {
     opacity: 0.45;
     filter: none;
 }
+.pg-select-input {
+    background: transparent;
+    border: 0;
+    color: var(--mantine-color-white);
+    transition: background-color 150ms ease;
+    appearance: none; /* hide native arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+/* Hover/focus */
+.pg-select-input:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+.pg-select-input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+/* Dropdown menu */
+.pg-select-dropdown {
+    background: #000; /* black */
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Option rows */
+.pg-select-option {
+    color: var(--mantine-color-white); /* white text */
+    font-weight: 200;
+}
+.pg-select-option[data-hovered] {
+    background: rgba(255, 255, 255, 0.08); /* subtle hover */
+}
+.pg-select-option[data-checked] {
+    background: #495057; /* dim gray active */
+    color: var(--mantine-color-white);
+}
 
 .sidebar-link {
     display: flex;

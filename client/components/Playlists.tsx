@@ -110,8 +110,6 @@ const Playlists = () => {
 
             {playlists?.items?.length > 0 ? (
                 <Box>
-                    {/* TODO: render your playlists list/grid here */}
-                    {/* Example placeholder: */}
                     <PlaylistsTable />
                 </Box>
             ) : (

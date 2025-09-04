@@ -5,33 +5,9 @@ import {
     Pagination,
     Table,
     Text,
-    NativeSelect,
+    Select,
     type MantineBreakpoint,
 } from '@mantine/core';
-
-// export type PageData<T> = {
-//     items: T[];
-//     currentPage: number;
-//     totalPages: number;
-//     total?: number;
-//     pageSize?: number;
-// };
-
-// export type Column<T> = {
-//     /** Header label/node */
-//     header: React.ReactNode;
-//     /** Render cell (preferred) */
-//     render?: (row: T) => React.ReactNode;
-//     /** Fallback accessor if you don’t provide render */
-//     accessor?: keyof T | ((row: T) => React.ReactNode);
-//     /** Optional header/cell width */
-//     width?: number | string;
-//     /** Show this column from breakpoint and up (hidden on smaller screens) */
-//     visibleFrom?: MantineBreakpoint; // 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-//     /** Extra props for header/cell if you need them */
-//     thProps?: React.ComponentProps<typeof Table.Th>;
-//     tdProps?: React.ComponentProps<typeof Table.Td>;
-// };
 
 export type DataTableProps<T> = {
     data?: PageData<T> | null;
@@ -130,23 +106,24 @@ export const DataTable = <T,>({
                 <Group gap="xs" align="center">
                     {onPageSizeChange && (
                         <Group gap={6} align="center">
-                            <Text c="dimmed" size="xs">
-                                Rows
-                            </Text>
-                            <NativeSelect
+                            <Select
                                 size="xs"
                                 aria-label="Rows per page"
                                 value={String(effectivePageSize)}
-                                onChange={e =>
-                                    onPageSizeChange?.(
-                                        parseInt(e.currentTarget.value, 10),
-                                    )
-                                }
+                                onChange={val => {
+                                    if (val)
+                                        onPageSizeChange?.(parseInt(val, 10));
+                                }}
+                                w={60}
                                 data={pageSizeOptions.map(n => ({
                                     value: String(n),
                                     label: String(n),
                                 }))}
-                                className="pg-select" // optional: style via CSS if you want it translucent
+                                classNames={{
+                                    input: 'pg-select-input',
+                                    dropdown: 'pg-select-dropdown',
+                                    option: 'pg-select-option',
+                                }}
                             />
                         </Group>
                     )}
