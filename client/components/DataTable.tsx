@@ -105,6 +105,7 @@ export function DataTable<T>({
                         onChange={onPageChange}
                         size="sm"
                         disabled={totalPages <= 1}
+                        classNames={{ control: 'pg-control' }}
                     />
                 </Group>
             </Group>
@@ -175,20 +176,6 @@ export function DataTable<T>({
                     </Table.Tbody>
                 </Table>
             </Table.ScrollContainer>
-
-            {/* Bottom pager */}
-            <Group justify="flex-end" mt="sm">
-                <Group gap="xs">
-                    {bottomRight}
-                    <Pagination
-                        total={totalPages}
-                        value={page}
-                        onChange={onPageChange}
-                        size="sm"
-                        disabled={totalPages <= 1}
-                    />
-                </Group>
-            </Group>
         </Box>
     );
 }
