@@ -6,10 +6,6 @@ import {
     Text,
     Loader,
     MantineProvider,
-    defaultVariantColorsResolver,
-    VariantColorsResolver,
-    parseThemeColor,
-    rgba,
     ActionIcon,
     Tooltip,
 } from '@mantine/core';
@@ -20,25 +16,7 @@ import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
-
-const variantColorResolver: VariantColorsResolver = input => {
-    const defaultResolvedColors = defaultVariantColorsResolver(input);
-    const parsedColor = parseThemeColor({
-        color: input.color || input.theme.primaryColor,
-        theme: input.theme,
-    });
-
-    if (input.variant === 'light') {
-        return {
-            background: rgba(parsedColor.value, 0.1),
-            hover: rgba(parsedColor.value, 0.15),
-            border: `0px solid ${parsedColor.value}`,
-            color: 'white',
-        };
-    }
-
-    return defaultResolvedColors;
-};
+import { variantColorResolver } from '../lib/variantColorResolver';
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -174,7 +152,7 @@ const VideoPlaylist = () => {
                                         withinPortal
                                     >
                                         <ActionIcon
-                                            variant="subtle"
+                                            variant="light-transparent"
                                             onClick={e => {
                                                 e.stopPropagation();
                                                 handleAdd(video);
