@@ -164,7 +164,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                                 '"Orbitron", sans-serif',
                                             fontSize: '1.2rem',
                                             letterSpacing: '1px',
-                                            color: 'red',
+                                            color: 'yellow',
                                             lineHeight: 1.2,
                                             fontWeight: 'bold',
                                         }}
@@ -177,7 +177,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                                 '"Orbitron", sans-serif',
                                             fontSize: '1.2rem',
                                             letterSpacing: '1px',
-                                            color: 'red',
+                                            color: 'yellow',
                                             lineHeight: 1.2,
                                             fontWeight: 'bold',
                                         }}

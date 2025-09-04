@@ -7,8 +7,6 @@ import {
     Group,
     Stack,
     Text,
-    Center,
-    Divider,
     Box,
     ActionIcon,
 } from '@mantine/core';
@@ -42,7 +40,7 @@ const Playlists = () => {
             playlistState.playlists?.pageSize ??
             10;
 
-        if (page == null) return;
+        if (!page) return;
 
         (async () => {
             try {
@@ -77,9 +75,22 @@ const Playlists = () => {
                 description?.trim(),
                 selectedVideo,
             );
+
+            // close + reset form
             setOpen(false);
             setName('');
             setDescription('');
+
+            // keep current page size, jump to page 1
+            const prevLimit =
+                playlistState.pendingLimit ??
+                playlistState.playlists?.pageSize ??
+                10;
+
+            dispatchPlaylist({
+                type: 'PLAYLISTS_PAGE_SIZE_REQUESTED',
+                payload: { limit: prevLimit, page: 1 },
+            });
         } catch (error: any) {
             console.log(error);
         } finally {
@@ -93,11 +104,16 @@ const Playlists = () => {
 
     return (
         <>
-            <Group justify="space-between" mb="sm">
+            <Group align="center">
                 <Text fw={700} size="lg">
                     Playlists
                 </Text>
+                <Button variant="light" onClick={() => setOpen(true)}>
+                    Create
+                </Button>
+
                 <ActionIcon
+                    ml="auto" // <- pushes this item to the far right
                     variant="light"
                     radius="md"
                     size="lg"
@@ -113,14 +129,7 @@ const Playlists = () => {
                     <PlaylistsTable />
                 </Box>
             ) : (
-                <Center mih={160}>
-                    <Stack align="center" gap="xs">
-                        <Text c="dimmed">No playlists yet</Text>
-                        <Button variant="light" onClick={() => setOpen(true)}>
-                            Create
-                        </Button>
-                    </Stack>
-                </Center>
+                <Text c="dimmed">No playlists yet</Text>
             )}
 
             <Modal
@@ -132,7 +141,7 @@ const Playlists = () => {
                     content: { backgroundColor: 'var(--mantine-color-dark-7)' },
                     header: { backgroundColor: 'var(--mantine-color-dark-7)' },
                     body: {
-                        backgroundColor: 'var(--mantine-color-dark-7)',
+                        backgroundColor: 'var(--mantine-color-dark-`7`)',
                         color: 'white',
                     },
                     title: { color: 'white' },

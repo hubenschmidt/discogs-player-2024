@@ -35,7 +35,8 @@ const VideoPlaylist = () => {
     const bearerToken = useBearerToken();
 
     const handleAdd = async (video: any) => {
-        getPlaylists(userState?.username, bearerToken, { limit: 1 })
+        // todo, add videos
+        getPlaylists(userState?.username, bearerToken, { limit: 10 })
             .then(res => {
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
 
@@ -140,6 +141,7 @@ const VideoPlaylist = () => {
 
                     return (
                         <Button
+                            size="md"
                             rightSection={
                                 <Tooltip
                                     label="Add to playlist"
