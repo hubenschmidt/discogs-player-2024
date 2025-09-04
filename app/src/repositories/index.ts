@@ -70,12 +70,12 @@ export const createHistoryEntry = async (
 };
 
 export const createPlaylist = async (req: Request, user: any, video?: any) => {
-    const [playlist, created] = await db.Playlist.create({
+    const playlist = await db.Playlist.create({
         User_Id: user.User_Id,
         Name: req.body.name,
-        Description: req.body.Description ?? null,
+        ...(req.body?.description && { Description: req.body.description }),
     });
-    return { playlist, created };
+    return playlist.get();
 };
 
 export const addVideoToPlaylist = async (

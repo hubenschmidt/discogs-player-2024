@@ -175,13 +175,14 @@ export const createPlaylist = async (
     token: BearerToken,
     name: string,
     description?: string | null,
+    video?: string | null,
 ) => {
     const uri = `/api/app/${username}/playlist/create`;
 
     const response: AxiosResponse<any> = await requestHandler(
         'POST',
         uri,
-        { name: name, description: description },
+        { name: name, description: description, video: video },
         token,
     );
 

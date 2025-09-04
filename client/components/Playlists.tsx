@@ -13,24 +13,45 @@ import {
     ActionIcon,
 } from '@mantine/core';
 import { UserContext } from '../context/userContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { X } from 'lucide-react';
 import classes from '../styles/Playlists.module.css';
+import { createPlaylist } from '../api';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { playlists } = playlistState;
+    const { discogsReleaseState } = useContext(DiscogsReleaseContext);
+    const { selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
 
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [creating, setCreating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    const onSubmit = () => {};
+    const onSubmit = async () => {
+        setCreating(true);
+        try {
+            await createPlaylist(
+                userState?.username,
+                bearerToken,
+                name.trim(),
+                description?.trim(),
+                selectedVideo?.title,
+            );
+            setOpen(false);
+            setName('');
+            setDescription('');
+        } catch (error: any) {
+            console.log(error);
+        } finally {
+            setCreating(false);
+        }
+    };
 
     const handleClose = payload => {
         dispatchPlaylist({ type: 'SET_SHOW_PLAYLIST_VIEW', payload: payload });
@@ -105,7 +126,6 @@ const Playlists = () => {
                         autosize
                         minRows={2}
                     />
-                    {error && <Text c="red">{error}</Text>}
                     <Group justify="flex-end" mt="xs">
                         <Button
                             variant="light-transparent"
@@ -124,6 +144,9 @@ const Playlists = () => {
                             Save
                         </Button>
                     </Group>
+                    {selectedVideo && (
+                        <Text>Adding: {selectedVideo.title}</Text>
+                    )}
                 </Stack>
             </Modal>
         </>
