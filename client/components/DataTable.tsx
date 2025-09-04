@@ -70,7 +70,11 @@ export const DataTable = <T,>({
     withTableBorder = true,
     withColumnBorders = true,
     scrollMinWidth = 340,
-    tableStyle = { tableLayout: 'fixed', width: '100%' },
+    tableStyle = {
+        tableLayout: 'fixed',
+        width: '100%',
+        ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
+    },
     topRight,
     bottomRight,
 }: DataTableProps<T>) => {
@@ -107,7 +111,7 @@ export const DataTable = <T,>({
                     {onPageSizeChange && (
                         <Group gap={6} align="center">
                             <Select
-                                size="xs"
+                                size="sm"
                                 aria-label="Rows per page"
                                 value={String(effectivePageSize)}
                                 onChange={val => {
