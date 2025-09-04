@@ -45,7 +45,7 @@ const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
-    const { releases, totalPages } = collectionState;
+    const { items, totalPages } = collectionState;
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
@@ -91,7 +91,7 @@ const VinylShelf: FC = () => {
     }, [currentPage, itemsPerPage, searchSelection]);
 
     const handleRecordClick = (release: Release, index: number) => {
-        const reorderedReleases = reorderReleases(releases, index);
+        const reorderedReleases = reorderReleases(items, index);
         dispatchCollection({
             type: 'SET_COLLECTION',
             payload: { releases: reorderedReleases },
@@ -117,14 +117,14 @@ const VinylShelf: FC = () => {
     };
 
     const handleShelfPrev = () => {
-        if (releases.length < 2) return;
-        const n = releases.length;
+        if (items.length < 2) return;
+        const n = items.length;
         const mid = Math.floor((n - 1) / 2);
         const newIndex = (mid - 1 + n) % n;
-        const reorderedReleases = reorderReleases(releases, newIndex);
+        const reorderedReleases = reorderReleases(items, newIndex);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: reorderedReleases },
+            payload: { items: reorderedReleases },
         });
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
@@ -132,11 +132,11 @@ const VinylShelf: FC = () => {
     };
 
     const handleShelfNext = () => {
-        if (releases.length < 2) return;
-        const n = releases.length;
+        if (items.length < 2) return;
+        const n = items.length;
         const mid = Math.floor((n - 1) / 2);
         const newIndex = (mid + 1) % n;
-        const reorderedReleases = reorderReleases(releases, newIndex);
+        const reorderedReleases = reorderReleases(items, newIndex);
         dispatchCollection({
             type: 'SET_COLLECTION',
             payload: { releases: reorderedReleases },
@@ -164,8 +164,8 @@ const VinylShelf: FC = () => {
         <div className="vinyl-shelf-container">
             <TrackDetail selectedDiscogsRelease={selectedDiscogsRelease} />
             <div className="vinyl-shelf" ref={shelfRef}>
-                {releases?.map((release, i) => {
-                    const n = releases?.length;
+                {items?.map((release, i) => {
+                    const n = items?.length;
                     let angle = 0;
                     if (n > 1) {
                         angle = -90 + 180 * (i / (n - 1));
@@ -204,19 +204,19 @@ const VinylShelf: FC = () => {
             <div className="shelf-controls">
                 <ActionIcon
                     onClick={handleShelfPrev}
-                    disabled={releases?.length < 2}
+                    disabled={items?.length < 2}
                 >
                     <ChevronLeft />
                 </ActionIcon>
                 <ActionIcon
                     onClick={handleShelfNext}
-                    disabled={releases?.length < 2}
+                    disabled={items?.length < 2}
                 >
                     <ChevronRight />
                 </ActionIcon>
             </div>
             {/* Server Pagination Controls */}
-            {releases?.length > 1 && (
+            {items?.length > 1 && (
                 <Group className="shelf-pagination">
                     <ActionIcon
                         onClick={handleFirstPage}

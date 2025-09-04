@@ -52,6 +52,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [activePanel, setActivePanel] = useState<string | null>(null);
+    console.log(playlists?.items);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -92,8 +93,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
             </Center>
         );
     }
-
-    console.log(playlists?.length);
 
     return collectionState.synced ? (
         <Box>
@@ -249,7 +248,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 )}
 
-                {showPlaylistView && playlists !== null && (
+                {showPlaylistView && playlists?.items.length > 0 && (
                     <Grid mb="sm">
                         <Grid.Col
                             span={{ base: 12, md: 12, lg: 12 }}

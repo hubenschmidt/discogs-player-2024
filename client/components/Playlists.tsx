@@ -75,7 +75,7 @@ const Playlists = () => {
                 </ActionIcon>
             </Group>
 
-            {playlists?.length > 0 ? (
+            {playlists?.items?.length > 0 ? (
                 <Box>
                     {/* TODO: render your playlists list/grid here */}
                     {/* Example placeholder: */}

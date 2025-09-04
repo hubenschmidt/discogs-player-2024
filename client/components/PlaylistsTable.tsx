@@ -1,53 +1,45 @@
-import React, { useState, useContext, useMemo } from 'react';
-import {
-    Box,
-    Divider,
-    Text,
-    Table,
-    Modal,
-    Group,
-    ActionIcon,
-    Tooltip,
-    Stack,
-    Button,
-} from '@mantine/core';
+import React, { useContext } from 'react';
+import { Box, Text, Table, Group, Pagination } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
-import { X } from 'lucide-react';
 
 const PlaylistsTable = () => {
-    const { playlistState } = useContext(PlaylistContext);
-    const { playlists = [] } = playlistState || {};
-    const [opened, setOpened] = useState(false);
-    const [selected, setSelected] = useState<any | null>(null);
-
-    const rows = useMemo(
-        () =>
-            [...playlists].sort(
-                (a, b) =>
-                    new Date(b.updatedAt || b.createdAt || 0).getTime() -
-                    new Date(a.updatedAt || a.createdAt || 0).getTime(),
-            ),
-        [playlists],
-    );
-
-    const openModal = (pl: any) => {
-        setSelected(pl);
-        setOpened(true);
-    };
-    const closeModal = () => {
-        setOpened(false);
-        setSelected(null);
-    };
+    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
+    const data = playlistState?.playlists;
+    const items = data?.items ?? [];
+    const page = data?.currentPage ?? 1;
+    const totalPages = data?.totalPages ?? 1;
 
     const fmtDate = (d?: string) =>
         d ? new Date(d).toLocaleDateString() : '—';
 
+    const handlePageChange = (nextPage: number) => {
+        // Let your reducer/effect handle fetching the new page.
+        // e.g., saga/thunk triggers API call and updates playlistState.playlists
+        dispatchPlaylist({
+            type: 'PLAYLISTS_PAGE_REQUESTED',
+            payload: { page: nextPage },
+        });
+    };
+
     return (
         <Box>
-            <Divider my="sm" />
-            <Text c="dimmed">You have {playlists.length} playlist(s).</Text>
+            {/* Top summary + pager (optional) */}
+            <Group justify="space-between" mb="xs">
+                <Text c="dimmed" size="sm">
+                    {items.length
+                        ? `Showing ${items.length} item(s)`
+                        : 'No playlists yet'}
+                </Text>
+                <Pagination
+                    total={totalPages}
+                    value={page}
+                    onChange={handlePageChange}
+                    size="sm"
+                    disabled={totalPages <= 1}
+                />
+            </Group>
 
-            <Table.ScrollContainer minWidth="340" mt="sm">
+            <Table.ScrollContainer mt="xs" minWidth="340">
                 <Table
                     highlightOnHover
                     withTableBorder
@@ -56,41 +48,42 @@ const PlaylistsTable = () => {
                 >
                     <Table.Thead>
                         <Table.Tr>
-                            <Table.Th style={{ width: '32%' }}>Name</Table.Th>
+                            <Table.Th style={{ width: '25%' }}>Name</Table.Th>
                             <Table.Th>Description</Table.Th>
-                            <Table.Th visibleFrom="sm" style={{ width: 140 }}>
+                            <Table.Th visibleFrom="sm" style={{ width: '19%' }}>
                                 Updated
                             </Table.Th>
                         </Table.Tr>
                     </Table.Thead>
+
                     <Table.Tbody>
-                        {rows.map(pl => (
+                        {items.map((p: any) => (
                             <Table.Tr
-                                key={pl.Playlist_Id}
-                                onClick={() => openModal(pl)}
+                                key={p.Playlist_Id}
                                 style={{ cursor: 'pointer' }}
                             >
                                 <Table.Td>
-                                    <Text lineClamp={1} title={pl.Name}>
-                                        {pl.Name}
+                                    <Text lineClamp={1} title={p.Name}>
+                                        {p.Name}
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
                                     <Text
                                         lineClamp={1}
-                                        title={pl.Description || ''}
+                                        title={p.Description || ''}
                                     >
-                                        {pl.Description || '—'}
+                                        {p.Description || '—'}
                                     </Text>
                                 </Table.Td>
                                 <Table.Td visibleFrom="sm">
                                     <Text>
-                                        {fmtDate(pl.updatedAt || pl.createdAt)}
+                                        {fmtDate(p.updatedAt || p.createdAt)}
                                     </Text>
                                 </Table.Td>
                             </Table.Tr>
                         ))}
-                        {rows.length === 0 && (
+
+                        {items.length === 0 && (
                             <Table.Tr>
                                 <Table.Td colSpan={3}>
                                     <Text c="dimmed" ta="center">
@@ -103,69 +96,16 @@ const PlaylistsTable = () => {
                 </Table>
             </Table.ScrollContainer>
 
-            {/* Playlist modal */}
-            <Modal
-                opened={opened}
-                onClose={closeModal}
-                title={selected?.Name || 'Playlist'}
-                centered
-                overlayProps={{
-                    color: '#000',
-                    backgroundOpacity: 0.75,
-                    blur: 2,
-                }}
-                styles={{
-                    content: { backgroundColor: 'var(--mantine-color-dark-7)' },
-                    header: { backgroundColor: 'var(--mantine-color-dark-7)' },
-                    body: {
-                        backgroundColor: 'var(--mantine-color-dark-7)',
-                        color: 'white',
-                    },
-                    title: { color: 'white' },
-                    close: { color: 'white' },
-                }}
-            >
-                {selected && (
-                    <Stack gap="sm">
-                        <Group justify="space-between" align="center">
-                            <Text fw={700}>{selected.Name}</Text>
-                            <Tooltip
-                                label="Close"
-                                withArrow
-                                openDelay={400}
-                                closeDelay={100}
-                                withinPortal
-                            >
-                                <ActionIcon
-                                    variant="subtle"
-                                    radius="md"
-                                    size="lg"
-                                    onClick={closeModal}
-                                    aria-label="Close"
-                                >
-                                    <X size={18} />
-                                </ActionIcon>
-                            </Tooltip>
-                        </Group>
-
-                        <Text c="dimmed" size="sm">
-                            {selected.Description || 'No description'}
-                        </Text>
-
-                        <Text size="sm">
-                            Created: {fmtDate(selected.createdAt)} • Updated:{' '}
-                            {fmtDate(selected.updatedAt)}
-                        </Text>
-
-                        {/* TODO: render the playlist’s videos here if you load them; or show actions */}
-                        <Group justify="flex-end" mt="sm">
-                            <Button variant="light-transparent">
-                                Open full view
-                            </Button>
-                        </Group>
-                    </Stack>
-                )}
-            </Modal>
+            {/* Bottom pager (optional duplicate for UX) */}
+            <Group justify="flex-end" mt="sm">
+                <Pagination
+                    total={totalPages}
+                    value={page}
+                    onChange={handlePageChange}
+                    size="sm"
+                    disabled={totalPages <= 1}
+                />
+            </Group>
         </Box>
     );
 };

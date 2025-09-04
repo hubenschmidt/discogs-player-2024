@@ -51,7 +51,7 @@ export interface CollectionResponse {
     user: {
         username: string;
     };
-    totalReleases: number;
+    total: number;
     currentPage: number;
     totalPages: number;
     releases: Release[];

@@ -160,7 +160,7 @@ export const getPlaylists = async (
     username: string,
     token: BearerToken,
 ): Promise<any> => {
-    const uri = `/api/app/${username}/playlist/all`;
+    const uri = `/api/app/${username}/playlist/all?limit=1`;
     const response: AxiosResponse<any> = await requestHandler(
         'GET',
         uri,

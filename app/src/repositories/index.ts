@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { Op } from 'sequelize';
 import { Transaction } from 'sequelize';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
+import { parsePaging, toPagedResponse } from '../lib/pagination';
 
 export interface AuthenticatedRequest extends Request {
     user: any;
@@ -91,11 +92,6 @@ export const addVideoToPlaylist = async (
 export const updatePlaylistMeta = async () => {};
 
 export const getPlaylist = async (req: Request, user: any) => {};
-
-export const getPlaylists = async (req: Request, user: any) => {
-    const playlists = await db.Playlist.findAll();
-    return playlists;
-};
 
 export const getVideo = async (req: Request) => {
     const uri = extractYouTubeVideoId(req.body.video.uri);
@@ -204,6 +200,21 @@ export const getUser = async (req: Request) => {
 
 export const getCollection = async (req: Request) => {
     try {
+        const { page, limit, offset, order, orderBy } = parsePaging(req, {
+            defaultLimit: 25,
+            maxLimit: 100,
+            defaultOrderBy: 'updatedAt',
+            allowedOrderBy: {
+                Release_Id: 'Playlist_Id',
+                Date_Added: 'Date_Added',
+                Title: 'Title',
+                Year: 'Year',
+                updatedAt: 'updatedAt',
+                createdAt: 'createdAt',
+            },
+            defaultOrder: 'DESC',
+        });
+
         const { username, genre, style } = req.params;
 
         // Resolve single or multiple genres and styles
@@ -211,23 +222,6 @@ export const getCollection = async (req: Request) => {
             genre && genre !== ':genre' ? genre.split(',') : null;
         const resolvedStyles =
             style && style !== ':style' ? style.split(',') : null;
-
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 25;
-        const offset = (page - 1) * limit;
-
-        // Extract and sanitize order query parameters
-        const order =
-            (req.query.order as string)?.toUpperCase() === 'ASC'
-                ? 'ASC'
-                : 'DESC';
-        const orderBy = (req.query.orderBy as string) || 'Release_Id';
-
-        // Validate the `orderBy` column
-        const validOrderColumns = ['Release_Id', 'Date_Added', 'Title', 'Year'];
-        if (!validOrderColumns.includes(orderBy)) {
-            throw new Error(`Invalid orderBy column: ${orderBy}`);
-        }
 
         // Fetch the user and their collections
         const user = await db.User.findOne({
@@ -239,7 +233,7 @@ export const getCollection = async (req: Request) => {
         if (req.query.releaseId) releaseWhere.Release_Id = req.query.releaseId;
 
         // Fetch releases with pagination and optional genre and style filtering
-        const releases = await db.Release.findAndCountAll({
+        const { count, rows } = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
             where: releaseWhere,
             include: [
@@ -294,19 +288,53 @@ export const getCollection = async (req: Request) => {
             order: [[orderBy, order]],
         });
 
-        return {
-            user: { username },
-            totalReleases: releases.count,
-            currentPage: page,
-            totalPages: Math.ceil(releases.count / limit),
-            releases: releases.rows,
-        };
+        return toPagedResponse(
+            count,
+            page,
+            limit,
+            rows.map((r: any) => r.get({ plain: true })),
+        );
     } catch (error) {
         console.error('Error fetching collection:', error);
         throw error;
     }
 };
 
+export const getPlaylists = async (req: Request, user: any) => {
+    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+        defaultLimit: 25,
+        maxLimit: 100,
+        defaultOrderBy: 'updatedAt',
+        allowedOrderBy: {
+            Name: 'Name',
+            updatedAt: 'updatedAt',
+            createdAt: 'createdAt',
+            Playlist_Id: 'Playlist_Id',
+        },
+        defaultOrder: 'DESC',
+    });
+
+    const where: any = { User_Id: user.User_Id };
+    const q = (req.query.q as string)?.trim();
+    if (q) where.Name = { [Op.iLike]: `%${q}%` }; // if MySQL, use [Op.substring]: q
+
+    const { count, rows } = await db.Playlist.findAndCountAll({
+        where,
+        order: [
+            [orderBy, order],
+            ['Playlist_Id', 'DESC'], // tie-breaker for stable order
+        ],
+        limit,
+        offset,
+    });
+
+    return toPagedResponse(
+        count,
+        page,
+        limit,
+        rows.map((r: any) => r.get({ plain: true })),
+    );
+};
 export const getStylesByGenre = async (req: Request) => {
     try {
         const { genre } = req.params;
