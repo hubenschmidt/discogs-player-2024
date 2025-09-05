@@ -11,7 +11,6 @@ export const variantColorResolver: VariantColorsResolver = input => {
         color: input.color || input.theme.primaryColor,
         theme: input.theme,
     });
-    console.log(parsedColor);
 
     if (input.variant === 'light') {
         return {

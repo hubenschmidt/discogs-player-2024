@@ -43,6 +43,7 @@ const History: React.FC = () => (
 
 const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
+    const { username} = userState;
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
@@ -53,7 +54,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [activePanel, setActivePanel] = useState<string | null>(null);
-    console.log(playlists?.items);
 
     let borderStyle = '.5px solid black';
     let devStyle = {

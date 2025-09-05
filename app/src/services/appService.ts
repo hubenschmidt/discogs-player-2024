@@ -1,3 +1,5 @@
+/// <reference path="../types/express/index.d.ts" />
+
 import { Request } from 'express';
 import * as repos from '../repositories';
 
@@ -18,6 +20,7 @@ export const getStylesByGenre = async (req: Request) => {
 };
 
 export const updatePlayHistory = async (req: Request) => {
+    console.trace(req.auth);
     const user = await repos.getUser(req);
     const video = await repos.updateVideoPlayCount(req, user);
     const historyEntry = await repos.createHistoryEntry(req, user, video);
