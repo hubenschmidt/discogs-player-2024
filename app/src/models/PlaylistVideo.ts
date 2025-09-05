@@ -9,14 +9,49 @@ module.exports = (sequelize: any, DataTypes: any) => {
             },
             Playlist_Id: {
                 type: DataTypes.INTEGER,
+                allowNull: false,
             },
             Video_Id: {
                 type: DataTypes.INTEGER,
+                allowNull: false,
             },
         },
         {
             tableName: 'PlaylistVideo',
             timestamps: true,
+        },
+    );
+
+    // helper to bump count + touch updatedAt atomically
+    const bumpPlaylist = async (
+        playlistId: number,
+        delta: number,
+        transaction: any,
+    ) => {
+        const { Playlist } = sequelize.models;
+        await Playlist.update(
+            {
+                // Postgres-safe increment and floor at 0 on decrements
+                Tracks_Count: sequelize.literal(
+                    `GREATEST("Tracks_Count" + (${delta}), 0)`,
+                ),
+                updatedAt: sequelize.literal('clock_timestamp()'),
+            },
+            { where: { Playlist_Id: playlistId }, transaction },
+        );
+    };
+
+    PlaylistVideo.addHook(
+        'afterCreate',
+        async (instance: any, options: any) => {
+            await bumpPlaylist(instance.Playlist_Id, +1, options.transaction);
+        },
+    );
+
+    PlaylistVideo.addHook(
+        'afterDestroy',
+        async (instance: any, options: any) => {
+            await bumpPlaylist(instance.Playlist_Id, -1, options.transaction);
         },
     );
 

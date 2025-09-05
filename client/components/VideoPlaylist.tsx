@@ -35,21 +35,14 @@ const VideoPlaylist = () => {
     const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
 
-    const handleAdd = async (video: any) => {
-        // todo, add videos
+    const handleAdd = async () => {
         getPlaylists(userState?.username, bearerToken, {
-            limit: 10,
             orderBy: 'updatedAt',
-            order: 'ASC',
+            order: 'DESC',
         })
             .then(res => {
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
-
                 dispatchPlaylist({ type: 'SET_ADD_MODAL', payload: true });
-                // dispatchPlaylist({
-                //     type: 'SET_SHOW_PLAYLIST_VIEW',
-                //     payload: true,
-                // });
             })
             .catch(err => console.log(err));
     };
@@ -164,7 +157,7 @@ const VideoPlaylist = () => {
                                                 type: 'SET_SELECTED_VIDEO',
                                                 payload: video,
                                             });
-                                            handleAdd(video);
+                                            handleAdd();
                                         }}
                                     >
                                         <Plus size={16} />

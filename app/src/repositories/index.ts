@@ -318,7 +318,7 @@ export const getPlaylists = async (req: Request, user: any) => {
         where: { User_Id: user.User_Id },
         order: [
             [orderBy, order],
-            ['Playlist_Id', 'DESC'], // stable tie-breaker
+            ['updatedAt', 'DESC'], // stable tie-breaker
         ],
         limit,
         offset,
@@ -562,6 +562,26 @@ export const addToPlaylist = async (req: Request, user: any) => {
             },
             transaction: t,
         });
+
+        // 3) Touch playlist (force a strictly newer timestamp)
+        const pid = Number(playlistId);
+
+        const [affected, updated] = await db.Playlist.update(
+            { updatedAt: db.sequelize.literal('clock_timestamp()') },
+            {
+                where: { Playlist_Id: pid },
+                transaction: t,
+                returning: true, // PG supports this; get the fresh row back
+            },
+        );
+        console.log(affected);
+
+        // Reload fresh playlist row (optional, but nice for response/debug)
+        const fresh = await db.Playlist.findByPk(playlistId, {
+            transaction: t,
+            raw: true,
+        });
+        // console.log(fresh);
 
         return {
             added: created, // false if it already existed

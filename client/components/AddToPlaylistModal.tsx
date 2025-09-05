@@ -1,11 +1,20 @@
-import React, { useContext, useState } from 'react';
-import { Modal, Stack, Text, Button, Group, ScrollArea } from '@mantine/core';
-import { Music2 } from 'lucide-react';
+import React, { useContext, useState, useEffect } from 'react';
+import {
+    Modal,
+    Stack,
+    Text,
+    Button,
+    Group,
+    ScrollArea,
+    Textarea,
+    TextInput,
+} from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { UserContext } from '../context/userContext';
-import { addToPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { addToPlaylist, createPlaylist, getPlaylists } from '../api';
+import classes from '../styles/Playlists.module.css';
 
 const AddToPlaylistModal = () => {
     const { userState } = useContext(UserContext);
@@ -16,6 +25,9 @@ const AddToPlaylistModal = () => {
     const bearerToken = useBearerToken();
     const [loadingId, setLoadingId] = useState<number | null>(null);
     const [open, setOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [creating, setCreating] = useState(false);
 
     const handleClose = () =>
         dispatchPlaylist({ type: 'SET_ADD_MODAL', payload: false });
@@ -23,7 +35,7 @@ const AddToPlaylistModal = () => {
     const onPick = (pl: any) => {
         if (!selectedVideo) return;
 
-        // optional: keep track of last-picked in context
+        // keep track of last-picked in context
         dispatchPlaylist({ type: 'SET_SELECTED_PLAYLIST', payload: pl });
 
         setLoadingId(pl.Playlist_Id);
@@ -43,7 +55,50 @@ const AddToPlaylistModal = () => {
             })
             .finally(() => setLoadingId(null));
     };
-    console.log(playlists.items);
+
+    const onSubmit = async () => {
+        setCreating(true);
+        try {
+            await createPlaylist(
+                userState?.username,
+                bearerToken,
+                name.trim(),
+                description?.trim(),
+                selectedVideo,
+            );
+
+            // close + reset form
+            setOpen(false);
+            setName('');
+            setDescription('');
+        } catch (error: any) {
+            console.log(error);
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    useEffect(() => {
+        (async () => {
+            try {
+                dispatchPlaylist({ type: 'PLAYLISTS_LOADING' });
+                const res = await getPlaylists(
+                    userState.username,
+                    bearerToken,
+                    {
+                        orderBy: 'updatedAt',
+                        order: 'DESC',
+                    },
+                );
+                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
+            } catch (err: any) {
+                dispatchPlaylist({
+                    type: 'PLAYLISTS_ERROR',
+                    payload: err?.message,
+                });
+            }
+        })();
+    }, [open]);
 
     return (
         <Modal.Root
@@ -58,14 +113,17 @@ const AddToPlaylistModal = () => {
                     style={{ backgroundColor: 'var(--mantine-color-dark-9)' }}
                 >
                     <Modal.Title>Add Track</Modal.Title>
-
-                    {/* Right side: your button + the X */}
-                    <Group ml="auto" gap="xs" align="center">
-                        <Button variant="light" onClick={() => setOpen(true)}>
-                            Create Playlist
-                        </Button>
-                        <Modal.CloseButton />
-                    </Group>
+                    {!open && (
+                        <Group ml="auto" gap="xs" align="center">
+                            <Button
+                                variant="light"
+                                onClick={() => setOpen(true)}
+                            >
+                                Create Playlist
+                            </Button>
+                            <Modal.CloseButton />
+                        </Group>
+                    )}
                 </Modal.Header>
 
                 <Modal.Body
@@ -74,139 +132,107 @@ const AddToPlaylistModal = () => {
                         color: 'white',
                     }}
                 >
-                    <Stack gap="sm">
-                        <Group justify="right" align="right">
-                            <Button
-                                mr="100px"
-                                mt="-40px"
-                                variant="light"
-                                onClick={() => setOpen(true)}
-                            >
-                                Create Playlist
-                            </Button>
-                        </Group>
+                    {open && (
+                        <Stack>
+                            <TextInput
+                                label="Name"
+                                placeholder="Name"
+                                value={name}
+                                onChange={e => setName(e.currentTarget.value)}
+                                withAsterisk
+                            />
+                            <Textarea
+                                label="Description"
+                                placeholder="Optional description"
+                                value={description}
+                                onChange={e =>
+                                    setDescription(e.currentTarget.value)
+                                }
+                                autosize
+                                minRows={2}
+                            />
+                            <Group justify="flex-end" mt="xs">
+                                <Button
+                                    variant="light-transparent"
+                                    onClick={() => setOpen(false)}
+                                    disabled={creating}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="light-transparent"
+                                    onClick={onSubmit}
+                                    loading={creating}
+                                    disabled={!name.trim()}
+                                    classNames={classes}
+                                >
+                                    Save
+                                </Button>
+                            </Group>
+                            {selectedVideo && (
+                                <Text>Track: {selectedVideo.title}</Text>
+                            )}
+                        </Stack>
+                    )}
+                    {!open && (
+                        <Stack gap="sm">
+                            {selectedVideo && (
+                                <Text size="sm">
+                                    Track: {selectedVideo.title}
+                                </Text>
+                            )}
 
-                        {selectedVideo && (
-                            <Text size="sm">Track: {selectedVideo.title}</Text>
-                        )}
-
-                        <ScrollArea.Autosize mah={320} type="auto">
-                            <Stack gap={6}>
-                                {playlists?.items?.map((p: any) => (
-                                    <Button
-                                        key={p.Playlist_Id}
-                                        variant="light"
-                                        onClick={() => onPick(p)}
-                                        loading={loadingId === p.Playlist_Id}
-                                        rightSection={
-                                            <Group mr="8">
-                                                <Text
-                                                    size="sm"
-                                                    span
-                                                    style={{
-                                                        whiteSpace: 'nowrap',
-                                                    }}
-                                                >
-                                                    {p?.Videos?.length ?? '—'}{' '}
-                                                    tracks
-                                                </Text>
-                                            </Group>
-                                        }
-                                        styles={{
-                                            label: {
-                                                justifyContent: 'space-between',
-                                                width: '100%',
-                                            },
-                                        }}
-                                    >
-                                        {p.Name}
-                                    </Button>
-                                ))}
-                                {(!playlists?.items ||
-                                    playlists.items.length === 0) && (
-                                    <Text c="dimmed" ta="center">
-                                        No playlists yet
-                                    </Text>
-                                )}
-                            </Stack>
-                        </ScrollArea.Autosize>
-                    </Stack>
+                            <ScrollArea.Autosize mah={320} type="auto">
+                                <Stack gap={6}>
+                                    {playlists?.items?.map((p: any) => (
+                                        <Button
+                                            key={p.Playlist_Id}
+                                            variant="light"
+                                            onClick={() => onPick(p)}
+                                            loading={
+                                                loadingId === p.Playlist_Id
+                                            }
+                                            rightSection={
+                                                <Group mr="8">
+                                                    <Text
+                                                        size="sm"
+                                                        span
+                                                        style={{
+                                                            whiteSpace:
+                                                                'nowrap',
+                                                        }}
+                                                    >
+                                                        {p?.Videos?.length ??
+                                                            '—'}{' '}
+                                                        tracks
+                                                    </Text>
+                                                </Group>
+                                            }
+                                            styles={{
+                                                label: {
+                                                    justifyContent:
+                                                        'space-between',
+                                                    width: '100%',
+                                                },
+                                            }}
+                                        >
+                                            {p.Name}
+                                        </Button>
+                                    ))}
+                                    {(!playlists?.items ||
+                                        playlists.items.length === 0) && (
+                                        <Text c="dimmed" ta="center">
+                                            No playlists yet
+                                        </Text>
+                                    )}
+                                </Stack>
+                            </ScrollArea.Autosize>
+                        </Stack>
+                    )}
                 </Modal.Body>
             </Modal.Content>
         </Modal.Root>
     );
-
-    // return (
-    //     <Modal
-    //         opened={!!addModalOpen}
-    //         onClose={handleClose}
-    //         title="Add to playlist"
-    //         centered
-    //         size="lg"
-    //         styles={{
-    //             content: { backgroundColor: 'var(--mantine-color-dark-7)' },
-    //             header: { backgroundColor: 'var(--mantine-color-dark-7)' },
-    //             body: {
-    //                 backgroundColor: 'var(--mantine-color-dark-7)',
-    //                 color: 'white',
-    //             },
-    //             title: { color: 'white' },
-    //             close: { color: 'white' },
-    //         }}
-    //     >
-    //         <Stack gap="sm">
-    //             <Group justify="right" align="right">
-    //                 <Button
-    //                     mr="100px"
-    //                     mt="-40px"
-    //                     variant="light"
-    //                     onClick={() => setOpen(true)}
-    //                 >
-    //                     Create Playlist
-    //                 </Button>
-    //             </Group>
-
-    //             {selectedVideo && (
-    //                 <Text size="sm">Track: {selectedVideo.title}</Text>
-    //             )}
-
-    //             <ScrollArea.Autosize mah={320} type="auto">
-    //                 <Stack gap={6}>
-    //                     {playlists?.items?.map((p: any) => (
-    //                         <Button
-    //                             key={p.Playlist_Id}
-    //                             variant="light"
-    //                             onClick={() => onPick(p)}
-    //                             loading={loadingId === p.Playlist_Id}
-    //                             rightSection={
-    //                                 <Group gap={6}>
-    //                                     <Music2 size={14} />
-    //                                     <Text size="xs">
-    //                                         {p.tracksCount ?? '—'}
-    //                                     </Text>
-    //                                 </Group>
-    //                             }
-    //                             styles={{
-    //                                 label: {
-    //                                     justifyContent: 'space-between',
-    //                                     width: '100%',
-    //                                 },
-    //                             }}
-    //                         >
-    //                             {p.Name}
-    //                         </Button>
-    //                     ))}
-    //                     {(!playlists?.items ||
-    //                         playlists.items.length === 0) && (
-    //                         <Text c="dimmed" ta="center">
-    //                             No playlists yet
-    //                         </Text>
-    //                     )}
-    //                 </Stack>
-    //             </ScrollArea.Autosize>
-    //         </Stack>
-    //     </Modal>
-    // );
 };
 
 export default AddToPlaylistModal;

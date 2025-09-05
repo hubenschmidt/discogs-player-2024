@@ -557,6 +557,11 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: true,
             },
+            Tracks_Count: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

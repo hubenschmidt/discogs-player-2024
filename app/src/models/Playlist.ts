@@ -16,6 +16,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
             Description: {
                 type: DataTypes.INTEGER,
             },
+            Tracks_Count: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
         },
         {
             tableName: 'Playlist',
