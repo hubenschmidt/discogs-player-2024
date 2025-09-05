@@ -314,18 +314,27 @@ export const getPlaylists = async (req: Request, user: any) => {
         defaultOrder: 'DESC',
     });
 
-    const where: any = { User_Id: user.User_Id };
-    const q = (req.query.q as string)?.trim();
-    if (q) where.Name = { [Op.iLike]: `%${q}%` }; // if MySQL, use [Op.substring]: q
-
     const { count, rows } = await db.Playlist.findAndCountAll({
-        where,
+        where: { User_Id: user.User_Id },
         order: [
             [orderBy, order],
-            ['Playlist_Id', 'DESC'], // tie-breaker for stable order
+            ['Playlist_Id', 'DESC'], // stable tie-breaker
         ],
         limit,
         offset,
+        include: {
+            model: db.Video,
+            attributes: [
+                'Video_Id',
+                'URI',
+                'Title',
+                'Duration',
+                'createdAt',
+                'updatedAt',
+            ],
+            through: { attributes: [] }, // hide join table fields
+            order: [['updatedAt', 'DESC']],
+        },
     });
 
     return toPagedResponse(
@@ -335,6 +344,7 @@ export const getPlaylists = async (req: Request, user: any) => {
         rows.map((r: any) => r.get({ plain: true })),
     );
 };
+
 export const getStylesByGenre = async (req: Request) => {
     try {
         const { genre } = req.params;
