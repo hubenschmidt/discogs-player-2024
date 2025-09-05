@@ -529,3 +529,35 @@ export const search = async (req: Request) => {
 
     return [];
 };
+
+export const addToPlaylist = async (req: Request, user: any) => {
+    const { playlistId, uri } = req.body;
+    const extractedUri = extractYouTubeVideoId(uri);
+
+    return db.sequelize.transaction(async (t: Transaction) => {
+        const video = await db.Video.findOne({
+            where: { URI: extractedUri },
+            transaction: t,
+            raw: true,
+        });
+
+        const [playlistVideo, created] = await db.PlaylistVideo.findOrCreate({
+            where: {
+                Playlist_Id: playlistId,
+                Video_Id: video.Video_Id,
+            },
+            defaults: {
+                Playlist_Id: playlistId,
+                Video_Id: video.Video_Id,
+            },
+            transaction: t,
+        });
+
+        return {
+            added: created, // false if it already existed
+            playlistId: playlistId,
+            playlistVideo: playlistVideo.get({ plain: true }),
+            video: video.get ? video.get({ plain: true }) : video,
+        };
+    });
+};

@@ -6,6 +6,7 @@ import {
     getUser,
     updatePlayHistory,
     createPlaylist,
+    addToPlaylist,
     getPlaylists,
 } from '../../controllers/appController';
 
@@ -17,6 +18,7 @@ router.get('/search/:username', search);
 router.get('/user/:email', getUser);
 router.post('/:username/release/:release_id/video', updatePlayHistory);
 router.post('/:username/playlist/create', createPlaylist);
+router.post('/:username/playlist/add', addToPlaylist);
 router.get('/:username/playlist/all', getPlaylists);
 
 export default router;

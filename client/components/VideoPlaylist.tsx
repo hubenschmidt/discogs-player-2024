@@ -15,6 +15,7 @@ import { UserContext } from '../context/userContext';
 import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
+import AddToPlaylistModal from './AddToPlaylistModal';
 
 const VideoPlaylist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -36,14 +37,19 @@ const VideoPlaylist = () => {
 
     const handleAdd = async (video: any) => {
         // todo, add videos
-        getPlaylists(userState?.username, bearerToken, { limit: 10 })
+        getPlaylists(userState?.username, bearerToken, {
+            limit: 10,
+            orderBy: 'updatedAt',
+            order: 'ASC',
+        })
             .then(res => {
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
 
-                dispatchPlaylist({
-                    type: 'SET_SHOW_PLAYLIST_VIEW',
-                    payload: true,
-                });
+                dispatchPlaylist({ type: 'SET_ADD_MODAL', payload: true });
+                // dispatchPlaylist({
+                //     type: 'SET_SHOW_PLAYLIST_VIEW',
+                //     payload: true,
+                // });
             })
             .catch(err => console.log(err));
     };
@@ -204,6 +210,7 @@ const VideoPlaylist = () => {
                     );
                 })}
             </Stack>
+            <AddToPlaylistModal />
         </Box>
     );
 };

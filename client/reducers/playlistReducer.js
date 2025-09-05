@@ -3,6 +3,8 @@ export const SET_PLAYLISTS = 'SET_PLAYLISTS';
 export const PLAYLISTS_PAGE_REQUESTED = 'PLAYLISTS_PAGE_REQUESTED';
 export const PLAYLISTS_PAGE_SIZE_REQUESTED = 'PLAYLISTS_PAGE_SIZE_REQUESTED';
 export const PLAYLISTS_LOADING = 'PLAYLISTS_LOADING';
+export const SET_ADD_MODAL = 'SET_ADD_MODAL';
+export const SET_SELECTED_PLAYLIST = 'SET_SELECTED_PLAYLIST';
 
 export default initialState => {
     return (state, action) => {
@@ -17,6 +19,10 @@ export default initialState => {
                 return playlistsPageSizeRequested(state, action.payload);
             case PLAYLISTS_LOADING:
                 return playlistsLoading(state, action.payload);
+            case SET_ADD_MODAL:
+                return setAddModal(state, action.payload);
+            case SET_SELECTED_PLAYLIST:
+                return setSelectedPlaylist(state, action.payload);
             default:
                 return state;
         }
@@ -56,5 +62,19 @@ const playlistsLoading = (state, payload) => {
     return {
         ...state,
         isLoadingPlaylists: payload,
+    };
+};
+
+const setAddModal = (state, payload) => {
+    return {
+        ...state,
+        addModalOpen: payload,
+    };
+};
+
+const setSelectedPlaylist = (state, payload) => {
+    return {
+        ...state,
+        selectedPlaylist: payload,
     };
 };

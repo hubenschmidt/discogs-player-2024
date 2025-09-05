@@ -1,5 +1,5 @@
 import { requestHandler } from '../lib/request-handler';
-import { Axios, AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { CollectionResponse } from '../interfaces';
 import type { BearerToken } from '../types/types';
 
@@ -223,6 +223,24 @@ export const createPlaylist = async (
         'POST',
         uri,
         { name: name, description: description, video: video },
+        token,
+    );
+
+    return response.data;
+};
+
+export const addToPlaylist = async (
+    username: string,
+    token: BearerToken,
+    selectedPlaylist: any,
+    video: any,
+) => {
+    const uri = `/api/app/${username}/playlist/add`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'POST',
+        uri,
+        { playlistId: selectedPlaylist.Playlist_Id, uri: video.uri },
         token,
     );
 

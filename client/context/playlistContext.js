@@ -4,6 +4,8 @@ import playlistReducer from '../reducers/playlistReducer';
 const initialState = {
     showPlaylistView: false,
     playlists: null,
+    addModalOpen: false,
+    selectedPlaylist: null,
 };
 
 export const PlaylistContext = createContext(initialState);

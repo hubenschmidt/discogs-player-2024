@@ -29,7 +29,6 @@ export const createPlaylist = async (req: Request) => {
 
     let video = undefined;
     if (req.body?.video) video = await repos.getVideo(req);
-    console.log(video);
 
     const playlist = await repos.createPlaylist(req, user, video);
     return playlist;
@@ -39,4 +38,10 @@ export const getPlaylists = async (req: Request) => {
     const user = await repos.getUser(req);
     const playlists = await repos.getPlaylists(req, user);
     return playlists;
+};
+
+export const addToPlaylist = async (req: Request) => {
+    const user = await repos.getUser(req);
+    const entry = await repos.addToPlaylist(req, user);
+    return entry;
 };

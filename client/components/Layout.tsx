@@ -25,6 +25,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import Search from './Search';
 import Navbar from './NavBar';
 import Playlists from './Playlists';
+import AddToPlaylistModal from './AddToPlaylistModal';
 
 type Props = {
     children?: ReactNode;

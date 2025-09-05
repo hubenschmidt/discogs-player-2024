@@ -14,16 +14,17 @@ import { UserContext } from '../context/userContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { Play, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist } from '../api';
 import { getPlaylists } from '../api';
+import AddToPlaylistModal from './AddToPlaylistModal';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { playlists } = playlistState;
+    const { addModalOpen, addModalVideo, playlists } = playlistState;
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
@@ -64,6 +65,33 @@ const Playlists = () => {
         userState.username,
         bearerToken,
     ]);
+    console.log(selectedVideo);
+
+    const handlePickPlaylist = async (playlistId: number) => {
+        // if (!addModalVideo) return;
+        // try {
+        //     await addVideoToPlaylist(
+        //         userState.username,
+        //         bearerToken,
+        //         uri,
+        //         addModalVideo,
+        //     );
+        //     // close modal
+        //     dispatchPlaylist({ type: 'CLOSE_ADD_MODAL' });
+        //     // refresh page 1 so updated playlist surfaces at top
+        //     const limit =
+        //         playlistState.pendingLimit ?? playlists?.pageSize ?? 10;
+        //     const res = await getPlaylists(userState.username, bearerToken, {
+        //         page: 1,
+        //         limit,
+        //         orderBy: 'updatedAt',
+        //         order: 'DESC',
+        //     });
+        //     dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
+        // } catch (e) {
+        //     console.error(e);
+        // }
+    };
 
     const onSubmit = async () => {
         setCreating(true);

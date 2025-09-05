@@ -40,6 +40,7 @@ export const toPagedResponse = <T>(
     rows: T[],
 ) => {
     return {
+        count: count,
         currentPage: page,
         totalPages: Math.max(1, Math.ceil(count / limit)),
         items: rows,

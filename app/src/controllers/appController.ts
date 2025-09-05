@@ -98,3 +98,17 @@ export const getPlaylists = async (
         next(error);
     }
 };
+
+export const addToPlaylist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const entry = await appService.addToPlaylist(req);
+        res.status(200).json(entry);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
