@@ -107,10 +107,17 @@ const AddToPlaylistModal = () => {
             centered
             size="lg"
         >
-            <Modal.Overlay />
-            <Modal.Content>
+            <Modal.Overlay backgroundOpacity={0.5} />
+            <Modal.Content
+                style={{
+                    border: '1px solid #fff', // ← white border
+                    borderRadius: 12, // optional, match your design
+                }}
+            >
                 <Modal.Header
-                    style={{ backgroundColor: 'var(--mantine-color-dark-9)' }}
+                    style={{
+                        backgroundColor: 'var(--mantine-color-dark-9)',
+                    }}
                 >
                     <Modal.Title>Add Track</Modal.Title>
                     {!open && (
