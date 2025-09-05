@@ -116,7 +116,7 @@ const AddToPlaylistModal = () => {
             >
                 <Modal.Header
                     style={{
-                        backgroundColor: 'var(--mantine-color-dark-9)',
+                        backgroundColor: '#141516',
                     }}
                 >
                     <Modal.Title>Add Track</Modal.Title>
@@ -135,7 +135,7 @@ const AddToPlaylistModal = () => {
 
                 <Modal.Body
                     style={{
-                        backgroundColor: 'var(--mantine-color-dark-9)',
+                        backgroundColor: '#141516',
                         color: 'white',
                     }}
                 >
