@@ -8,12 +8,6 @@
     --fw-base: 200;
 }
 
-/* 2) Apply it app-wide */
-html,
-body {
-    font-weight: var(--fw-base);
-}
-
 /* 3) Reset common elements to inherit the base (helps defeat UA defaults) */
 h1,
 h2,
@@ -172,13 +166,20 @@ html {
     height: 14px;
 }
 
+/* Self-hosted variable font example */
+@font-face {
+    font-family: 'JetBrains Mono Var';
+    src: url('/fonts/JetBrainsMono-Variable.woff2') format('woff2-variations');
+    font-weight: 100 800; /* <- important so the browser knows the range */
+    font-style: normal;
+    font-display: swap;
+}
+
 body {
     color: var(--foreground);
     background: var(--background);
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Iosevka',
-        ui-monospace, Monaco, Cascadia Mono, Segoe UI Mono, Roboto Mono,
-        Oxygen Mono, Ubuntu Mono, Source Code Pro, Fira Mono, Droid Sans Mono,
-        Consolas, Courier New, monospace;
+    /* font-family: 'JetBrains Mono Var', 'JetBrains Mono', Consolas, monospace;
+    font-weight: var(--fw-base); */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

@@ -61,10 +61,8 @@ export const DataTable = <T,>({
     onPageSizeChange,
     pageSizeValue,
     pageSizeOptions = [5, 10, 20, 25, 50, 100],
-
     rowKey,
     onRowClick,
-
     emptyText = 'No records',
     highlightOnHover = true,
     withTableBorder = true,
@@ -74,9 +72,10 @@ export const DataTable = <T,>({
         tableLayout: 'fixed',
         width: '100%',
         ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
+        backgroundColor: '#0e0e0f',
+        border: 'transparent',
     },
     topRight,
-    bottomRight,
 }: DataTableProps<T>) => {
     const items = data?.items ?? [];
     const page = data?.currentPage ?? 1;
@@ -158,7 +157,11 @@ export const DataTable = <T,>({
                                 <Table.Th
                                     key={i}
                                     visibleFrom={col.visibleFrom}
-                                    style={{ width: col.width }}
+                                    style={{
+                                        width: col.width,
+                                        border: '4px solid black',
+                                        fontVariationSettings: '"wght" 700',
+                                    }}
                                     {...col.thProps}
                                 >
                                     {col.header}
@@ -170,27 +173,21 @@ export const DataTable = <T,>({
                     <Table.Tbody>
                         {items.map((row, idx) => {
                             const key = rowKey ? rowKey(row, idx) : idx;
-                            const clickable = !!onRowClick;
 
                             return (
                                 <Table.Tr
                                     key={key}
-                                    onClick={
-                                        clickable
-                                            ? () => onRowClick!(row)
-                                            : undefined
-                                    }
-                                    style={
-                                        clickable
-                                            ? { cursor: 'pointer' }
-                                            : undefined
-                                    }
+                                    onClick={() => onRowClick!(row)}
+                                    style={{ border: '4px solid black' }}
                                 >
                                     {columns.map((col, ci) => (
                                         <Table.Td
                                             key={ci}
                                             visibleFrom={col.visibleFrom}
                                             {...col.tdProps}
+                                            style={{
+                                                border: '4px solid black',
+                                            }}
                                         >
                                             {getCellContent(col, row)}
                                         </Table.Td>
@@ -211,13 +208,6 @@ export const DataTable = <T,>({
                     </Table.Tbody>
                 </Table>
             </Table.ScrollContainer>
-
-            {/* Bottom area (optional) */}
-            {bottomRight && (
-                <Group justify="flex-end" mt="sm">
-                    {bottomRight}
-                </Group>
-            )}
         </Box>
     );
 };

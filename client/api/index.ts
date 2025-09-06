@@ -246,3 +246,13 @@ export const addToPlaylist = async (
 
     return response.data;
 };
+
+export const getPlaylist = async (
+    username: string,
+    token: BearerToken,
+    playlistId: number,
+) => {
+    const uri = `/api/app/${username}/playlist/${playlistId}`;
+    const response: AxiosResponse<any> = await requestHandler('GET', uri, null, token);
+    return response.data; 
+};

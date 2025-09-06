@@ -5,12 +5,12 @@ export const PLAYLISTS_PAGE_SIZE_REQUESTED = 'PLAYLISTS_PAGE_SIZE_REQUESTED';
 export const PLAYLISTS_LOADING = 'PLAYLISTS_LOADING';
 export const SET_ADD_MODAL = 'SET_ADD_MODAL';
 export const SET_SELECTED_PLAYLIST = 'SET_SELECTED_PLAYLIST';
+export const SET_PLAYLIST_OPEN = 'SET_PLAYLIST_OPEN';
+export const SET_PLAYLIST_DETAIL = 'SET_PLAYLIST_DETAIL';
 
 export default initialState => {
     return (state, action) => {
         switch (action.type) {
-            case SET_SHOW_PLAYLIST_VIEW:
-                return setShowPlaylistView(state, action.payload);
             case SET_PLAYLISTS:
                 return setPlaylists(state, action.payload);
             case PLAYLISTS_PAGE_REQUESTED:
@@ -23,16 +23,13 @@ export default initialState => {
                 return setAddModal(state, action.payload);
             case SET_SELECTED_PLAYLIST:
                 return setSelectedPlaylist(state, action.payload);
+            case SET_PLAYLIST_OPEN:
+                return setPlaylistOpen(state, action.payload);
+            case SET_PLAYLIST_DETAIL:
+                return setPlaylistDetail(state, action.payload);
             default:
                 return state;
         }
-    };
-};
-
-const setShowPlaylistView = (state, payload) => {
-    return {
-        ...state,
-        showPlaylistView: payload,
     };
 };
 
@@ -76,5 +73,19 @@ const setSelectedPlaylist = (state, payload) => {
     return {
         ...state,
         selectedPlaylist: payload,
+    };
+};
+
+const setPlaylistOpen = (state, payload) => {
+    return {
+        ...state,
+        playlistOpen: payload,
+    };
+};
+
+const setPlaylistDetail = (state, payload) => {
+    return {
+        ...state,
+        playlistDetail: payload,
     };
 };

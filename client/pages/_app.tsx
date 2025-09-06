@@ -9,6 +9,7 @@ import { DiscogsReleaseProvider } from '../context/discogsReleaseContext';
 import { PlayerProvider } from '../context/playerContext';
 import { SearchProvider } from '../context/searchContext';
 import { PlaylistProvider } from '../context/playlistContext';
+import { NavProvider } from '../context/navContext';
 import { variantColorResolver } from '../lib/variantColorResolver';
 
 export default ({ Component, pageProps }: AppProps) => (
@@ -19,7 +20,9 @@ export default ({ Component, pageProps }: AppProps) => (
                     <PlayerProvider>
                         <SearchProvider>
                             <PlaylistProvider>
-                                <Component {...pageProps} />
+                                <NavProvider>
+                                    <Component {...pageProps} />
+                                </NavProvider>
                             </PlaylistProvider>
                         </SearchProvider>
                     </PlayerProvider>

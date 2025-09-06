@@ -2,7 +2,10 @@
 import React, { useContext } from 'react';
 import { Text } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
+import { UserContext } from '../context/userContext';
 import { DataTable, type Column } from './DataTable';
+import { useBearerToken } from '../hooks/useBearerToken';
+import { getPlaylist } from '../api';
 
 type Playlist = {
     Playlist_Id: number;
@@ -17,7 +20,8 @@ const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : '—');
 
 const PlaylistsTable = () => {
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const data = playlistState?.playlists;
+    const { userState } = useContext(UserContext);
+    const bearerToken = useBearerToken();
 
     const columns: Column<Playlist>[] = [
         {
@@ -44,6 +48,20 @@ const PlaylistsTable = () => {
             render: p => <Text>{fmtDate(p.updatedAt || p.createdAt)}</Text>,
         },
     ];
+
+    const handleRowClick = async (row: Playlist) => {
+        dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: true });
+
+        getPlaylist(userState.username, bearerToken, row.Playlist_Id)
+            .then(res => {
+                console.log(res);
+                dispatchPlaylist({
+                    type: 'SET_PLAYLIST_DETAIL',
+                    payload: res,
+                });
+            })
+            .catch(err => console.log(err));
+    };
 
     return (
         <DataTable<Playlist>
@@ -73,6 +91,7 @@ const PlaylistsTable = () => {
                 });
             }}
             pageSizeOptions={[5, 10, 20, 25, 50]}
+            onRowClick={handleRowClick}
         />
     );
 };

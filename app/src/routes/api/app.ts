@@ -8,6 +8,7 @@ import {
     createPlaylist,
     addToPlaylist,
     getPlaylists,
+    getPlaylist,
 } from '../../controllers/appController';
 
 export const router: Router = Router();
@@ -20,5 +21,6 @@ router.post('/:username/release/:release_id/video', updatePlayHistory);
 router.post('/:username/playlist/create', createPlaylist);
 router.post('/:username/playlist/add', addToPlaylist);
 router.get('/:username/playlist/all', getPlaylists);
+router.get('/:username/playlist/:playlistId', getPlaylist);
 
 export default router;

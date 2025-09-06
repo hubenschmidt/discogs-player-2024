@@ -19,15 +19,16 @@ import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist } from '../api';
 import { getPlaylists } from '../api';
+import { NavContext } from '../context/navContext';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
+    const { dispatchNav } = useContext(NavContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { addModalOpen, playlists } = playlistState;
+    const { playlists } = playlistState;
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
-
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -99,7 +100,7 @@ const Playlists = () => {
     };
 
     const handleClose = payload => {
-        dispatchPlaylist({ type: 'SET_SHOW_PLAYLIST_VIEW', payload: payload });
+        dispatchNav({ type: 'SET_NAV_KEY', payload: payload });
     };
 
     return (
@@ -118,7 +119,7 @@ const Playlists = () => {
                     radius="md"
                     size="lg"
                     aria-label="Close playlists"
-                    onClick={() => handleClose(false)}
+                    onClick={() => handleClose(null)}
                 >
                     <X size={18} />
                 </ActionIcon>

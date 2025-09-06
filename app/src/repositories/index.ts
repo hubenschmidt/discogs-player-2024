@@ -91,7 +91,14 @@ export const addVideoToPlaylist = async (
 
 export const updatePlaylistMeta = async () => {};
 
-export const getPlaylist = async (req: Request, user: any) => {};
+export const getPlaylist = async (req: Request, user: any) => {
+    return await db.Playlist.findOne({
+        where: { Playlist_Id: req.params.playlistId },
+        include: {
+            model: db.Video,
+        },
+    });
+};
 
 export const getVideo = async (req: Request) => {
     const uri = extractYouTubeVideoId(req.body.video.uri);

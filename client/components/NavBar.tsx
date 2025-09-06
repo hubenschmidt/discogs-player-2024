@@ -1,7 +1,7 @@
-// NavBar.tsx
-import React from 'react';
+import React, { useContext } from 'react';
 import { Stack, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { Menu, ChevronLeft } from 'lucide-react';
+import { NavContext } from '../context/navContext';
 
 type SidebarLinkProps = {
     label: string;
@@ -52,16 +52,10 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
 type NavBarProps = {
     isCollapsed: boolean;
     setIsCollapsed: (v: boolean) => void;
-    activePanel: string | null;
-    onSelect: (panel: string) => void;
 };
 
-const NavBar: React.FC<NavBarProps> = ({
-    isCollapsed,
-    setIsCollapsed,
-    activePanel,
-    onSelect,
-}) => {
+const NavBar: React.FC<NavBarProps> = ({ isCollapsed, setIsCollapsed }) => {
+    const { navState, dispatchNav } = useContext(NavContext);
     const navLinks = [
         { key: 'history', label: 'History' },
         { key: 'playlists', label: 'Playlists' },
@@ -109,14 +103,14 @@ const NavBar: React.FC<NavBarProps> = ({
                             <SidebarLink
                                 key={l.key}
                                 label={l.label}
-                                active={activePanel === l.key}
                                 collapsed={isCollapsed}
                                 href={l.href}
                                 onClick={() => {
                                     if (!l.href) {
-                                        onSelect(
-                                            activePanel === l.key ? '' : l.key,
-                                        );
+                                        dispatchNav({
+                                            type: 'SET_NAV_KEY',
+                                            payload: l.key,
+                                        });
                                         setIsCollapsed(true);
                                     }
                                 }}

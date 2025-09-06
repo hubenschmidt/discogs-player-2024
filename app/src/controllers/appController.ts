@@ -112,3 +112,17 @@ export const addToPlaylist = async (
         next(error);
     }
 };
+
+export const getPlaylist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const playlist = await appService.getPlaylist(req);
+        res.status(200).json(playlist);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};

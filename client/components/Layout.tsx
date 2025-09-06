@@ -25,35 +25,24 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import Search from './Search';
 import Navbar from './NavBar';
 import Playlists from './Playlists';
-import AddToPlaylistModal from './AddToPlaylistModal';
+import { NavContext } from '../context/navContext';
 
 type Props = {
     children?: ReactNode;
     title?: string;
 };
 
-const History: React.FC = () => (
-    <Box>
-        <Text size="lg" fw={700} mb="sm">
-            History
-        </Text>
-        <Text>…your history component goes here…</Text>
-    </Box>
-);
-
 const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
-    const { username} = userState;
+    const { navState } = useContext(NavContext);
+    const { navKey } = navState;
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { previewDiscogsRelease, selectedDiscogsRelease, selectedVideo } =
         discogsReleaseState;
-    const { playlistState } = useContext(PlaylistContext);
-    const { showPlaylistView, playlists } = playlistState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
-    const [activePanel, setActivePanel] = useState<string | null>(null);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -112,12 +101,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 />
             </Head>
 
-            <Navbar
-                isCollapsed={isCollapsed}
-                setIsCollapsed={setIsCollapsed}
-                activePanel={activePanel}
-                onSelect={panel => setActivePanel(panel || null)}
-            />
+            <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             <Box component="header"></Box>
             <Container fluid className="layout-container" ml="5px" mr="5px">
                 <Box
@@ -198,22 +182,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 </Box>
 
-                {/* This is the column BELOW Search. Show the selected panel here. */}
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                        {activePanel === 'history' && <History />}
-                        {activePanel === 'playlists' && <Text>Playlists…</Text>}
-                        {activePanel === 'genres' && <Text>Genres…</Text>}
-                        {activePanel === 'styles' && <Text>Styles…</Text>}
-                        {!activePanel && (
-                            <Text>
-                                content placeholder for playlists, history,
-                                stats, genre and style explorer
-                            </Text>
-                        )}
-                    </Grid.Col>
-                </Grid>
-
                 {/* Vinyl Shelf Section */}
                 <Grid mb="sm">
                     <Grid.Col span={{ base: 12 }}>
@@ -249,7 +217,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 )}
 
-                {showPlaylistView && playlists?.items.length > 0 && (
+                {navKey === 'playlists' && (
                     <Grid mb="sm">
                         <Grid.Col
                             span={{ base: 12, md: 12, lg: 12 }}
