@@ -21,7 +21,8 @@ app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlen
 // validate bearerToken is from a trusted source
 const jwtCheck = auth({
     audience: 'http://localhost:5000/',
-    issuerBaseURL: 'https://dev-gzizexcaww2ggsh4.us.auth0.com/',
+    // issuerBaseURL: 'https://dev-gzizexcaww2ggsh4.us.auth0.com/', // locked-out whubenschmidt@gmail.com Auth0 Tenant
+    issuerBaseURL: 'https://dev-i6pidxzic85x5kuy.us.auth0.com/', // new Github-Auth0 Tenant
     tokenSigningAlg: 'RS256',
 });
 app.use(jwtCheck);
