@@ -5,8 +5,7 @@ const initialState = {
     playlists: null,
     addModalOpen: false,
     selectedPlaylist: null,
-    playlistOpen: false,
-    playlistDetail: null
+    playlistDetail: null,
 };
 
 export const PlaylistContext = createContext(initialState);

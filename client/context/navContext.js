@@ -3,6 +3,7 @@ import navReducer from '../reducers/navReducer';
 
 const initialState = {
     navBarKey: null,
+    playlistOpen: false,
 };
 
 export const NavContext = createContext(initialState);

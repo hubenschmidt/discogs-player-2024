@@ -7,7 +7,6 @@ import VideoPlaylist from './VideoPlaylist';
 import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { PlaylistContext } from '../context/playlistContext';
 import {
     Grid,
     Container,
@@ -25,6 +24,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import Search from './Search';
 import Navbar from './NavBar';
 import Playlists from './Playlists';
+import Playlist from './Playlist';
 import { NavContext } from '../context/navContext';
 
 type Props = {
@@ -35,7 +35,7 @@ type Props = {
 const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
     const { navState } = useContext(NavContext);
-    const { navKey } = navState;
+    const { navKey, playlistOpen } = navState;
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
@@ -43,6 +43,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
+    console.log(playlistOpen);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -224,6 +225,17 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             style={devStyle}
                         >
                             <Playlists />
+                        </Grid.Col>
+                    </Grid>
+                )}
+
+                {playlistOpen && (
+                    <Grid mb="sm">
+                        <Grid.Col
+                            span={{ base: 12, md: 12, lg: 12 }}
+                            style={devStyle}
+                        >
+                            <Playlist />
                         </Grid.Col>
                     </Grid>
                 )}

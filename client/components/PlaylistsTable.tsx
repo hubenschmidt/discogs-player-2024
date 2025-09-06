@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { Text } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
 import { UserContext } from '../context/userContext';
+import { NavContext } from '../context/navContext';
 import { DataTable, type Column } from './DataTable';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylist } from '../api';
@@ -21,6 +22,7 @@ const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : '—');
 const PlaylistsTable = () => {
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { userState } = useContext(UserContext);
+    const { dispatchNav } = useContext(NavContext);
     const bearerToken = useBearerToken();
 
     const columns: Column<Playlist>[] = [
@@ -54,11 +56,13 @@ const PlaylistsTable = () => {
 
         getPlaylist(userState.username, bearerToken, row.Playlist_Id)
             .then(res => {
-                console.log(res);
                 dispatchPlaylist({
                     type: 'SET_PLAYLIST_DETAIL',
                     payload: res,
                 });
+
+                dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+                dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: true });
             })
             .catch(err => console.log(err));
     };
