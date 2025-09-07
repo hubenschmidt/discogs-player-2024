@@ -40,6 +40,9 @@ const Playlists = () => {
             playlistState.pendingLimit ??
             playlistState.playlists?.pageSize ??
             10;
+        const orderBy = playlistState.pendingOrderBy ?? 'updatedAt';
+        const order = playlistState.pendingOrder ?? 'DESC';
+        console.log(playlistState.pendingOrder, 'pending order');
 
         if (!page) return;
 
@@ -49,7 +52,7 @@ const Playlists = () => {
                 const res = await getPlaylists(
                     userState.username,
                     bearerToken,
-                    { page, limit },
+                    { page, limit, orderBy, order },
                 );
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
             } catch (err: any) {
@@ -62,6 +65,8 @@ const Playlists = () => {
     }, [
         playlistState.pendingPage,
         playlistState.pendingLimit,
+        playlistState.pendingOrderBy,
+        playlistState.pendingOrder,
         userState.username,
         bearerToken,
     ]);

@@ -6,8 +6,12 @@ import {
     Table,
     Text,
     Select,
+    UnstyledButton,
     type MantineBreakpoint,
 } from '@mantine/core';
+import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
+
+type SortDir = 'ASC' | 'DESC';
 
 export type DataTableProps<T> = {
     data?: PageData<T> | null;
@@ -19,6 +23,11 @@ export type DataTableProps<T> = {
     onPageSizeChange?: (size: number) => void;
     pageSizeValue?: number; // requested/controlled page size
     pageSizeOptions?: number[]; // defaults below
+
+    // sorting
+    sortBy?: string;
+    sortDirection?: SortDir;
+    onSortChange?: (s: { sortBy: string; direction: SortDir }) => void;
 
     // rows
     rowKey?: (row: T, index: number) => React.Key;
@@ -54,6 +63,10 @@ export type Column<T> = {
     visibleFrom?: MantineBreakpoint;
     thProps?: React.ComponentProps<typeof Table.Th>;
     tdProps?: React.ComponentProps<typeof Table.Td>;
+    /** enable click-to-sort on this column */
+    sortable?: boolean;
+    /** explicit key to send to backend; defaults to string accessor if present */
+    sortKey?: string;
 };
 
 export const DataTable = <T,>({
@@ -64,6 +77,9 @@ export const DataTable = <T,>({
     onPageSizeChange,
     pageSizeValue,
     pageSizeOptions = [5, 10, 20, 25, 50, 100],
+    sortBy,
+    sortDirection,
+    onSortChange,
     rowKey,
     onRowClick,
     emptyText = 'No records',
@@ -92,6 +108,53 @@ export const DataTable = <T,>({
             return v ?? '—';
         }
         return '—';
+    };
+
+    const renderHeader = (col: Column<T>) => {
+        const key =
+            col.sortKey ??
+            (typeof col.accessor === 'string'
+                ? (col.accessor as string)
+                : undefined);
+        const isSortable = !!(onSortChange && (col.sortable || key));
+        const isActive = isSortable && sortBy === key;
+
+        if (!isSortable || !key) return col.header;
+
+        const nextDir: SortDir =
+            isActive && sortDirection === 'ASC' ? 'DESC' : 'ASC';
+
+        return (
+            <UnstyledButton
+                onClick={() =>
+                    onSortChange?.({ sortBy: key, direction: nextDir })
+                }
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    width: '100%',
+                }}
+                aria-sort={
+                    isActive
+                        ? sortDirection === 'ASC'
+                            ? 'ascending'
+                            : 'descending'
+                        : 'none'
+                }
+            >
+                {col.header}
+                {isActive ? (
+                    sortDirection === 'ASC' ? (
+                        <ArrowUp size={14} />
+                    ) : (
+                        <ArrowDown size={14} />
+                    )
+                ) : (
+                    <ChevronsUpDown size={14} style={{ opacity: 0.5 }} />
+                )}
+            </UnstyledButton>
+        );
     };
 
     return (
@@ -162,7 +225,7 @@ export const DataTable = <T,>({
                                     }}
                                     {...col.thProps}
                                 >
-                                    {col.header}
+                                    {renderHeader(col)}
                                 </Table.Th>
                             ))}
                         </Table.Tr>

@@ -6,6 +6,8 @@ const initialState = {
     addModalOpen: false,
     selectedPlaylist: null,
     playlistDetail: null,
+    pendingOrderBy: 'updatedAt',
+    pendingOrder: 'DESC',
 };
 
 export const PlaylistContext = createContext(initialState);

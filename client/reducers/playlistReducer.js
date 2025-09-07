@@ -6,6 +6,10 @@ export const PLAYLISTS_LOADING = 'PLAYLISTS_LOADING';
 export const SET_ADD_MODAL = 'SET_ADD_MODAL';
 export const SET_SELECTED_PLAYLIST = 'SET_SELECTED_PLAYLIST';
 export const SET_PLAYLIST_DETAIL = 'SET_PLAYLIST_DETAIL';
+export const PLAYLISTS_SORT_REQUESTED = 'PLAYLISTS_SORT_REQUESTED';
+// export const PLAYLIST_VIDEOS_PAGE_REQUESTED = 'PLAYLIST_VIDEOS_PAGE_REQUESTED';
+// export const PLAYLIST_VIDEOS_PAGE_SIZE_REQUESTED =
+//     'PLAYLIST_VIDEOS_PAGE_SIZE_REQUESTED';
 
 export default initialState => {
     return (state, action) => {
@@ -24,6 +28,10 @@ export default initialState => {
                 return setSelectedPlaylist(state, action.payload);
             case SET_PLAYLIST_DETAIL:
                 return setPlaylistDetail(state, action.payload);
+            case PLAYLISTS_SORT_REQUESTED:
+                return playlistsSortRequested(state, action.payload);
+            // case PLAYLIST_VIDEOS_PAGE_REQUESTED:
+            //     return playlist
             default:
                 return state;
         }
@@ -73,16 +81,19 @@ const setSelectedPlaylist = (state, payload) => {
     };
 };
 
-const setPlaylistOpen = (state, payload) => {
-    return {
-        ...state,
-        playlistOpen: payload,
-    };
-};
-
 const setPlaylistDetail = (state, payload) => {
     return {
         ...state,
         playlistDetail: payload,
+    };
+};
+
+const playlistsSortRequested = (state, payload) => {
+    console.log('playlists sort requested called');
+    return {
+        ...state,
+        pendingOrderBy: payload.orderBy,
+        pendingOrder: payload.order,
+        pendingPage: payload.page ?? 1, // reset page
     };
 };

@@ -34,6 +34,8 @@ const PlaylistsTable = () => {
                     {p.Name}
                 </Text>
             ),
+            sortable: true,
+            sortKey: 'Name',
         },
         {
             header: <Text fw={700}>Description</Text>,
@@ -42,12 +44,16 @@ const PlaylistsTable = () => {
                     {p.Description || '—'}
                 </Text>
             ),
+            sortable: true,
+            sortKey: 'Description',
         },
         {
             header: <Text fw={700}>Updated</Text>,
             width: '19%',
             visibleFrom: 'sm',
             render: p => <Text>{fmtDate(p.updatedAt || p.createdAt)}</Text>,
+            sortable: true,
+            sortKey: 'updatedAt',
         },
     ];
 
@@ -95,6 +101,20 @@ const PlaylistsTable = () => {
                 });
             }}
             pageSizeOptions={[5, 10, 20, 25, 50]}
+            sortBy={playlistState.pendingOrderBy ?? 'updatedAt'}
+            sortDirection={
+                (playlistState.pendingOrder ?? 'DESC') as 'ASC' | 'DESC'
+            }
+            onSortChange={({ sortBy, direction }) =>
+                dispatchPlaylist({
+                    type: 'PLAYLISTS_SORT_REQUESTED',
+                    payload: {
+                        orderBy: sortBy,
+                        order: direction.toUpperCase(),
+                        page: 1,
+                    }, // reset to 1 on sort change
+                })
+            }
             onRowClick={handleRowClick}
             tableStyle={{
                 tableLayout: 'fixed',
