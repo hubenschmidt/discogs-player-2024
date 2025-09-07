@@ -92,12 +92,38 @@ export const addVideoToPlaylist = async (
 export const updatePlaylistMeta = async () => {};
 
 export const getPlaylist = async (req: Request, user: any) => {
-    return await db.Playlist.findOne({
+    const playlist = await db.Playlist.findOne({
         where: { Playlist_Id: req.params.playlistId },
         include: {
             model: db.Video,
         },
     });
+    // Pull all releases linked to any video in this playlist
+    const releases = await db.Release.findAll({
+        distinct: true,
+        include: [
+            {
+                model: db.Video,
+                required: true,
+                through: { attributes: [] }, // ReleaseVideo
+                include: [
+                    {
+                        model: db.Playlist,
+                        where: { Playlist_Id: req.params.playlistId },
+                        required: true,
+                        through: { attributes: [] }, // PlaylistVideo
+                    },
+                ],
+            },
+            { model: db.Genre, through: { attributes: [] } },
+            { model: db.Style, through: { attributes: [] } },
+            { model: db.Artist, through: { attributes: [] } },
+            { model: db.Label, through: { attributes: [] } },
+        ],
+        order: [['Date_Added', 'DESC']],
+    });
+
+    return { playlist, releases };
 };
 
 export const getVideo = async (req: Request) => {
@@ -569,25 +595,6 @@ export const addToPlaylist = async (req: Request, user: any) => {
             },
             transaction: t,
         });
-
-        // // 3) Touch playlist (force a strictly newer timestamp)
-        // const pid = Number(playlistId);
-
-        // const [affected, updated] = await db.Playlist.update(
-        //     { updatedAt: db.sequelize.literal('clock_timestamp()') },
-        //     {
-        //         where: { Playlist_Id: pid },
-        //         transaction: t,
-        //         returning: true, // PG supports this; get the fresh row back
-        //     },
-        // );
-
-        // // Reload fresh playlist row (optional, but nice for response/debug)
-        // const fresh = await db.Playlist.findByPk(playlistId, {
-        //     transaction: t,
-        //     raw: true,
-        // });
-        // // console.log(fresh);
 
         return {
             added: created, // false if it already existed
