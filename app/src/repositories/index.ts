@@ -158,7 +158,6 @@ export const getPlaylist = async (req: Request, user: any) => {
                 model: db.Video,
                 as: 'Video',
                 required: true,
-                // include Playlist if you want to be extra strict; not needed here
             },
         ],
         order: videoOrder,
@@ -197,38 +196,56 @@ export const getPlaylist = async (req: Request, user: any) => {
         }));
     }
 
-    // ---- 4) Paged RELEASES for just those paged videos
+    // ---- 4) Paged RELEASES in the same order as the matching videos' Release_Id
     let releasesPaged: any[] = [];
     let releasesCount = 0;
 
     if (videosWithRelease.length) {
-        const videoIds = videosWithRelease.map((v: any) => v.Video_Id);
+        // 1) Build an ordered list of Release_Id (drop nulls, dedupe but keep first occurrence)
+        const releaseIdsOrdered: number[] = [];
+        const seen = new Set<number>();
+        for (const v of videosWithRelease) {
+            const rid = v?.Release_Id;
+            if (Number.isInteger(rid) && !seen.has(rid)) {
+                seen.add(rid);
+                releaseIdsOrdered.push(rid);
+            }
+        }
 
-        const rel = await db.Release.findAndCountAll({
-            distinct: true,
-            include: [
-                {
-                    model: db.Video,
-                    as: 'Videos',
-                    required: true,
-                    attributes: [], // we don't need video fields here
-                    where: { Video_Id: { [Op.in]: videoIds } },
-                    through: { attributes: [] }, // ReleaseVideo
-                },
-                { model: db.Genre, through: { attributes: [] } },
-                { model: db.Style, through: { attributes: [] } },
-                { model: db.Artist, through: { attributes: [] } },
-                { model: db.Label, through: { attributes: [] } },
-            ],
-            order: [['Date_Added', 'DESC']],
-            limit: relLimit,
-            offset: relOffset,
-        });
+        releasesCount = releaseIdsOrdered.length;
 
-        releasesCount = rel.count as number;
-        releasesPaged = rel.rows.map((r: any) =>
-            r.get ? r.get({ plain: true }) : r,
-        );
+        // 2) Page that ordered id list
+        const sliceStart = relOffset;
+        const sliceEnd = relOffset + relLimit;
+        const pagedIds = releaseIdsOrdered.slice(sliceStart, sliceEnd);
+
+        if (pagedIds.length) {
+            // 3) Fetch only these releases (+ associations)
+            const relRows = await db.Release.findAll({
+                where: { Release_Id: { [Op.in]: pagedIds } },
+                include: [
+                    { model: db.Genre, through: { attributes: [] } },
+                    { model: db.Style, through: { attributes: [] } },
+                    { model: db.Artist, through: { attributes: [] } },
+                    { model: db.Label, through: { attributes: [] } },
+                ],
+                // no order here — we'll reorder manually to match pagedIds
+            });
+
+            // 4) Reorder to match pagedIds
+            const rank = new Map<number, number>();
+            pagedIds.forEach((id, i) => rank.set(id, i));
+
+            relRows.sort(
+                (a: any, b: any) =>
+                    (rank.get(a.Release_Id) ?? 0) -
+                    (rank.get(b.Release_Id) ?? 0),
+            );
+
+            releasesPaged = relRows.map((r: any) =>
+                r.get ? r.get({ plain: true }) : r,
+            );
+        }
     }
 
     // ---- 5) Shape response using rows-first helper
