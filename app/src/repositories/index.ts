@@ -92,39 +92,152 @@ export const addVideoToPlaylist = async (
 export const updatePlaylistMeta = async () => {};
 
 export const getPlaylist = async (req: Request, user: any) => {
-    const playlist = await db.Playlist.findOne({
-        where: { Playlist_Id: req.params.playlistId },
-        include: {
-            model: db.Video,
+    const pid = Number(req.params.playlistId);
+
+    // ---- 1) Base paging for VIDEOS
+    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+        defaultLimit: 25,
+        maxLimit: 100,
+        defaultOrderBy: 'updatedAt',
+        allowedOrderBy: {
+            // exposed -> column (we translate below)
+            addedAt: 'addedAt', // PlaylistVideo.createdAt
+            title: 'Title', // Video.Title
+            updatedAt: 'updatedAt', // Video.updatedAt
+            createdAt: 'createdAt', // Video.createdAt
         },
+        defaultOrder: 'DESC',
     });
-    // Pull all releases linked to any video in this playlist
-    const releases = await db.Release.findAll({
-        distinct: true,
+
+    // Optional separate paging for RELEASES (defaults to same as videos)
+    const relPage = Math.max(
+        parseInt((req.query.relPage as string) ?? String(page)) || 1,
+        1,
+    );
+    const relLimit = Math.max(
+        1,
+        Math.min(
+            parseInt((req.query.relLimit as string) ?? String(limit)) || limit,
+            100,
+        ),
+    );
+    const relOffset = (relPage - 1) * relLimit;
+
+    // ---- 2) Fetch the playlist core (no eager yet)
+    const playlistCore = await db.Playlist.findOne({
+        where: { Playlist_Id: pid, User_Id: user.User_Id },
+        attributes: [
+            'Playlist_Id',
+            'User_Id',
+            'Name',
+            'Description',
+            'Tracks_Count',
+            'createdAt',
+            'updatedAt',
+        ],
+    });
+    if (!playlistCore) return { error: 'Playlist not found' };
+
+    // ---- 3) Paged VIDEOS via the join table (no separate:)
+    // This makes sorting by "addedAt" (join.createdAt) trivial.
+    const videoOrder: any[] = (() => {
+        switch (orderBy) {
+            case 'addedAt':
+                return [['createdAt', order]]; // PlaylistVideo.createdAt
+            case 'Title':
+                return [[{ model: db.Video, as: 'Video' }, 'Title', order]];
+            case 'updatedAt':
+                return [[{ model: db.Video, as: 'Video' }, 'updatedAt', order]];
+            case 'createdAt':
+                return [[{ model: db.Video, as: 'Video' }, 'createdAt', order]];
+            default:
+                return [
+                    [{ model: db.Video, as: 'Video' }, 'updatedAt', 'DESC'],
+                ];
+        }
+    })();
+
+    const videosJoin = await db.PlaylistVideo.findAndCountAll({
+        where: { Playlist_Id: pid },
         include: [
             {
                 model: db.Video,
+                as: 'Video',
                 required: true,
-                through: { attributes: [] }, // ReleaseVideo
-                include: [
-                    {
-                        model: db.Playlist,
-                        where: { Playlist_Id: req.params.playlistId },
-                        required: true,
-                        through: { attributes: [] }, // PlaylistVideo
-                    },
-                ],
+                // include Playlist if you want to be extra strict; not needed here
             },
-            { model: db.Genre, through: { attributes: [] } },
-            { model: db.Style, through: { attributes: [] } },
-            { model: db.Artist, through: { attributes: [] } },
-            { model: db.Label, through: { attributes: [] } },
         ],
-        order: [['Date_Added', 'DESC']],
+        order: videoOrder,
+        limit,
+        offset,
     });
 
-    return { playlist, releases };
+    const totalVideos = videosJoin.count as number;
+    const videos = videosJoin.rows.map((pv: any) =>
+        pv.Video?.get ? pv.Video.get({ plain: true }) : pv.Video,
+    );
+
+    // ---- 4) Paged RELEASES for just those paged videos
+    let releasesPaged: any[] = [];
+    let releasesCount = 0;
+
+    if (videos.length) {
+        const videoIds = videos.map((v: any) => v.Video_Id);
+
+        const rel = await db.Release.findAndCountAll({
+            distinct: true,
+            include: [
+                {
+                    model: db.Video,
+                    as: 'Videos',
+                    required: true,
+                    attributes: [], // we don't need video fields here
+                    where: { Video_Id: { [Op.in]: videoIds } },
+                    through: { attributes: [] }, // ReleaseVideo
+                },
+                { model: db.Genre, through: { attributes: [] } },
+                { model: db.Style, through: { attributes: [] } },
+                { model: db.Artist, through: { attributes: [] } },
+                { model: db.Label, through: { attributes: [] } },
+            ],
+            order: [['Date_Added', 'DESC']],
+            limit: relLimit,
+            offset: relOffset,
+        });
+
+        releasesCount = rel.count as number;
+        releasesPaged = rel.rows.map((r: any) =>
+            r.get ? r.get({ plain: true }) : r,
+        );
+    }
+
+    // ---- 5) Shape response using rows-first helper
+    const playlist = playlistCore.get
+        ? playlistCore.get({ plain: true })
+        : playlistCore;
+
+    return {
+        playlist,
+        videos: toPagedResponse(totalVideos, page, limit, videos),
+        releases: toPagedResponse(
+            releasesCount,
+            relLimit,
+            relPage,
+            releasesPaged,
+        ),
+    };
 };
+
+// return {
+//     playlist, // core fields about the playlist
+//     videos: toPagedResponse(totalVideos, page, limit, videos),
+//     releases: toPagedResponse(
+//         releasesCount,
+//         relLimit,
+//         relPage,
+//         releasesPaged,
+//     ),
+// };
 
 export const getVideo = async (req: Request) => {
     const uri = extractYouTubeVideoId(req.body.video.uri);

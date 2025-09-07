@@ -55,5 +55,14 @@ module.exports = (sequelize: any, DataTypes: any) => {
         },
     );
 
+    PlaylistVideo.associate = (models: any) => {
+        PlaylistVideo.belongsTo(models.Video, {
+            foreignKey: 'Video_Id',
+        });
+        PlaylistVideo.belongsTo(models.Playlist, {
+            foreignKey: 'Playlist_Id',
+        });
+    };
+
     return PlaylistVideo;
 };
