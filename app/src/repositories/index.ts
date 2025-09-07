@@ -83,12 +83,6 @@ export const createPlaylist = async (req: Request, user: any, video?: any) => {
     return playlist.get();
 };
 
-export const addVideoToPlaylist = async (
-    req: Request,
-    user: any,
-    video: any,
-) => {};
-
 export const updatePlaylistMeta = async () => {};
 
 export const getPlaylist = async (req: Request, user: any) => {
@@ -173,16 +167,42 @@ export const getPlaylist = async (req: Request, user: any) => {
     });
 
     const totalVideos = videosJoin.count as number;
-    const videos = videosJoin.rows.map((pv: any) =>
+    const videosRaw = videosJoin.rows.map((pv: any) =>
         pv.Video?.get ? pv.Video.get({ plain: true }) : pv.Video,
     );
+
+    // ---- 5) attach Release_Id to each video
+    let videosWithRelease = videosRaw;
+
+    if (videosRaw.length) {
+        const videoIds = videosRaw.map((v: any) => v.Video_Id);
+
+        // Option A (simple & fast): just grab one link per video from ReleaseVideo
+        const rvLinks: Array<{ Video_Id: number; Release_Id: number }> =
+            await db.ReleaseVideo.findAll({
+                where: { Video_Id: { [Op.in]: videoIds } },
+                attributes: ['Video_Id', 'Release_Id'],
+                raw: true,
+            });
+
+        // Build a map: Video_Id -> Release_Id (first hit wins)
+        const v2r = new Map<number, number>();
+        for (const row of rvLinks) {
+            if (!v2r.has(row.Video_Id)) v2r.set(row.Video_Id, row.Release_Id);
+        }
+
+        videosWithRelease = videosRaw.map((v: any) => ({
+            ...v,
+            Release_Id: v2r.get(v.Video_Id) ?? null,
+        }));
+    }
 
     // ---- 4) Paged RELEASES for just those paged videos
     let releasesPaged: any[] = [];
     let releasesCount = 0;
 
-    if (videos.length) {
-        const videoIds = videos.map((v: any) => v.Video_Id);
+    if (videosWithRelease.length) {
+        const videoIds = videosWithRelease.map((v: any) => v.Video_Id);
 
         const rel = await db.Release.findAndCountAll({
             distinct: true,
@@ -218,7 +238,7 @@ export const getPlaylist = async (req: Request, user: any) => {
 
     return {
         playlist,
-        videos: toPagedResponse(totalVideos, page, limit, videos),
+        videos: toPagedResponse(totalVideos, page, limit, videosWithRelease),
         releases: toPagedResponse(
             releasesCount,
             relLimit,
@@ -227,17 +247,6 @@ export const getPlaylist = async (req: Request, user: any) => {
         ),
     };
 };
-
-// return {
-//     playlist, // core fields about the playlist
-//     videos: toPagedResponse(totalVideos, page, limit, videos),
-//     releases: toPagedResponse(
-//         releasesCount,
-//         relLimit,
-//         relPage,
-//         releasesPaged,
-//     ),
-// };
 
 export const getVideo = async (req: Request) => {
     const uri = extractYouTubeVideoId(req.body.video.uri);
