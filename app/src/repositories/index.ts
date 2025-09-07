@@ -90,7 +90,7 @@ export const getPlaylist = async (req: Request, user: any) => {
 
     // ---- 1) Base paging for VIDEOS
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
-        defaultLimit: 25,
+        defaultLimit: 5,
         maxLimit: 100,
         defaultOrderBy: 'updatedAt',
         allowedOrderBy: {

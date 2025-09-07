@@ -33,6 +33,9 @@ export type DataTableProps<T> = {
     tableStyle?: React.CSSProperties;
     topRight?: React.ReactNode;
     bottomRight?: React.ReactNode;
+
+    // Border applied to all header/data cells unless overridden in thProps/tdProps
+    cellBorder?: string; // e.g. "4px solid black"
 };
 
 export type PageData<T> = {
@@ -68,14 +71,9 @@ export const DataTable = <T,>({
     withTableBorder = true,
     withColumnBorders = true,
     scrollMinWidth = 340,
-    tableStyle = {
-        tableLayout: 'fixed',
-        width: '100%',
-        ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
-        backgroundColor: '#0e0e0f',
-        border: 'transparent',
-    },
+    tableStyle,
     topRight,
+    cellBorder,
 }: DataTableProps<T>) => {
     const items = data?.items ?? [];
     const page = data?.currentPage ?? 1;
@@ -159,7 +157,7 @@ export const DataTable = <T,>({
                                     visibleFrom={col.visibleFrom}
                                     style={{
                                         width: col.width,
-                                        border: '4px solid black',
+                                        border: cellBorder,
                                         fontVariationSettings: '"wght" 700',
                                     }}
                                     {...col.thProps}
@@ -178,7 +176,6 @@ export const DataTable = <T,>({
                                 <Table.Tr
                                     key={key}
                                     onClick={() => onRowClick!(row)}
-                                    style={{ border: '4px solid black' }}
                                 >
                                     {columns.map((col, ci) => (
                                         <Table.Td
@@ -186,7 +183,7 @@ export const DataTable = <T,>({
                                             visibleFrom={col.visibleFrom}
                                             {...col.tdProps}
                                             style={{
-                                                border: '4px solid black',
+                                                border: cellBorder,
                                             }}
                                         >
                                             {getCellContent(col, row)}
