@@ -88,12 +88,12 @@ const PlaylistsTable = () => {
                     payload: { page },
                 })
             }
-            pageSizeValue={playlistState.pendingLimit ?? 10}
+            pageSizeValue={playlistState.playlists?.pageSize}
             onPageSizeChange={limit => {
-                // usually reset to page 1 when page size changes
+                // reset to page 1 when page size changes
                 dispatchPlaylist({
                     type: 'SET_PLAYLISTS_LIMIT',
-                    payload: { limit, page: 1 },
+                    payload: { limit: limit, page: 1 },
                 });
             }}
             pageSizeOptions={[5, 10, 20, 25, 50]}

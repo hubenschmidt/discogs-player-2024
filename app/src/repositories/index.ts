@@ -498,6 +498,7 @@ export const getPlaylists = async (req: Request, user: any) => {
         ],
         limit,
         offset,
+        distinct: true,
         include: {
             model: db.Video,
             attributes: [
@@ -509,6 +510,7 @@ export const getPlaylists = async (req: Request, user: any) => {
                 'updatedAt',
             ],
             through: { attributes: [] }, // hide join table fields
+            eparate: true,
             order: [['updatedAt', 'DESC']],
         },
     });

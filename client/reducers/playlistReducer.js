@@ -42,17 +42,17 @@ const setPlaylists = (state, payload) => {
 };
 
 const setPlaylistsPage = (state, payload) => {
+    console.log(payload);
     return {
         ...state,
-        pendingPage: payload.page,
-        isLoadingPlaylists: true,
+        page: payload.page,
     };
 };
 
 const setPlaylistsLimit = (state, payload) => ({
     ...state,
-    pendingLimit: payload.limit,
-    pendingPage: payload.page ?? 1, // reset to page 1 on size change
+    limit: payload.limit,
+    page: payload.page,
 });
 
 const setAddModal = (state, payload) => {
@@ -79,8 +79,8 @@ const setPlaylistDetail = (state, payload) => {
 const setPlaylistSort = (state, payload) => {
     return {
         ...state,
-        pendingOrderBy: payload.orderBy,
-        pendingOrder: payload.order,
-        pendingPage: payload.page ?? 1, // reset page
+        orderBy: payload.orderBy,
+        order: payload.order,
+        page: payload.page ?? 1, // reset page
     };
 };

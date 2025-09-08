@@ -35,10 +35,10 @@ const Playlists = () => {
     const [creating, setCreating] = useState(false);
 
     useEffect(() => {
-        const page = playlistState.pendingPage;
-        const limit = playlistState.pendingLimit ?? 10;
-        const orderBy = playlistState.pendingOrderBy ?? 'updatedAt';
-        const order = playlistState.pendingOrder ?? 'DESC';
+        const page = playlistState.page;
+        const limit = playlistState.limit ?? 10;
+        const orderBy = playlistState.orderBy ?? 'updatedAt';
+        const order = playlistState.order ?? 'DESC';
 
         if (!page) return;
 
@@ -53,10 +53,10 @@ const Playlists = () => {
             )
             .catch(err => console.log(err));
     }, [
-        playlistState.pendingPage,
-        playlistState.pendingLimit,
-        playlistState.pendingOrderBy,
-        playlistState.pendingOrder,
+        playlistState.page,
+        playlistState.limit,
+        playlistState.orderBy,
+        playlistState.order,
         userState.username,
         bearerToken,
         open,
@@ -79,11 +79,9 @@ const Playlists = () => {
             setDescription('');
 
             // keep current page size, jump to page 1
-            const prevLimit = playlistState.pendingLimit ?? 10;
-
             dispatchPlaylist({
-                type: 'SET_PLAYLIST_LIMIT',
-                payload: { limit: prevLimit, page: 1 },
+                type: 'SET_PLAYLISTS_LIMIT',
+                payload: { limit: playlistState.limit, page: 1 },
             });
         } catch (error: any) {
             console.log(error);
