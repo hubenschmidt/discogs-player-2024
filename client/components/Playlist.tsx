@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Box, Group, Stack, Text, Divider, Badge, Card } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { PlaylistContext } from '../context/playlistContext';
@@ -110,73 +110,66 @@ const Playlist = () => {
     ]);
 
     return (
-        <Card
-            withBorder
-            p="md"
-            style={{ backgroundColor: 'var(--mantine-color-dark-9)' }}
-        >
-            <Stack gap="xs">
-                <Group justify="space-between" align="center">
-                    <Text fw={700} fz="lg" c="white">
-                        {pl?.playlist?.Name}
-                    </Text>
-                    <Badge variant="light">
-                        {pl?.playlist.Tracks_Count} track
-                        {pl?.videos?.length === 1 ? '' : 's'}
-                    </Badge>
-                </Group>
+        <Stack gap="xs">
+            <Group justify="space-between" align="center">
+                <Text fw={700} fz="lg" c="white">
+                    {pl?.playlist?.Name}
+                </Text>
+                <Badge variant="light">
+                    {pl?.playlist.Tracks_Count} track
+                    {pl?.videos?.length === 1 ? '' : 's'}
+                </Badge>
+            </Group>
 
-                {pl?.Description && <Text size="sm">{pl?.Description}</Text>}
+            {pl?.Description && <Text size="sm">{pl?.Description}</Text>}
 
-                <Group gap="md" c="dimmed" fz="xs">
-                    <Text>Created: {pl?.playlist?.createdAtFormatted}</Text>
-                    <Text>Updated: {pl?.playlist?.updatedAtFormatted}</Text>
-                </Group>
-                <Divider my="xs" />
-                <DataTable<any>
-                    data={videosPage}
-                    columns={columns}
-                    emptyText="No tracks yet"
-                    onRowClick={row => {
-                        // select the video; if you also want to sync a release selection:
+            <Group gap="md" c="dimmed" fz="xs">
+                <Text>Created: {pl?.playlist?.createdAtFormatted}</Text>
+                <Text>Updated: {pl?.playlist?.updatedAtFormatted}</Text>
+            </Group>
+            <DataTable<any>
+                data={videosPage}
+                columns={columns}
+                emptyText="No tracks yet"
+                onRowClick={row => {
+                    // select the video; if you also want to sync a release selection:
+                    dispatchDiscogsRelease({
+                        type: 'SET_SELECTED_VIDEO',
+                        payload: row,
+                    });
+                    if (row.Release_Id) {
+                        // optionally tell your app which release to highlight in the shelf
                         dispatchDiscogsRelease({
-                            type: 'SET_SELECTED_VIDEO',
-                            payload: row,
+                            type: 'SET_SELECTED_RELEASE_ID',
+                            payload: row.Release_Id,
                         });
-                        if (row.Release_Id) {
-                            // optionally tell your app which release to highlight in the shelf
-                            dispatchDiscogsRelease({
-                                type: 'SET_SELECTED_RELEASE_ID',
-                                payload: row.Release_Id,
-                            });
-                        }
-                    }}
-                    onPageChange={page =>
-                        dispatchPlaylist({
-                            type: 'SET_PLAYLIST_VIDEOS_PAGE',
-                            payload: { playlistVideosPage: page },
-                        })
                     }
-                    onPageSizeChange={limit =>
-                        dispatchPlaylist({
-                            type: 'SET_PLAYLIST_VIDEOS_LIMIT',
-                            payload: {
-                                playlistVideosLimit: limit,
-                                playlistVideosPage: 1,
-                            },
-                        })
-                    }
-                    tableStyle={{
-                        tableLayout: 'fixed',
-                        width: '100%',
-                        backgroundColor: '#0e0e0f',
-                        color: 'var(--mantine-color-white)', // <- everything white by default
-                        ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
-                    }}
-                    cellBorder="4px solid #141414"
-                />
-            </Stack>
-        </Card>
+                }}
+                onPageChange={page =>
+                    dispatchPlaylist({
+                        type: 'SET_PLAYLIST_VIDEOS_PAGE',
+                        payload: { playlistVideosPage: page },
+                    })
+                }
+                onPageSizeChange={limit =>
+                    dispatchPlaylist({
+                        type: 'SET_PLAYLIST_VIDEOS_LIMIT',
+                        payload: {
+                            playlistVideosLimit: limit,
+                            playlistVideosPage: 1,
+                        },
+                    })
+                }
+                tableStyle={{
+                    tableLayout: 'fixed',
+                    width: '100%',
+                    backgroundColor: '#0e0e0f',
+                    color: 'var(--mantine-color-white)', // <- everything white by default
+                    ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
+                }}
+                cellBorder="4px solid #141414"
+            />
+        </Stack>
     );
 };
 
