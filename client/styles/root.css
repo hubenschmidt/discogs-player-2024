@@ -38,7 +38,6 @@ html {
     font-variation-settings: 'wght' var(--fw-base);
 }
 
-/* globals.css */
 .pg-control {
     background: transparent;
     border: 0;

@@ -42,26 +42,19 @@ const Playlists = () => {
             10;
         const orderBy = playlistState.pendingOrderBy ?? 'updatedAt';
         const order = playlistState.pendingOrder ?? 'DESC';
-        console.log(playlistState.pendingOrder, 'pending order');
 
         if (!page) return;
 
-        (async () => {
-            try {
-                dispatchPlaylist({ type: 'PLAYLISTS_LOADING' });
-                const res = await getPlaylists(
-                    userState.username,
-                    bearerToken,
-                    { page, limit, orderBy, order },
-                );
-                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
-            } catch (err: any) {
-                dispatchPlaylist({
-                    type: 'PLAYLISTS_ERROR',
-                    payload: err?.message,
-                });
-            }
-        })();
+        getPlaylists(userState.username, bearerToken, {
+            page,
+            limit,
+            orderBy,
+            order,
+        })
+            .then(res =>
+                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res }),
+            )
+            .catch(err => console.log(err));
     }, [
         playlistState.pendingPage,
         playlistState.pendingLimit,
@@ -69,6 +62,7 @@ const Playlists = () => {
         playlistState.pendingOrder,
         userState.username,
         bearerToken,
+        open,
     ]);
 
     const onSubmit = async () => {
@@ -94,7 +88,7 @@ const Playlists = () => {
                 10;
 
             dispatchPlaylist({
-                type: 'PLAYLISTS_PAGE_SIZE_REQUESTED',
+                type: 'SET_PLAYLISTS_PAGE_SIZE',
                 payload: { limit: prevLimit, page: 1 },
             });
         } catch (error: any) {

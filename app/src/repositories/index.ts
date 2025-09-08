@@ -76,10 +76,13 @@ export const createPlaylist = async (req: Request, user: any, video?: any) => {
         Name: req.body.name,
         Description: req.body.description,
     });
-    await db.PlaylistVideo.create({
-        Playlist_Id: playlist.Playlist_Id,
-        Video_Id: video.Video_Id,
-    });
+    if (video) {
+        await db.PlaylistVideo.create({
+            Playlist_Id: playlist.Playlist_Id,
+            Video_Id: video.Video_Id,
+        });
+    }
+
     return playlist.get();
 };
 
@@ -90,7 +93,7 @@ export const getPlaylist = async (req: Request, user: any) => {
 
     // ---- 1) Base paging for VIDEOS
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
-        defaultLimit: 5,
+        defaultLimit: 25,
         maxLimit: 100,
         defaultOrderBy: 'updatedAt',
         allowedOrderBy: {
@@ -473,6 +476,7 @@ export const getCollection = async (req: Request) => {
 };
 
 export const getPlaylists = async (req: Request, user: any) => {
+    console.log(req.params.limit, 'limit in get Playlists');
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
         defaultLimit: 25,
         maxLimit: 100,

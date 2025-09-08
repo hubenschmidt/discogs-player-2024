@@ -178,7 +178,7 @@ export const DataTable = <T,>({
                                     if (val)
                                         onPageSizeChange?.(parseInt(val, 10));
                                 }}
-                                w={60}
+                                w={80}
                                 data={pageSizeOptions.map(n => ({
                                     value: String(n),
                                     label: String(n),

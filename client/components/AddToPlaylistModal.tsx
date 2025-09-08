@@ -79,25 +79,14 @@ const AddToPlaylistModal = () => {
     };
 
     useEffect(() => {
-        (async () => {
-            try {
-                dispatchPlaylist({ type: 'PLAYLISTS_LOADING' });
-                const res = await getPlaylists(
-                    userState.username,
-                    bearerToken,
-                    {
-                        orderBy: 'updatedAt',
-                        order: 'DESC',
-                    },
-                );
-                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
-            } catch (err: any) {
-                dispatchPlaylist({
-                    type: 'PLAYLISTS_ERROR',
-                    payload: err?.message,
-                });
-            }
-        })();
+        getPlaylists(userState.username, bearerToken, {
+            orderBy: 'updatedAt',
+            order: 'DESC',
+        })
+            .then(res =>
+                dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res }),
+            )
+            .catch(err => console.log(err));
     }, [open]);
 
     return (

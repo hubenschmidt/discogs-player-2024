@@ -84,7 +84,7 @@ const PlaylistsTable = () => {
             }
             onPageChange={page =>
                 dispatchPlaylist({
-                    type: 'PLAYLISTS_PAGE_REQUESTED',
+                    type: 'SET_PLAYLISTS_PAGE',
                     payload: { page },
                 })
             }
@@ -96,7 +96,7 @@ const PlaylistsTable = () => {
             onPageSizeChange={limit => {
                 // usually reset to page 1 when page size changes
                 dispatchPlaylist({
-                    type: 'PLAYLISTS_PAGE_SIZE_REQUESTED',
+                    type: 'SET_PLAYLISTS_PAGE_SIZE',
                     payload: { limit, page: 1 },
                 });
             }}
@@ -107,7 +107,7 @@ const PlaylistsTable = () => {
             }
             onSortChange={({ sortBy, direction }) =>
                 dispatchPlaylist({
-                    type: 'PLAYLISTS_SORT_REQUESTED',
+                    type: 'SET_PLAYLISTS_SORT',
                     payload: {
                         orderBy: sortBy,
                         order: direction.toUpperCase(),
