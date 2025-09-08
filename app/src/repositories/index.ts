@@ -182,7 +182,7 @@ export const getPlaylist = async (req: Request, user: any) => {
     if (videosRaw.length) {
         const videoIds = videosRaw.map((v: any) => v.Video_Id);
 
-        // Option A (simple & fast): just grab one link per video from ReleaseVideo
+        // 1) Video -> Release_Id (first match wins)
         const rvLinks: Array<{ Video_Id: number; Release_Id: number }> =
             await db.ReleaseVideo.findAll({
                 where: { Video_Id: { [Op.in]: videoIds } },
@@ -190,16 +190,40 @@ export const getPlaylist = async (req: Request, user: any) => {
                 raw: true,
             });
 
-        // Build a map: Video_Id -> Release_Id (first hit wins)
         const v2r = new Map<number, number>();
+        const releaseIds = new Set<number>();
         for (const row of rvLinks) {
-            if (!v2r.has(row.Video_Id)) v2r.set(row.Video_Id, row.Release_Id);
+            if (!v2r.has(row.Video_Id)) {
+                v2r.set(row.Video_Id, row.Release_Id);
+                releaseIds.add(row.Release_Id);
+            }
         }
 
-        videosWithRelease = videosRaw.map((v: any) => ({
-            ...v,
-            Release_Id: v2r.get(v.Video_Id) ?? null,
-        }));
+        // 2) Release_Id -> Thumb (and optional fallback to Cover_Image)
+        const relThumbRows: Array<{
+            Release_Id: number;
+            Thumb: string | null;
+            Cover_Image?: string | null;
+        }> = await db.Release.findAll({
+            where: { Release_Id: { [Op.in]: Array.from(releaseIds) } },
+            attributes: ['Release_Id', 'Thumb'],
+            raw: true,
+        });
+
+        const r2thumb = new Map<number, string | null>();
+        for (const r of relThumbRows) {
+            r2thumb.set(r.Release_Id, r.Thumb ?? null);
+        }
+
+        // 3) Attach both fields to each video
+        videosWithRelease = videosRaw.map((v: any) => {
+            const rid = v2r.get(v.Video_Id) ?? null;
+            return {
+                ...v,
+                Release_Id: rid,
+                Thumb: rid ? r2thumb.get(rid) ?? null : null,
+            };
+        });
     }
 
     // ---- 4) Paged RELEASES in the same order as the matching videos' Release_Id

@@ -19,13 +19,49 @@ const Playlist = () => {
     // Define columns for the videos table
     const columns: Column<any>[] = [
         {
+            header: <Text fw={700}>Thumb</Text>,
+            width: 64, // or '15%'
+            render: v =>
+                v.Thumb ? (
+                    <Box
+                        component="img"
+                        src={v.Thumb}
+                        alt={v.Title ?? 'Cover'}
+                        width={40}
+                        height={40}
+                        loading="lazy"
+                        style={{
+                            borderRadius: 6,
+                            objectFit: 'cover',
+                            display: 'block',
+                        }}
+                    />
+                ) : (
+                    <Box
+                        w={40}
+                        h={40}
+                        style={{
+                            borderRadius: 6,
+                            background: 'rgba(255,255,255,0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Text size="xs" c="dimmed">
+                            —
+                        </Text>
+                    </Box>
+                ),
+        },
+        {
             header: <Text fw={700}>Title</Text>,
             render: v => (
                 <Text lineClamp={1} title={v.Title ?? v.title ?? 'Untitled'}>
                     {v.Title ?? v.title ?? 'Untitled'}
                 </Text>
             ),
-            width: '55%',
+            width: '45%',
         },
         {
             header: <Text fw={700}>URI</Text>,
