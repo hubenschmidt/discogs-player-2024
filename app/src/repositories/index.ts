@@ -513,6 +513,10 @@ export const getPlaylists = async (req: Request, user: any) => {
         defaultOrder: 'DESC',
     });
 
+    // allow client to control formatting
+    const locale = (req.query.locale as string) || 'en-US';
+    const tz = (req.query.tz as string) || undefined;
+
     const { count, rows } = await db.Playlist.findAndCountAll({
         where: { User_Id: user.User_Id },
         order: [
@@ -538,12 +542,22 @@ export const getPlaylists = async (req: Request, user: any) => {
         },
     });
 
-    return toPagedResponse(
-        count,
-        page,
-        limit,
-        rows.map((r: any) => r.get({ plain: true })),
-    );
+    const items = rows.map((r: any) => {
+        const p = r.get({ plain: true });
+        return {
+            ...p,
+            createdAtFormatted: formatDate(p.createdAt, locale, tz),
+            updatedAtFormatted: formatDate(p.updatedAt, locale, tz),
+            Videos: (p.Videos ?? []).map((v: any) => ({
+                ...v,
+                createdAtFormatted: formatDate(v.createdAt, locale, tz),
+                updatedAtFormatted: formatDate(v.updatedAt, locale, tz),
+                durationFormatted: formatDuration(v.Duration),
+            })),
+        };
+    });
+
+    return toPagedResponse(count, page, limit, items);
 };
 
 export const getStylesByGenre = async (req: Request) => {

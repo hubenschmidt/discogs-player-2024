@@ -1,29 +1,23 @@
-// components/PlaylistsTable.tsx
 import React, { useContext } from 'react';
 import { Text } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
-import { UserContext } from '../context/userContext';
 import { NavContext } from '../context/navContext';
 import { DataTable, type Column } from './DataTable';
-import { useBearerToken } from '../hooks/useBearerToken';
-import { getPlaylist } from '../api';
 
 type Playlist = {
     Playlist_Id: number;
     User_Id: number;
     Name: string;
     Description?: string | null;
-    createdAt?: string;
-    updatedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    createdAtFormatted: string;
+    updatedAtFormatted?: string;
 };
-
-const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : '—');
 
 const PlaylistsTable = () => {
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { userState } = useContext(UserContext);
     const { dispatchNav } = useContext(NavContext);
-    const bearerToken = useBearerToken();
 
     const columns: Column<Playlist>[] = [
         {
@@ -51,7 +45,7 @@ const PlaylistsTable = () => {
             header: <Text fw={700}>Updated</Text>,
             width: '19%',
             visibleFrom: 'sm',
-            render: p => <Text>{fmtDate(p.updatedAt || p.createdAt)}</Text>,
+            render: p => <Text>{p.updatedAtFormatted}</Text>,
             sortable: true,
             sortKey: 'updatedAt',
         },

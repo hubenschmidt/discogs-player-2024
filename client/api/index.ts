@@ -253,7 +253,6 @@ export const getPlaylist = async (
     playlistId: number,
     params: PaginationParams,
 ) => {
-    console.log('getplaylist called');
     const qs = new URLSearchParams();
 
     if (params.page != null) qs.set('page', String(params.page));

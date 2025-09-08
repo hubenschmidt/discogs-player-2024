@@ -35,7 +35,7 @@ const Playlist = () => {
         },
         {
             header: <Text fw={700}>Duration</Text>,
-            render: v => v.Duration,
+            render: v => v.durationFormatted,
             visibleFrom: 'md',
             width: 100,
         },
