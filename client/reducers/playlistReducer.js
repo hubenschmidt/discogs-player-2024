@@ -1,14 +1,13 @@
 export const SET_SHOW_PLAYLIST_VIEW = 'SET_SHOW_PLAYLIST_VIEW';
 export const SET_PLAYLISTS = 'SET_PLAYLISTS';
 export const SET_PLAYLISTS_PAGE = 'SET_PLAYLISTS_PAGE';
-export const SET_PLAYLISTS_PAGE_SIZE = 'SET_PLAYLISTS_PAGE_SIZE';
+export const SET_PLAYLISTS_LIMIT = 'SET_PLAYLISTS_LIMIT';
 export const SET_ADD_MODAL = 'SET_ADD_MODAL';
 export const SET_SELECTED_PLAYLIST = 'SET_SELECTED_PLAYLIST';
 export const SET_PLAYLIST_DETAIL = 'SET_PLAYLIST_DETAIL';
 export const SET_PLAYLISTS_SORT = 'SET_PLAYLISTS_SORT';
 // export const PLAYLIST_VIDEOS_PAGE_REQUESTED = 'PLAYLIST_VIDEOS_PAGE_REQUESTED';
-// export const PLAYLIST_VIDEOS_PAGE_SIZE_REQUESTED =
-//     'PLAYLIST_VIDEOS_PAGE_SIZE_REQUESTED';
+// export const PLAYLIST_VIDEOS_LIMIT_REQUESTED =
 
 export default initialState => {
     return (state, action) => {
@@ -17,8 +16,8 @@ export default initialState => {
                 return setPlaylists(state, action.payload);
             case SET_PLAYLISTS_PAGE:
                 return setPlaylistsPage(state, action.payload);
-            case SET_PLAYLISTS_PAGE_SIZE:
-                return setPlaylistsPageSize(state, action.payload);
+            case SET_PLAYLISTS_LIMIT:
+                return setPlaylistsLimit(state, action.payload);
             case SET_ADD_MODAL:
                 return setAddModal(state, action.payload);
             case SET_SELECTED_PLAYLIST:
@@ -50,17 +49,11 @@ const setPlaylistsPage = (state, payload) => {
     };
 };
 
-const setPlaylistsPageSize = (state, payload) => ({
+const setPlaylistsLimit = (state, payload) => ({
     ...state,
     pendingLimit: payload.limit,
     pendingPage: payload.page ?? 1, // reset to page 1 on size change
 });
-
-const playlistsLoading = (state, payload) => {
-    return {
-        ...state,
-    };
-};
 
 const setAddModal = (state, payload) => {
     return {

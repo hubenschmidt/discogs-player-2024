@@ -36,10 +36,7 @@ const Playlists = () => {
 
     useEffect(() => {
         const page = playlistState.pendingPage;
-        const limit =
-            playlistState.pendingLimit ??
-            playlistState.playlists?.pageSize ??
-            10;
+        const limit = playlistState.pendingLimit ?? 10;
         const orderBy = playlistState.pendingOrderBy ?? 'updatedAt';
         const order = playlistState.pendingOrder ?? 'DESC';
 
@@ -82,13 +79,10 @@ const Playlists = () => {
             setDescription('');
 
             // keep current page size, jump to page 1
-            const prevLimit =
-                playlistState.pendingLimit ??
-                playlistState.playlists?.pageSize ??
-                10;
+            const prevLimit = playlistState.pendingLimit ?? 10;
 
             dispatchPlaylist({
-                type: 'SET_PLAYLISTS_PAGE_SIZE',
+                type: 'SET_PLAYLIST_LIMIT',
                 payload: { limit: prevLimit, page: 1 },
             });
         } catch (error: any) {

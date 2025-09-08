@@ -8,6 +8,8 @@ const initialState = {
     playlistDetail: null,
     pendingOrderBy: 'updatedAt',
     pendingOrder: 'DESC',
+    pendingPage: 1,
+    pendingLimit: null,
 };
 
 export const PlaylistContext = createContext(initialState);
