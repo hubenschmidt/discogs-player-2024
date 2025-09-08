@@ -6,11 +6,13 @@ import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { DataTable, type Column, type PageData } from './DataTable';
 import { getPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { CollectionContext } from '../context/collectionContext';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
+    const { dispatchCollection } = useContext(CollectionContext);
     const bearerToken = useBearerToken();
 
     const pl = playlistState?.playlistDetail || null;
@@ -100,6 +102,10 @@ const Playlist = () => {
                     payload: res.playlist.Playlist_Id,
                 });
                 dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
+                dispatchCollection({
+                    type: 'SET_COLLECTION',
+                    payload: res.releases,
+                });
             })
             .catch(console.error);
     }, [
