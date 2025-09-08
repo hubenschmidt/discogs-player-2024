@@ -1,8 +1,11 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { Box, Group, Stack, Text, Divider, Badge, Card } from '@mantine/core';
+import { UserContext } from '../context/userContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { DataTable, type Column, type PageData } from './DataTable';
+import { getPlaylist } from '../api';
+import { useBearerToken } from '../hooks/useBearerToken';
 
 const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleString() : '—');
 const fmtDur = (d?: string | number) => {
@@ -15,24 +18,13 @@ const fmtDur = (d?: string | number) => {
 };
 
 const Playlist = () => {
+    const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
+    const bearerToken = useBearerToken();
 
-    const pl = playlistState?.playlistDetail;
+    const pl = playlistState?.playlistDetail || null;
     const videosPage = (pl?.videos ?? null) as PageData<any> | null;
-
-    const tracksCount = useMemo(
-        () => pl?.Tracks_Count ?? videosPage?.total ?? pl?.Videos?.length ?? 0,
-        [pl, videosPage?.total],
-    );
-
-    if (!pl) {
-        return (
-            <Box p="sm">
-                <Text c="dimmed">No playlist selected.</Text>
-            </Box>
-        );
-    }
 
     // Define columns for the videos table
     const columns: Column<any>[] = [
@@ -65,6 +57,31 @@ const Playlist = () => {
         },
     ];
 
+    useEffect(() => {
+        getPlaylist(
+            userState.username,
+            bearerToken,
+            playlistState.activePlaylistId,
+            {
+                page: playlistState.playlistVideosPage,
+                limit: playlistState.playlistVideosLimit,
+            },
+        )
+            .then(res => {
+                dispatchPlaylist({
+                    type: 'SET_ACTIVE_PLAYLIST_ID',
+                    payload: res.playlist.Playlist_Id,
+                });
+                dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
+            })
+            .catch(console.error);
+    }, [
+        bearerToken,
+        playlistState.activePlaylistId,
+        playlistState.playlistVideosPage,
+        playlistState.playlistVideosLimit,
+    ]);
+
     return (
         <Card
             withBorder
@@ -73,27 +90,22 @@ const Playlist = () => {
         >
             <Stack gap="xs">
                 <Group justify="space-between" align="center">
-                    <Text fw={700} fz="lg">
-                        {pl.Name || 'Untitled playlist'}
+                    <Text fw={700} fz="lg" c="white">
+                        {pl?.playlist?.Name}
                     </Text>
                     <Badge variant="light">
-                        {tracksCount} track{tracksCount === 1 ? '' : 's'}
+                        {pl?.playlist.Tracks_Count} track
+                        {pl?.videos?.length === 1 ? '' : 's'}
                     </Badge>
                 </Group>
 
-                {pl.Description && <Text size="sm">{pl.Description}</Text>}
+                {pl?.Description && <Text size="sm">{pl?.Description}</Text>}
 
                 <Group gap="md" c="dimmed" fz="xs">
-                    <Text>Created: {fmtDate(pl.createdAt)}</Text>
-                    <Text>Updated: {fmtDate(pl.updatedAt)}</Text>
+                    <Text>Created: {fmtDate(pl?.playlist?.createdAt)}</Text>
+                    <Text>Updated: {fmtDate(pl?.playlist?.updatedAt)}</Text>
                 </Group>
-
                 <Divider my="xs" />
-
-                <Text fw={600} size="sm">
-                    Tracks
-                </Text>
-
                 <DataTable<any>
                     data={videosPage}
                     columns={columns}
@@ -114,14 +126,17 @@ const Playlist = () => {
                     }}
                     onPageChange={page =>
                         dispatchPlaylist({
-                            type: 'PLAYLIST_VIDEOS_PAGE_REQUESTED',
-                            payload: { page },
+                            type: 'SET_PLAYLIST_VIDEOS_PAGE',
+                            payload: { playlistVideosPage: page },
                         })
                     }
                     onPageSizeChange={limit =>
                         dispatchPlaylist({
-                            type: 'PLAYLIST_VIDEOS_LIMIT_REQUESTED',
-                            payload: { limit, page: 1 },
+                            type: 'SET_PLAYLIST_VIDEOS_LIMIT',
+                            payload: {
+                                playlistVideosLimit: limit,
+                                playlistVideosPage: 1,
+                            },
                         })
                     }
                     tableStyle={{
@@ -132,10 +147,6 @@ const Playlist = () => {
                         ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
                     }}
                     cellBorder="4px solid #141414"
-
-                    // Optional: keep current values controlled if you store them in state
-                    // pageValue={playlistState.pendingVideosPage}
-                    // pageSizeValue={playlistState.pendingVideosLimit}
                 />
             </Stack>
         </Card>

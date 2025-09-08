@@ -58,30 +58,20 @@ const PlaylistsTable = () => {
     ];
 
     const handleRowClick = async (row: Playlist) => {
+        dispatchPlaylist({
+            type: 'SET_ACTIVE_PLAYLIST_ID',
+            payload: row.Playlist_Id,
+        });
         dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: true });
-
-        getPlaylist(userState.username, bearerToken, row.Playlist_Id)
-            .then(res => {
-                dispatchPlaylist({
-                    type: 'SET_PLAYLIST_DETAIL',
-                    payload: res,
-                });
-
-                dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-                dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: true });
-            })
-            .catch(err => console.log(err));
+        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: true });
     };
 
     return (
         <DataTable<Playlist>
             data={playlistState.playlists}
             columns={columns}
-            pageValue={
-                playlistState.pendingPage ??
-                playlistState.playlists?.currentPage ??
-                1
-            }
+            pageValue={playlistState.playlists?.currentPage ?? 1}
             onPageChange={page =>
                 dispatchPlaylist({
                     type: 'SET_PLAYLISTS_PAGE',
@@ -97,10 +87,8 @@ const PlaylistsTable = () => {
                 });
             }}
             pageSizeOptions={[5, 10, 20, 25, 50]}
-            sortBy={playlistState.pendingOrderBy ?? 'updatedAt'}
-            sortDirection={
-                (playlistState.pendingOrder ?? 'DESC') as 'ASC' | 'DESC'
-            }
+            sortBy={playlistState.orderBy ?? 'updatedAt'}
+            sortDirection={(playlistState.order ?? 'DESC') as 'ASC' | 'DESC'}
             onSortChange={({ sortBy, direction }) =>
                 dispatchPlaylist({
                     type: 'SET_PLAYLISTS_SORT',

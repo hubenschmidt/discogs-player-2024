@@ -43,7 +43,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
-    console.log(playlistOpen);
 
     let borderStyle = '.5px solid black';
     let devStyle = {

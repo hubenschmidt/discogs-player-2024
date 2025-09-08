@@ -158,7 +158,7 @@ export const updateVideoPlayCount = async (
 
 export type OrderDir = 'ASC' | 'DESC';
 
-export type GetPlaylistsParams = {
+export type PaginationParams = {
     page?: number;
     limit?: number; // page size
     orderBy?: 'Name' | 'updatedAt' | 'createdAt' | 'Playlist_Id';
@@ -186,7 +186,7 @@ export type PlaylistsPageResponse = {
 export const getPlaylists = async (
     username: string,
     token: BearerToken,
-    params: GetPlaylistsParams = {},
+    params: PaginationParams = {},
 ): Promise<PlaylistsPageResponse> => {
     const qs = new URLSearchParams();
 
@@ -251,8 +251,26 @@ export const getPlaylist = async (
     username: string,
     token: BearerToken,
     playlistId: number,
+    params: PaginationParams,
 ) => {
-    const uri = `/api/app/${username}/playlist/${playlistId}`;
-    const response: AxiosResponse<any> = await requestHandler('GET', uri, null, token);
-    return response.data; 
+    console.log('getplaylist called');
+    const qs = new URLSearchParams();
+
+    if (params.page != null) qs.set('page', String(params.page));
+    if (params.limit != null) qs.set('limit', String(params.limit));
+    if (params.orderBy) qs.set('orderBy', params.orderBy);
+    if (params.order) qs.set('order', params.order);
+    if (params.q) qs.set('q', params.q);
+
+    const uri = `/api/app/${encodeURIComponent(
+        username,
+    )}/playlist/${playlistId}${qs.toString() ? `?${qs.toString()}` : ''}`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        token,
+    );
+    return response.data;
 };

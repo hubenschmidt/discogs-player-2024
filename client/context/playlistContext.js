@@ -10,6 +10,11 @@ const initialState = {
     order: 'DESC',
     page: 1,
     limit: null,
+    playlistVideosPage: 1,
+    playlistVideosLimit: null,
+    playlistVideosOrderBy: 'updatedAt',
+    playlistVideosOrder: 'DESC',
+    activePlaylistId: null,
 };
 
 export const PlaylistContext = createContext(initialState);

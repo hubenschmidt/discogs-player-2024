@@ -6,8 +6,9 @@ export const SET_ADD_MODAL = 'SET_ADD_MODAL';
 export const SET_SELECTED_PLAYLIST = 'SET_SELECTED_PLAYLIST';
 export const SET_PLAYLIST_DETAIL = 'SET_PLAYLIST_DETAIL';
 export const SET_PLAYLISTS_SORT = 'SET_PLAYLISTS_SORT';
-// export const PLAYLIST_VIDEOS_PAGE_REQUESTED = 'PLAYLIST_VIDEOS_PAGE_REQUESTED';
-// export const PLAYLIST_VIDEOS_LIMIT_REQUESTED =
+export const SET_PLAYLIST_VIDEOS_PAGE = 'SET_PLAYLIST_VIDEOS_PAGE';
+export const SET_PLAYLIST_VIDEOS_LIMIT = 'SET_PLAYLIST_VIDEOS_LIMIT';
+export const SET_ACTIVE_PLAYLIST_ID = 'SET_ACTIVE_PLAYLIST_ID';
 
 export default initialState => {
     return (state, action) => {
@@ -26,8 +27,12 @@ export default initialState => {
                 return setPlaylistDetail(state, action.payload);
             case SET_PLAYLISTS_SORT:
                 return setPlaylistSort(state, action.payload);
-            // case PLAYLIST_VIDEOS_PAGE_REQUESTED:
-            //     return playlist
+            case SET_PLAYLIST_VIDEOS_PAGE:
+                return setPlaylistVideosPage(state, action.payload);
+            case SET_PLAYLIST_VIDEOS_LIMIT:
+                return setPlaylistVideosLimit(state, action.payload);
+            case SET_ACTIVE_PLAYLIST_ID:
+                return setActivePlaylistId(state, action.payload);
             default:
                 return state;
         }
@@ -42,7 +47,6 @@ const setPlaylists = (state, payload) => {
 };
 
 const setPlaylistsPage = (state, payload) => {
-    console.log(payload);
     return {
         ...state,
         page: payload.page,
@@ -82,5 +86,28 @@ const setPlaylistSort = (state, payload) => {
         orderBy: payload.orderBy,
         order: payload.order,
         page: payload.page ?? 1, // reset page
+    };
+};
+
+const setPlaylistVideosPage = (state, payload) => {
+    return {
+        ...state,
+        playlistVideosPage: payload.playlistVideosPage,
+    };
+};
+
+const setPlaylistVideosLimit = (state, payload) => {
+    console.log('setPlaylistVideos called', payload.playlistVideosLimit);
+    return {
+        ...state,
+        playlistVideosLimit: payload.playlistVideosLimit,
+        playlistVideosPage: payload.playlistVideosPage,
+    };
+};
+
+const setActivePlaylistId = (state, payload) => {
+    return {
+        ...state,
+        activePlaylistId: payload,
     };
 };

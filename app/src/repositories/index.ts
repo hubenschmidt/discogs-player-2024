@@ -476,7 +476,6 @@ export const getCollection = async (req: Request) => {
 };
 
 export const getPlaylists = async (req: Request, user: any) => {
-    console.log(req.params.limit, 'limit in get Playlists');
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
         defaultLimit: 25,
         maxLimit: 100,
