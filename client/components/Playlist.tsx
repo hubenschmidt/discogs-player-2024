@@ -19,7 +19,7 @@ const Playlist = () => {
     // Define columns for the videos table
     const columns: Column<any>[] = [
         {
-            header: <Text fw={700}>Thumb</Text>,
+            header: null,
             width: 64, // or '15%'
             render: v =>
                 v.Thumb ? (

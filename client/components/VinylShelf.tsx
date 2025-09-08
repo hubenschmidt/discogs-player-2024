@@ -9,6 +9,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
 import TrackDetail from './TrackDetail';
+import { NavContext } from '../context/navContext';
 
 const reorderReleases = (
     records: Release[],
@@ -52,6 +53,7 @@ const VinylShelf: FC = () => {
     const { selectedRelease, selectedDiscogsRelease, previewRelease } =
         discogsReleaseState;
     const { searchState } = useContext(SearchContext);
+    const { dispatchNav } = useContext(NavContext);
     const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
@@ -91,6 +93,9 @@ const VinylShelf: FC = () => {
     }, [currentPage, itemsPerPage, searchSelection]);
 
     const handleRecordClick = (release: Release, index: number) => {
+        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+
         const reorderedReleases = reorderReleases(items, index);
         dispatchCollection({
             type: 'SET_COLLECTION',
