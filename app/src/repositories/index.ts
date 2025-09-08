@@ -4,6 +4,8 @@ import { Op } from 'sequelize';
 import { Transaction } from 'sequelize';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { parsePaging, toPagedResponse } from '../lib/pagination';
+import { formatDate } from '../lib/format-date';
+import { formatDuration } from '../lib/format-duration';
 
 export interface AuthenticatedRequest extends Request {
     user: any;
@@ -91,6 +93,10 @@ export const updatePlaylistMeta = async () => {};
 export const getPlaylist = async (req: Request, user: any) => {
     const pid = Number(req.params.playlistId);
 
+    // allow client to choose formatting; fallback to en-US/no TZ
+    const locale = (req.query.locale as string) || 'en-US';
+    const tz = (req.query.tz as string) || undefined;
+
     // ---- 1) Base paging for VIDEOS
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
         defaultLimit: 25,
@@ -136,11 +142,8 @@ export const getPlaylist = async (req: Request, user: any) => {
     if (!playlistCore) return { error: 'Playlist not found' };
 
     // ---- 3) Paged VIDEOS via the join table (no separate:)
-    // This makes sorting by "addedAt" (join.createdAt) trivial.
     const videoOrder: any[] = (() => {
         switch (orderBy) {
-            case 'addedAt':
-                return [['createdAt', order]]; // PlaylistVideo.createdAt
             case 'Title':
                 return [[{ model: db.Video, as: 'Video' }, 'Title', order]];
             case 'updatedAt':
@@ -252,18 +255,39 @@ export const getPlaylist = async (req: Request, user: any) => {
     }
 
     // ---- 5) Shape response using rows-first helper
-    const playlist = playlistCore.get
+
+    // ---- enrich with formatted fields (playlist, videos, releases)
+    const playlistPlain = playlistCore.get
         ? playlistCore.get({ plain: true })
         : playlistCore;
+    const playlist = {
+        ...playlistPlain,
+        createdAtFormatted: formatDate(playlistPlain.createdAt, locale, tz),
+        updatedAtFormatted: formatDate(playlistPlain.updatedAt, locale, tz),
+    };
+
+    const videosEnriched = videosWithRelease.map((v: any) => ({
+        ...v,
+        createdAtFormatted: formatDate(v.createdAt, locale, tz),
+        updatedAtFormatted: formatDate(v.updatedAt, locale, tz),
+        durationFormatted: formatDuration(v.Duration),
+    }));
+
+    const releasesEnriched = releasesPaged.map((r: any) => ({
+        ...r,
+        dateAddedFormatted: formatDate(r.Date_Added, locale, tz),
+        createdAtFormatted: formatDate(r.createdAt, locale, tz),
+        updatedAtFormatted: formatDate(r.updatedAt, locale, tz),
+    }));
 
     return {
         playlist,
-        videos: toPagedResponse(totalVideos, page, limit, videosWithRelease),
+        videos: toPagedResponse(totalVideos, page, limit, videosEnriched),
         releases: toPagedResponse(
             releasesCount,
             relLimit,
             relPage,
-            releasesPaged,
+            releasesEnriched,
         ),
     };
 };

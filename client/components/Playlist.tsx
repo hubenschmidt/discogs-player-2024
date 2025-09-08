@@ -7,16 +7,6 @@ import { DataTable, type Column, type PageData } from './DataTable';
 import { getPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 
-const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleString() : '—');
-const fmtDur = (d?: string | number) => {
-    if (d == null) return '—';
-    const s = typeof d === 'string' ? parseInt(d, 10) : d;
-    if (Number.isNaN(s)) return '—';
-    const m = Math.floor(s / 60);
-    const r = s % 60;
-    return `${m}:${String(r).padStart(2, '0')}`;
-};
-
 const Playlist = () => {
     const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
@@ -45,13 +35,13 @@ const Playlist = () => {
         },
         {
             header: <Text fw={700}>Duration</Text>,
-            render: v => fmtDur(v.Duration),
+            render: v => v.Duration,
             visibleFrom: 'md',
             width: 100,
         },
         {
             header: <Text fw={700}>Updated</Text>,
-            render: v => fmtDate(v.updatedAt ?? v.createdAt),
+            render: v => v.updatedAtFormatted,
             visibleFrom: 'sm',
             width: 180,
         },
@@ -68,6 +58,7 @@ const Playlist = () => {
             },
         )
             .then(res => {
+                console.log(res);
                 dispatchPlaylist({
                     type: 'SET_ACTIVE_PLAYLIST_ID',
                     payload: res.playlist.Playlist_Id,
@@ -102,8 +93,8 @@ const Playlist = () => {
                 {pl?.Description && <Text size="sm">{pl?.Description}</Text>}
 
                 <Group gap="md" c="dimmed" fz="xs">
-                    <Text>Created: {fmtDate(pl?.playlist?.createdAt)}</Text>
-                    <Text>Updated: {fmtDate(pl?.playlist?.updatedAt)}</Text>
+                    <Text>Created: {pl?.playlist?.createdAtFormatted}</Text>
+                    <Text>Updated: {pl?.playlist?.updatedAtFormatted}</Text>
                 </Group>
                 <Divider my="xs" />
                 <DataTable<any>
