@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Box, Group, Stack, Text, Divider, Badge, Card } from '@mantine/core';
+import { Box, Group, Stack, Text, Divider, Badge } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
@@ -76,7 +76,7 @@ const Playlist = () => {
             width: 100,
         },
         {
-            header: <Text fw={700}>Updated</Text>,
+            header: <Text fw={700}>Added</Text>,
             render: v => v.updatedAtFormatted,
             visibleFrom: 'sm',
             width: 180,
@@ -120,13 +120,9 @@ const Playlist = () => {
                     {pl?.videos?.length === 1 ? '' : 's'}
                 </Badge>
             </Group>
-
-            {pl?.Description && <Text size="sm">{pl?.Description}</Text>}
-
-            <Group gap="md" c="dimmed" fz="xs">
-                <Text>Created: {pl?.playlist?.createdAtFormatted}</Text>
-                <Text>Updated: {pl?.playlist?.updatedAtFormatted}</Text>
-            </Group>
+            {pl?.playlist?.Description && (
+                <Text c="white">{pl?.playlist?.Description}</Text>
+            )}
             <DataTable<any>
                 data={videosPage}
                 columns={columns}
@@ -169,6 +165,16 @@ const Playlist = () => {
                 }}
                 cellBorder="4px solid #141414"
             />
+
+            <Group>
+                <Text c="dimmed">
+                    Created: {pl?.playlist?.createdAtFormatted}
+                </Text>
+                <Text c="dimmed">
+                    Updated: {pl?.playlist?.updatedAtFormatted}
+                </Text>
+            </Group>
+            <Divider mt="xs" mb="sm" color="rgba(255,255,255,0.12)" />
         </Stack>
     );
 };

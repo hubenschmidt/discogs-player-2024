@@ -39,8 +39,13 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const { previewDiscogsRelease, selectedDiscogsRelease, selectedVideo } =
-        discogsReleaseState;
+    const {
+        previewDiscogsRelease,
+        selectedDiscogsRelease,
+        selectedRelease,
+        previewRelease,
+        selectedVideo,
+    } = discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -240,20 +245,22 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {/* Video Playlist Section */}
-                <Grid mb="sm">
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 4 }}
-                        style={devStyle}
-                    >
-                        <VideoPlaylist />
-                    </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 8 }}
-                        style={devStyle}
-                    >
-                        About this release/artist/label
-                    </Grid.Col>
-                </Grid>
+                {selectedRelease && (
+                    <Grid mb="sm">
+                        <Grid.Col
+                            span={{ base: 12, md: 6, lg: 4 }}
+                            style={devStyle}
+                        >
+                            <VideoPlaylist />
+                        </Grid.Col>
+                        <Grid.Col
+                            span={{ base: 12, md: 6, lg: 8 }}
+                            style={devStyle}
+                        >
+                            About this release/artist/label
+                        </Grid.Col>
+                    </Grid>
+                )}
 
                 {/* YouTube Player Section */}
                 {selectedVideo && (

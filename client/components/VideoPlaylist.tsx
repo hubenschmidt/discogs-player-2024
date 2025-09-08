@@ -7,6 +7,7 @@ import {
     Loader,
     ActionIcon,
     Tooltip,
+    Group,
 } from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
@@ -135,6 +136,11 @@ const VideoPlaylist = () => {
     return (
         <Box>
             <Stack>
+                <Group justify="space-between" align="center" mb="10px">
+                    <Text fw={700} fz="lg" c="white">
+                        Tracks
+                    </Text>
+                </Group>
                 {activeDiscogs?.videos.map((video: any, idx: number) => {
                     const isSelected = selectedVideo?.uri === video.uri;
 
