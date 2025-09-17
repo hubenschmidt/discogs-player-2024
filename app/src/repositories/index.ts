@@ -185,55 +185,62 @@ export const getPlaylist = async (req: Request, user: any) => {
         pv.Video?.get ? pv.Video.get({ plain: true }) : pv.Video,
     );
 
-    // ---- 5) attach Release_Id to each video
+    // ---- 5) attach FULL release object to each video
     let videosWithRelease = videosRaw;
 
-    if (videosRaw.length) {
-        const videoIds = videosRaw.map((v: any) => v.Video_Id);
+    const videoIds = videosRaw.map((v: any) => v.Video_Id);
 
-        // 1) Video -> Release_Id (first match wins)
-        const rvLinks: Array<{ Video_Id: number; Release_Id: number }> =
-            await db.ReleaseVideo.findAll({
-                where: { Video_Id: { [Op.in]: videoIds } },
-                attributes: ['Video_Id', 'Release_Id'],
-                raw: true,
-            });
-
-        const v2r = new Map<number, number>();
-        const releaseIds = new Set<number>();
-        for (const row of rvLinks) {
-            if (!v2r.has(row.Video_Id)) {
-                v2r.set(row.Video_Id, row.Release_Id);
-                releaseIds.add(row.Release_Id);
-            }
-        }
-
-        // 2) Release_Id -> Thumb (and optional fallback to Cover_Image)
-        const relThumbRows: Array<{
-            Release_Id: number;
-            Thumb: string | null;
-            Cover_Image?: string | null;
-        }> = await db.Release.findAll({
-            where: { Release_Id: { [Op.in]: Array.from(releaseIds) } },
-            attributes: ['Release_Id', 'Thumb'],
+    // 1) Video -> Release_Id (first match wins)
+    const rvLinks: Array<{ Video_Id: number; Release_Id: number }> =
+        await db.ReleaseVideo.findAll({
+            where: { Video_Id: { [Op.in]: videoIds } },
+            attributes: ['Video_Id', 'Release_Id'],
             raw: true,
         });
 
-        const r2thumb = new Map<number, string | null>();
-        for (const r of relThumbRows) {
-            r2thumb.set(r.Release_Id, r.Thumb ?? null);
+    const v2r = new Map<number, number>();
+    const releaseIds = new Set<number>();
+    for (const row of rvLinks) {
+        if (!v2r.has(row.Video_Id)) {
+            v2r.set(row.Video_Id, row.Release_Id);
+            releaseIds.add(row.Release_Id);
         }
-
-        // 3) Attach both fields to each video
-        videosWithRelease = videosRaw.map((v: any) => {
-            const rid = v2r.get(v.Video_Id) ?? null;
-            return {
-                ...v,
-                Release_Id: rid,
-                Thumb: rid ? r2thumb.get(rid) ?? null : null,
-            };
-        });
     }
+
+    // 2) Fetch FULL releases for all collected releaseIds (NOT just Thumb)
+    let releasesAllPlain: any[] = [];
+    if (releaseIds.size) {
+        const releasesAll = await db.Release.findAll({
+            where: { Release_Id: { [Op.in]: Array.from(releaseIds) } },
+            include: [
+                { model: db.Genre, through: { attributes: [] } },
+                { model: db.Style, through: { attributes: [] } },
+                { model: db.Artist, through: { attributes: [] } },
+                { model: db.Label, through: { attributes: [] } },
+            ],
+        });
+
+        releasesAllPlain = releasesAll.map((r: any) =>
+            r.get ? r.get({ plain: true }) : r,
+        );
+    }
+
+    // 3) Map Release_Id -> full release object
+    const r2release = new Map<number, any>();
+    for (const r of releasesAllPlain) r2release.set(r.Release_Id, r);
+
+    // 4) Attach Release_Id, Thumb (convenience), and full release object to each video
+    videosWithRelease = videosRaw.map((v: any) => {
+        const rid = v2r.get(v.Video_Id) ?? null;
+        const releaseObj = rid ? r2release.get(rid) ?? null : null;
+
+        return {
+            ...v,
+            Release_Id: rid, // keep for downstream paging logic on VinylShelf
+            Thumb: releaseObj?.Thumb ?? null, // quick access
+            release: releaseObj, // <-- full release object embedded
+        };
+    });
 
     // ---- 4) Paged RELEASES in the same order as the matching videos' Release_Id
     let releasesPaged: any[] = [];

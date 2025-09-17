@@ -88,7 +88,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
             </Center>
         );
     }
-    console.log('selectedVideo', selectedVideo);
 
     return collectionState.synced ? (
         <Box>

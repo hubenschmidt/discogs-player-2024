@@ -28,7 +28,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
         discogsReleaseState;
     const { selectedRelease } = discogsReleaseState;
-    console.log(selectedVideo);
 
     const handleNextRelease = () => {
         if (!selectedRelease || !releases || releases.length === 0) return;

@@ -10,37 +10,7 @@ import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
 import TrackDetail from './TrackDetail';
 import { NavContext } from '../context/navContext';
-
-const reorderReleases = (
-    records: Release[],
-    selectedIndex: number,
-): Release[] => {
-    const n = records.length;
-    if (n < 2) return records;
-    const middleIndex = Math.floor((n - 1) / 2);
-    const newArr = new Array<Release>(n);
-    newArr[middleIndex] = records[selectedIndex];
-
-    // Fill to the right
-    let newPos = middleIndex + 1;
-    let oldPos = selectedIndex + 1;
-    while (newPos < n) {
-        newArr[newPos] = records[oldPos % n];
-        newPos++;
-        oldPos++;
-    }
-
-    // Fill to the left
-    newPos = middleIndex - 1;
-    oldPos = selectedIndex - 1;
-    while (newPos >= 0) {
-        newArr[newPos] = records[(oldPos + n) % n];
-        newPos--;
-        oldPos--;
-    }
-
-    return newArr;
-};
+import { reorderReleases } from '../lib/reorder-releases';
 
 const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
@@ -99,7 +69,7 @@ const VinylShelf: FC = () => {
         const reorderedReleases = reorderReleases(items, index);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: reorderedReleases },
+            payload: { items: reorderedReleases },
         });
 
         if (shelfRef.current) {
@@ -144,7 +114,7 @@ const VinylShelf: FC = () => {
         const reorderedReleases = reorderReleases(items, newIndex);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { releases: reorderedReleases },
+            payload: { items: reorderedReleases },
         });
         if (shelfRef.current) {
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });

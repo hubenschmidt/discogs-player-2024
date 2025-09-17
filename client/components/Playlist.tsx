@@ -7,6 +7,7 @@ import { DataTable, type Column, type PageData } from './DataTable';
 import { getPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { CollectionContext } from '../context/collectionContext';
+import { reorderReleases } from '../lib/reorder-releases';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -14,8 +15,9 @@ const Playlist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedVideo } = discogsReleaseState;
-    const { dispatchCollection } = useContext(CollectionContext);
+    const { collectionState, dispatchCollection } =
+        useContext(CollectionContext);
+    const { items } = collectionState;
     const bearerToken = useBearerToken();
 
     const pl = playlistState?.playlistDetail || null;
@@ -141,11 +143,25 @@ const Playlist = () => {
                         type: 'SET_SELECTED_VIDEO',
                         payload: row,
                     });
-                    if (row.Release_Id) {
-                        // optionally tell your app which release to highlight in the shelf
-                        dispatchDiscogsRelease({
-                            type: 'SET_SELECTED_RELEASE_ID',
-                            payload: row.Release_Id,
+                    dispatchDiscogsRelease({
+                        type: 'SET_SELECTED_RELEASE',
+                        payload: row.release,
+                    });
+
+                    // center on shelf if that release is present in current items
+                    const rel = row.release;
+                    const idx = items.findIndex(
+                        r => r.Release_Id === rel.Release_Id,
+                    );
+                    if (idx !== -1) {
+                        const reordered = reorderReleases(items, idx);
+                        // preserve paging fields if your reducer stores them
+                        dispatchCollection({
+                            type: 'SET_COLLECTION',
+                            payload: {
+                                ...collectionState,
+                                items: reordered,
+                            },
                         });
                     }
                 }}
