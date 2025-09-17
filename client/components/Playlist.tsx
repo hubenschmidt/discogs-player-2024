@@ -97,27 +97,42 @@ const Playlist = () => {
 
     // Auto-start first entry when videosPage loads (if nothing playing from this page)
     useEffect(() => {
-        const first = videosPage?.items?.[0];
-        if (!first) return;
+        const items = videosPage?.items ?? [];
+        if (!items.length) return;
 
-        // create a queue from this page's playlist rows
-        const queue = videosPage.items;
+        const currentUri = discogsReleaseState.selectedVideo?.uri;
+        const idx = currentUri
+            ? items.findIndex(v => v.uri === currentUri)
+            : -1;
+        const startIndex = idx >= 0 ? idx : 0;
 
+        // seed/refresh the queue with the correct starting index
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
-            payload: { items: queue, startIndex: 0, mode: 'playlist' },
+            payload: { items, startIndex, mode: 'playlist' },
         });
 
-        // pick the first video so the player can start immediately
-        dispatchDiscogsRelease({
-            type: 'SET_SELECTED_VIDEO',
-            payload: queue[0],
-        });
-        // keep selectedRelease in sync (and shelf centering you already do)
-        dispatchDiscogsRelease({
-            type: 'SET_SELECTED_RELEASE',
-            payload: first.release,
-        });
+        // keep selected video/release aligned with the queue
+        const target = items[startIndex];
+        if (
+            !discogsReleaseState.selectedVideo ||
+            discogsReleaseState.selectedVideo.uri !== target.uri
+        ) {
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: target,
+            });
+        }
+        if (
+            !discogsReleaseState.selectedRelease ||
+            discogsReleaseState.selectedRelease.Release_Id !==
+                target.release?.Release_Id
+        ) {
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_RELEASE',
+                payload: target.release,
+            });
+        }
     }, [videosPage?.items]);
 
     // Count plays once per (releaseId|videoUri) while in playlist mode
