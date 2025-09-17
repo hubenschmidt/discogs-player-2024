@@ -186,26 +186,24 @@ const ReleaseVideos = () => {
         ).catch(console.error);
     }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
 
-    // when selectedDiscogsRelease changes, seed queue with its videos
+    // when selectedDiscogsRelease changes, seed queue only if we don't already
+    // have a selected video from this release (prevents clobbering startIndex)
     useEffect(() => {
-        // ⬅️ don't overwrite the queue if we're playing a playlist
         if (playbackMode === 'playlist') return;
+
         const vids = selectedDiscogsRelease?.videos ?? [];
         if (!vids.length) return;
+
+        const curUri = selectedVideo?.uri;
+        const currentIsInThisRelease =
+            !!curUri && vids.some((v: any) => v.uri === curUri);
+        if (currentIsInThisRelease) return; // <-- don't overwrite user's pick
 
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
             payload: { items: vids, startIndex: 0, mode: 'release' },
         });
-    }, [selectedDiscogsRelease?.id]); // or Release_Id, or videos array ref
-
-    if (loading) return <Loader />;
-    if (
-        selectedDiscogsRelease &&
-        selectedDiscogsRelease?.videos?.length === 0
-    ) {
-        return <Text>No videos available</Text>;
-    }
+    }, [selectedDiscogsRelease?.id, playbackMode, selectedVideo?.uri]);
 
     return (
         <Box>
