@@ -93,8 +93,12 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                 videoId: extractYouTubeVideoId(selectedVideo.uri),
                 playerVars: {
                     autoplay: 1,
-                    controls: 1,
+                    controls: 0,
                     rel: 0, // prevents showing related videos from other channels
+                    iv_load_policy: 3, // <- hide annotations/cards
+                    fs: 0, // <- no fullscreen button (optional)
+                    disablekb: 1, // <- disable keyboard controls (optional)
+                    playsinline: 1, // <- inline playback on mobile
                 },
                 events: {
                     onReady: (event: any) => {
