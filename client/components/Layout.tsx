@@ -27,6 +27,7 @@ import Playlists from './Playlists';
 import Playlist from './Playlist';
 import TrackProgress from './TrackProgress';
 import { NavContext } from '../context/navContext';
+import ReleaseDetail from './ReleaseDetail';
 
 type Props = {
     children?: ReactNode;
@@ -267,7 +268,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             span={{ base: 12, md: 6, lg: 8 }}
                             style={devStyle}
                         >
-                            About this release/artist/label
+                            <ReleaseDetail />
                         </Grid.Col>
                     </Grid>
                 )}
