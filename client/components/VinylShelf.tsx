@@ -4,7 +4,7 @@ import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Box, Group, ActionIcon, Text } from '@mantine/core'; 
+import { Box, Group, ActionIcon, Text } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
@@ -34,12 +34,19 @@ const VinylShelf: FC = () => {
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
     const bearerToken = useBearerToken();
 
-    // ⬇️ NEW loading flags
+    // loading flags
     const [loadingFetch, setLoadingFetch] = useState(false);
     const [loadingCenter, setLoadingCenter] = useState(false);
     const isLoading = loadingFetch || loadingCenter;
-
     const MIN_SPINNER_MS = 300;
+
+    const showSearchShelf = !!(
+        searchSelection?.Artist_Id ||
+        searchSelection?.Label_Id ||
+        searchSelection?.Release_Id
+    );
+
+    const shelfShowsPlaylist = playlistOpen && !showSearchShelf;
 
     // NEW: auto-stop the center blur when it’s turned on
     useEffect(() => {
@@ -50,7 +57,7 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch collection when not viewing a playlist ----------
     useEffect(() => {
-        if (playlistOpen) return;
+        if (shelfShowsPlaylist) return; // <- playlist is showing on shelf, skip
 
         const params: any = {
             username: userState.username,
@@ -96,7 +103,7 @@ const VinylShelf: FC = () => {
             if (t) clearTimeout(t);
         };
     }, [
-        playlistOpen,
+        shelfShowsPlaylist, // <- key change,
         currentPage,
         itemsPerPage,
         searchSelection,
@@ -107,7 +114,7 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch playlist when playlist is open ----------
     useEffect(() => {
-        if (!playlistOpen) return;
+        if (!shelfShowsPlaylist) return; // <- only when we actually want the playlist showing on shelf
 
         let aborted = false;
         let t: ReturnType<typeof setTimeout> | null = null;
@@ -149,7 +156,7 @@ const VinylShelf: FC = () => {
             if (t) clearTimeout(t);
         };
     }, [
-        playlistOpen,
+        shelfShowsPlaylist, // <- key change
         bearerToken,
         playlistState.activePlaylistId,
         playlistState.playlistVideosPage,

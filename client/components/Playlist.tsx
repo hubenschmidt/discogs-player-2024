@@ -9,6 +9,7 @@ import { updateVideoPlayCount } from '../api';
 import { ActionIcon } from '@mantine/core';
 import { X } from 'lucide-react';
 import { NavContext } from '../context/navContext';
+import { SearchContext } from '../context/searchContext';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -17,6 +18,7 @@ const Playlist = () => {
         DiscogsReleaseContext,
     );
     const { dispatchNav } = useContext(NavContext);
+    const { dispatchSearch } = useContext(SearchContext);
     const bearerToken = useBearerToken();
 
     const pl = playlistState?.playlistDetail || null;
@@ -179,6 +181,10 @@ const Playlist = () => {
                 selectedRowKey={discogsReleaseState.selectedVideo?.uri}
                 selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
+                    dispatchSearch({
+                        type: 'SET_SEARCH_SELECTION',
+                        payload: null,
+                    });
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
