@@ -178,6 +178,8 @@ const ReleaseVideos = () => {
 
     // when selectedDiscogsRelease changes, seed queue with its videos
     useEffect(() => {
+        // ⬅️ don't overwrite the queue if we're playing a playlist
+        if (playbackMode === 'playlist') return;
         const vids = selectedDiscogsRelease?.videos ?? [];
         if (!vids.length) return;
 

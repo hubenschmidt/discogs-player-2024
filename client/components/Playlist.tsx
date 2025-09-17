@@ -106,8 +106,11 @@ const Playlist = () => {
             payload: { items: queue, startIndex: 0, mode: 'playlist' },
         });
 
-        // ensure VinylShelf will center/blur
-        // dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        // pick the first video so the player can start immediately
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_VIDEO',
+            payload: queue[0],
+        });
         // keep selectedRelease in sync (and shelf centering you already do)
         dispatchDiscogsRelease({
             type: 'SET_SELECTED_RELEASE',
@@ -176,7 +179,6 @@ const Playlist = () => {
                 selectedRowKey={discogsReleaseState.selectedVideo?.uri}
                 selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
-                    console.log(row);
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
@@ -197,7 +199,7 @@ const Playlist = () => {
                     // select the video; if you also want to sync a release selection:
                     dispatchDiscogsRelease({
                         type: 'SET_SELECTED_VIDEO',
-                        payload: row,
+                        payload: queue[startIndex],
                     });
                     dispatchDiscogsRelease({
                         type: 'SET_SELECTED_RELEASE',

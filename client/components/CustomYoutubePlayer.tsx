@@ -43,27 +43,30 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     };
 
     const handleVideoEnd = () => {
-        // No queue, nothing to do
         if (!queue || queue.length === 0 || queueIndex < 0) return;
 
         const atEnd = queueIndex >= queue.length - 1;
 
-        if (atEnd && !continuousPlay) {
-            // What happens at the end depends on source:
-            if (playbackMode === 'release') {
-                // your existing behavior
-                handleNextRelease?.();
-            } else {
-                // playbackMode === 'playlist'
-                // Option A: stop (do nothing)
-                // Option B: ask Playlist to go to the next page (recommended)
-                //   e.g., emit a callback/dispatch an event your Playlist listens to,
-                //   then your "auto-start first entry" effect will kick in on the new page
+        if (playbackMode === 'playlist') {
+            // In playlists: advance within the list; stop at the end (or loop if you want)
+            if (atEnd) {
+                // To loop the playlist, uncomment:
+                dispatchDiscogsRelease({
+                    type: 'SET_PLAYBACK_QUEUE',
+                    payload: { items: queue, startIndex: 0, mode: 'playlist' },
+                });
+                return;
             }
+            dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
             return;
         }
 
-        // Otherwise just advance within the queue
+        // Release mode (your existing behavior)
+        if (atEnd && !continuousPlay) {
+            handleNextRelease?.();
+            return;
+        }
+
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
     const safeSetVolume = (target: any, volume: number, attempts = 5) => {
@@ -81,7 +84,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
 
     // Function to create the YouTube player
     const createPlayer = () => {
-        console.log(selectedVideo.uri, 'sel');
         if (playerRef.current && selectedVideo.uri) {
             playerInstance.current = new window.YT.Player(playerRef.current, {
                 height,
@@ -133,6 +135,17 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
             });
         }
     };
+
+    useEffect(() => {
+        const next = queue?.[queueIndex];
+        if (!next) return;
+        if (selectedVideo?.uri !== next?.uri) {
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: next,
+            });
+        }
+    }, [queueIndex, queue, selectedVideo?.uri, dispatchDiscogsRelease]);
 
     useEffect(() => {
         // Check if the YT API is loaded
