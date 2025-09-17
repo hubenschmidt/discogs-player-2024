@@ -29,6 +29,7 @@ const ReleaseVideos = () => {
         selectedRelease,
         selectedVideo,
         previewDiscogsRelease,
+        playbackMode,
     } = discogsReleaseState;
     const { userState } = useContext(UserContext);
     const { username } = userState;
@@ -94,6 +95,7 @@ const ReleaseVideos = () => {
 
     // ---- A) Auto-select first video (no API call here)
     useEffect(() => {
+        if (playbackMode === 'playlist') return;
         // Only auto-select when we are on the playing (selected) release and not previewing
         if (previewDiscogsRelease) return;
 
@@ -102,6 +104,16 @@ const ReleaseVideos = () => {
 
         const hasCurrent =
             selectedVideo && vids.some((v: any) => v.uri === selectedVideo.uri);
+
+        // Seed the release queue first (start at current if already selected)
+        const startIndex = hasCurrent
+            ? vids.findIndex((v: any) => v.uri === selectedVideo?.uri)
+            : 0;
+
+        dispatchDiscogsRelease({
+            type: 'SET_PLAYBACK_QUEUE',
+            payload: { items: vids, startIndex, mode: 'release' },
+        });
 
         if (!hasCurrent) {
             dispatchDiscogsRelease({
@@ -210,10 +222,10 @@ const ReleaseVideos = () => {
                                     },
                                 });
 
-                                // dispatchDiscogsRelease({
-                                //     type: 'SET_SELECTED_VIDEO',
-                                //     payload: video,
-                                // });
+                                dispatchDiscogsRelease({
+                                    type: 'SET_SELECTED_VIDEO',
+                                    payload: video,
+                                });
                             }}
                             mt="-16px"
                             styles={{

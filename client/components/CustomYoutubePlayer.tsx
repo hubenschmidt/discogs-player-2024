@@ -25,14 +25,8 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const {
-        selectedDiscogsRelease,
-        queue,
-        queueIndex,
-        playbackMode,
-        continuousPlay,
-        selectedVideo,
-    } = discogsReleaseState;
+    const { queue, queueIndex, playbackMode, continuousPlay, selectedVideo } =
+        discogsReleaseState;
     const { selectedRelease } = discogsReleaseState;
 
     const handleNextRelease = () => {
@@ -87,6 +81,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
 
     // Function to create the YouTube player
     const createPlayer = () => {
+        console.log(selectedVideo.uri, 'sel');
         if (playerRef.current && selectedVideo.uri) {
             playerInstance.current = new window.YT.Player(playerRef.current, {
                 height,

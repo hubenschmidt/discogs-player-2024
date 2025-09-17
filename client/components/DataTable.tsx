@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     Box,
     Group,
@@ -49,16 +49,13 @@ export type DataTableProps<T> = {
     sortDirection?: SortDir;
     onSortChange?: (s: { sortBy: string; direction: SortDir }) => void;
 
-    // rows
-    rowKey?: (row: T, index: number) => React.Key;
-    onRowClick?: (row: T) => void;
+    // keys & selection (controlled)
+    rowKey?: (row: T, index: number) => React.Key; // provide a stable key (e.g. row.uri)
+    selectedRowKey?: React.Key | null; // parent-controlled
+    onRowSelect?: (key: React.Key, row: T) => void;
 
-    // selection
-    defaultSelectedRowKey?: React.Key | null;
-    selectedRowKey?: React.Key | null; // controlled
-    onSelectionChange?: (key: React.Key | null, row?: T) => void;
-    selectOnRowClick?: boolean;
-    preserveSelection?: boolean;
+    // clicks
+    onRowClick?: (row: T) => void;
 
     // UI
     emptyText?: string;
@@ -88,6 +85,7 @@ export const DataTable = <T,>({
     sortDirection,
     onSortChange,
     rowKey,
+    onRowSelect,
     onRowClick,
     emptyText = 'No records',
     highlightOnHover = true,
@@ -97,28 +95,12 @@ export const DataTable = <T,>({
     tableStyle,
     topRight,
     cellBorder,
-
-    // selection
-    selectedRowKey: controlledSelected,
-    onSelectionChange,
-    selectOnRowClick = true,
-
+    selectedRowKey,
     selectedRowClassName,
     selectedRowStyle,
 }: DataTableProps<T>) => {
     const items = data?.items ?? [];
     const keyOf = (row: T, idx: number) => (rowKey ? rowKey(row, idx) : idx);
-
-    // uncontrolled internal selection
-    const [internalSelected, setInternalSelected] = useState(null);
-
-    // controlled wins
-    const selectedKey = controlledSelected ?? internalSelected;
-
-    const handleSelect = (key: React.Key | null, row?: T) => {
-        if (controlledSelected === undefined) setInternalSelected(key);
-        onSelectionChange?.(key, row);
-    };
 
     // paging
     const page = data?.currentPage ?? 1;
@@ -261,12 +243,11 @@ export const DataTable = <T,>({
                         {items.map((row, idx) => {
                             const key = keyOf(row, idx);
                             const selected =
-                                selectedKey != null &&
-                                String(key) === String(selectedKey);
-
+                                selectedRowKey !== null &&
+                                String(key) === String(selectedRowKey);
                             const handleRowClick = () => {
                                 onRowClick?.(row);
-                                if (selectOnRowClick) handleSelect(key, row);
+                                onRowSelect?.(key, row);
                             };
 
                             return (
@@ -274,7 +255,6 @@ export const DataTable = <T,>({
                                     key={key}
                                     onClick={handleRowClick}
                                     data-row-key={String(key)}
-                                    data-selected={selected ? 'true' : 'false'}
                                     className={
                                         selected
                                             ? selectedRowClassName

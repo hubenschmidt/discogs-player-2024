@@ -24,8 +24,6 @@ export default initialState => {
                 return setPreviewDiscogsRelease(state, action.payload);
             case SET_CONTINUOUS_PLAY:
                 return setContinuousPlay(state, action.payload);
-            case SET_SELECTED_VIDEO:
-                return setSelectedVideo(state, action.payload);
             // case SET_NEXT_VIDEO:
             //     return setNextVideo(state);
             case SET_PREV_VIDEO:
@@ -38,7 +36,6 @@ export default initialState => {
                 return setPrevInQueue(state);
             case SET_SELECTED_VIDEO:
                 return setSelectedVideo(state, action.payload); // we'll sync queueIndex here
-
             case MERGE_STATE:
                 return mergeState(state, action.payload);
             default:
@@ -79,32 +76,12 @@ const setContinuousPlay = (state, payload) => {
     };
 };
 
-// const setSelectedVideo = (state, payload) => {
-//     return {
-//         ...state,
-//         selectedVideo: payload,
-//     };
-// };
-
-// const setNextVideo = state => {
-//     const videos = state.selectedDiscogsRelease?.videos;
-//     if (!videos || videos.length === 0) return state;
-
-//     const currentIndex = videos.findIndex(
-//         video => video.uri === state.selectedVideo.uri,
-//     );
-
-//     // Advance if not last, otherwise loop back
-//     const nextIndex =
-//         currentIndex !== -1 && currentIndex < videos.length - 1
-//             ? currentIndex + 1
-//             : 0;
-
-//     return {
-//         ...state,
-//         selectedVideo: videos[nextIndex],
-//     };
-// };
+const setSelectedVideo = (state, payload) => {
+    return {
+        ...state,
+        selectedVideo: payload,
+    };
+};
 
 const setPrevVideo = state => {
     const videos = state.selectedDiscogsRelease?.videos;
@@ -136,8 +113,8 @@ const setPlaybackQueue = (state, payload) => {
         ...state,
         playbackMode: mode,
         queue: items ?? [],
-        queueIndex: items?.length ? safeIndex : -1,
-        selectedVideo: nextVideo ?? state.selectedVideo, // align selection to queue
+        queueIndex: safeIndex,
+        selectedVideo: nextVideo, // align selection to queue
     };
 };
 
@@ -163,19 +140,17 @@ const setPrevInQueue = state => {
     };
 };
 
-const setSelectedVideo = (state, video) => {
-    // keep reducer source-of-truth consistent:
-    // if the selected video exists in the current queue, sync index
-    const idx =
-        state.queue?.findIndex(
-            v => (v.uri ?? v.URI) === (video?.uri ?? video?.URI),
-        ) ?? -1;
-    return {
-        ...state,
-        selectedVideo: video,
-        queueIndex: idx !== -1 ? idx : state.queueIndex,
-    };
-};
+// const setSelectedVideo = (state, video) => {
+//     // keep reducer source-of-truth consistent:
+//     // if the selected video exists in the current queue, sync index
+//     const idx = state.queue?.findIndex(v => v.uri === video?.uri);
+//     console.log('set selected video called, ind', idx);
+//     return {
+//         ...state,
+//         selectedVideo: video,
+//         queueIndex: idx !== -1 ? idx : state.queueIndex,
+//     };
+// };
 
 const mergeState = (state, payload) => {
     return {
