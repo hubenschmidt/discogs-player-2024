@@ -147,16 +147,16 @@ const Playlist = () => {
         const idx = items.findIndex(r => r.Release_Id === rid);
         if (idx === -1) return;
 
-        // avoid churn if it's already centered
-        const mid = Math.floor((items.length - 1) / 2);
-        if (items[mid]?.Release_Id === rid) return;
+        // // avoid churn if it's already centered
+        // const mid = Math.floor((items.length - 1) / 2);
+        // if (items[mid]?.Release_Id === rid) return;
 
         const centered = reorderReleases(items, idx);
         dispatchCollection({
             type: 'SET_COLLECTION',
             payload: { ...collectionState, items: centered },
         });
-    }, [discogsReleaseState.selectedRelease?.Release_Id, items]);
+    }, [discogsReleaseState.selectedRelease?.Release_Id]);
 
     // Count plays once per (releaseId|videoUri) while in playlist mode
     useEffect(() => {

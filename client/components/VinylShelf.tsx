@@ -23,7 +23,8 @@ const VinylShelf: FC = () => {
     const { selectedRelease, selectedDiscogsRelease, previewRelease } =
         discogsReleaseState;
     const { searchState } = useContext(SearchContext);
-    const { dispatchNav } = useContext(NavContext);
+    const { navState, dispatchNav } = useContext(NavContext);
+    const { playlistOpen } = navState;
     const { searchSelection } = searchState;
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // maintains odd number so records center in carousel
@@ -64,7 +65,7 @@ const VinylShelf: FC = () => {
 
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+        // dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
 
         const reorderedReleases = reorderReleases(items, index);
         dispatchCollection({
@@ -176,60 +177,64 @@ const VinylShelf: FC = () => {
                     );
                 })}
             </div>
-            <div className="shelf-controls">
-                <ActionIcon
-                    onClick={handleShelfPrev}
-                    disabled={items?.length < 2}
-                >
-                    <ChevronLeft />
-                </ActionIcon>
-                <ActionIcon
-                    onClick={handleShelfNext}
-                    disabled={items?.length < 2}
-                >
-                    <ChevronRight />
-                </ActionIcon>
-            </div>
-            {/* Server Pagination Controls */}
-            {items?.length > 1 && (
-                <Group className="shelf-pagination">
-                    <ActionIcon
-                        onClick={handleFirstPage}
-                        disabled={currentPage <= 1}
-                    >
-                        <SkipBack />
-                    </ActionIcon>
-                    <ActionIcon
-                        onClick={handlePrevPage}
-                        disabled={currentPage <= 1}
-                    >
-                        <ChevronLeft />
-                    </ActionIcon>
-                    <Text c={'white'}>{currentPage}</Text>
-                    <ActionIcon
-                        onClick={handleNextPage}
-                        disabled={currentPage >= totalPages}
-                    >
-                        <ChevronRight />
-                    </ActionIcon>
-                    <ActionIcon
-                        onClick={handleLastPage}
-                        disabled={currentPage >= totalPages}
-                    >
-                        <SkipForward />
-                    </ActionIcon>
-                    <select
-                        value={itemsPerPage}
-                        onChange={handleItemsPerPageChange}
-                    >
-                        <option value={5}>5</option>
-                        <option value={10 + offset}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50 + offset}>50</option>
-                        <option value={100 + offset}>100</option>
-                        <option value={250 + offset}>250</option>
-                    </select>
-                </Group>
+            {!playlistOpen && (
+                <>
+                    <div className="shelf-controls">
+                        <ActionIcon
+                            onClick={handleShelfPrev}
+                            disabled={items?.length < 2}
+                        >
+                            <ChevronLeft />
+                        </ActionIcon>
+                        <ActionIcon
+                            onClick={handleShelfNext}
+                            disabled={items?.length < 2}
+                        >
+                            <ChevronRight />
+                        </ActionIcon>
+                    </div>
+                    {/* Server Pagination Controls */}
+                    {items?.length > 1 && (
+                        <Group className="shelf-pagination">
+                            <ActionIcon
+                                onClick={handleFirstPage}
+                                disabled={currentPage <= 1}
+                            >
+                                <SkipBack />
+                            </ActionIcon>
+                            <ActionIcon
+                                onClick={handlePrevPage}
+                                disabled={currentPage <= 1}
+                            >
+                                <ChevronLeft />
+                            </ActionIcon>
+                            <Text c={'white'}>{currentPage}</Text>
+                            <ActionIcon
+                                onClick={handleNextPage}
+                                disabled={currentPage >= totalPages}
+                            >
+                                <ChevronRight />
+                            </ActionIcon>
+                            <ActionIcon
+                                onClick={handleLastPage}
+                                disabled={currentPage >= totalPages}
+                            >
+                                <SkipForward />
+                            </ActionIcon>
+                            <select
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10 + offset}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50 + offset}>50</option>
+                                <option value={100 + offset}>100</option>
+                                <option value={250 + offset}>250</option>
+                            </select>
+                        </Group>
+                    )}
+                </>
             )}
         </div>
     );

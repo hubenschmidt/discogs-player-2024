@@ -161,7 +161,6 @@ const ReleaseVideos = () => {
     ) {
         return <Text>No videos available</Text>;
     }
-    if (playlistOpen) return null;
 
     return (
         <Box>

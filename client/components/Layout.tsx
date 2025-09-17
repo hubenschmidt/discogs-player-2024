@@ -245,8 +245,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {/* Video Playlist Section */}
-                {/* Video Playlist Section */}
-                {selectedRelease && !playlistOpen && (
+                {selectedRelease && (
                     <Grid mb="sm">
                         <Grid.Col
                             span={{ base: 12, md: 6, lg: 4 }}
