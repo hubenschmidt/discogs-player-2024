@@ -4,7 +4,7 @@ import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Box, Group, ActionIcon, Text, Loader } from '@mantine/core'; // ⬅️ Loader
+import { Box, Group, ActionIcon, Text } from '@mantine/core'; 
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';

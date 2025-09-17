@@ -17,7 +17,6 @@ import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
 import AddToPlaylistModal from './AddToPlaylistModal';
-import { NavContext } from '../context/navContext';
 
 const ReleaseVideos = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -32,8 +31,6 @@ const ReleaseVideos = () => {
         previewDiscogsRelease,
         playbackMode,
     } = discogsReleaseState;
-    const { navState } = useContext(NavContext);
-    const { navKey, playlistOpen } = navState;
     const { userState } = useContext(UserContext);
     const { username } = userState;
     const [loadingSel, setLoadingSel] = useState(false);
@@ -50,6 +47,45 @@ const ReleaseVideos = () => {
                 dispatchPlaylist({ type: 'SET_ADD_MODAL', payload: true });
             })
             .catch(err => console.log(err));
+    };
+
+    // 1) shared handler
+    const playVideo = (
+        video: any,
+        idx: number,
+        opts?: { openAdd?: boolean },
+    ) => {
+        // If we were previewing a different release, promote it to selected first
+        if (previewRelease) {
+            dispatchDiscogsRelease({
+                type: 'MERGE_STATE',
+                payload: {
+                    selectedRelease: previewRelease,
+                    selectedDiscogsRelease: activeDiscogs,
+                    previewRelease: null,
+                    previewDiscogsRelease: null,
+                },
+            });
+        }
+
+        // Seed queue & select the video
+        dispatchDiscogsRelease({
+            type: 'SET_PLAYBACK_QUEUE',
+            payload: {
+                items: activeDiscogs.videos,
+                startIndex: idx,
+                mode: 'release',
+            },
+        });
+
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_VIDEO',
+            payload: video,
+        });
+
+        if (opts?.openAdd) {
+            handleAdd();
+        }
     };
 
     // ---- Fetch full discogs for selected release
@@ -145,9 +181,6 @@ const ReleaseVideos = () => {
         const vids = selectedDiscogsRelease?.videos ?? [];
         if (!vids.length) return;
 
-        // only seed if we are explicitly in 'release' mode
-        if (discogsReleaseState.playbackMode !== 'release') return;
-
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
             payload: { items: vids, startIndex: 0, mode: 'release' },
@@ -188,11 +221,9 @@ const ReleaseVideos = () => {
                                         variant="light-transparent"
                                         onClick={e => {
                                             e.stopPropagation();
-                                            dispatchDiscogsRelease({
-                                                type: 'SET_SELECTED_VIDEO',
-                                                payload: video,
+                                            playVideo(video, idx, {
+                                                openAdd: true,
                                             });
-                                            handleAdd();
                                         }}
                                     >
                                         <Plus size={16} />
@@ -202,34 +233,7 @@ const ReleaseVideos = () => {
                             key={idx}
                             variant={isSelected ? 'filled' : 'light'}
                             color="gray"
-                            onClick={() => {
-                                if (previewRelease) {
-                                    dispatchDiscogsRelease({
-                                        type: 'MERGE_STATE',
-                                        payload: {
-                                            selectedRelease: previewRelease,
-                                            selectedDiscogsRelease:
-                                                activeDiscogs,
-                                            previewRelease: null, // clear the preview states
-                                            previewDiscogsRelease: null,
-                                        },
-                                    });
-                                }
-
-                                dispatchDiscogsRelease({
-                                    type: 'SET_PLAYBACK_QUEUE',
-                                    payload: {
-                                        items: activeDiscogs.videos,
-                                        startIndex: idx,
-                                        mode: 'release',
-                                    },
-                                });
-
-                                dispatchDiscogsRelease({
-                                    type: 'SET_SELECTED_VIDEO',
-                                    payload: video,
-                                });
-                            }}
+                            onClick={() => playVideo(video, idx)}
                             mt="-16px"
                             styles={{
                                 root: {

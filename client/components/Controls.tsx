@@ -66,10 +66,20 @@ const Controls = () => {
     };
 
     const handleNextVideo = () => {
+        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        dispatchDiscogsRelease({
+            type: 'SET_PREVIEW_DISCOGS_RELEASE',
+            payload: null,
+        });
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
 
     const handlePrevVideo = () => {
+        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        dispatchDiscogsRelease({
+            type: 'SET_PREVIEW_DISCOGS_RELEASE',
+            payload: null,
+        });
         dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
     };
 

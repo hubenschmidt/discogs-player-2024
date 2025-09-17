@@ -5,8 +5,6 @@ import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { DataTable, type Column, type PageData } from './DataTable';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { CollectionContext } from '../context/collectionContext';
-import { reorderReleases } from '../lib/reorder-releases';
 import { updateVideoPlayCount } from '../api';
 import { ActionIcon } from '@mantine/core';
 import { X } from 'lucide-react';
@@ -19,9 +17,6 @@ const Playlist = () => {
         DiscogsReleaseContext,
     );
     const { dispatchNav } = useContext(NavContext);
-    const { collectionState, dispatchCollection } =
-        useContext(CollectionContext);
-    const { items } = collectionState;
     const bearerToken = useBearerToken();
 
     const pl = playlistState?.playlistDetail || null;
@@ -111,6 +106,8 @@ const Playlist = () => {
             payload: { items: queue, startIndex: 0, mode: 'playlist' },
         });
 
+        // ensure VinylShelf will center/blur
+        // dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
         // keep selectedRelease in sync (and shelf centering you already do)
         dispatchDiscogsRelease({
             type: 'SET_SELECTED_RELEASE',
@@ -179,12 +176,20 @@ const Playlist = () => {
                 selectedRowKey={discogsReleaseState.selectedVideo?.uri}
                 selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
+                    console.log(row);
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
                         queue.findIndex(v => v.uri === row.uri),
                     );
-
+                    dispatchDiscogsRelease({
+                        type: 'SET_PREVIEW_RELEASE',
+                        payload: null,
+                    });
+                    dispatchDiscogsRelease({
+                        type: 'SET_PREVIEW_DISCOGS_RELEASE',
+                        payload: null,
+                    });
                     dispatchDiscogsRelease({
                         type: 'SET_PLAYBACK_QUEUE',
                         payload: { items: queue, startIndex, mode: 'playlist' },
@@ -198,23 +203,6 @@ const Playlist = () => {
                         type: 'SET_SELECTED_RELEASE',
                         payload: row.release,
                     });
-
-                    // center on shelf if that release is present in current items
-                    const rel = row.release;
-                    const idx = items.findIndex(
-                        r => r.Release_Id === rel.Release_Id,
-                    );
-                    if (idx !== -1) {
-                        const reordered = reorderReleases(items, idx);
-                        // preserve paging fields if your reducer stores them
-                        dispatchCollection({
-                            type: 'SET_COLLECTION',
-                            payload: {
-                                ...collectionState,
-                                items: reordered,
-                            },
-                        });
-                    }
                 }}
                 onPageChange={page =>
                     dispatchPlaylist({
