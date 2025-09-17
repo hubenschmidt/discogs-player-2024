@@ -91,35 +91,6 @@ const Playlist = () => {
         },
     ];
 
-    useEffect(() => {
-        getPlaylist(
-            userState.username,
-            bearerToken,
-            playlistState.activePlaylistId,
-            {
-                page: playlistState.playlistVideosPage,
-                limit: playlistState.playlistVideosLimit,
-            },
-        )
-            .then(res => {
-                dispatchPlaylist({
-                    type: 'SET_ACTIVE_PLAYLIST_ID',
-                    payload: res.playlist.Playlist_Id,
-                });
-                dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
-                dispatchCollection({
-                    type: 'SET_COLLECTION',
-                    payload: res.releases,
-                });
-            })
-            .catch(console.error);
-    }, [
-        bearerToken,
-        playlistState.activePlaylistId,
-        playlistState.playlistVideosPage,
-        playlistState.playlistVideosLimit,
-    ]);
-
     // Auto-start first entry when videosPage loads (if nothing playing from this page)
     useEffect(() => {
         const first = videosPage?.items?.[0];

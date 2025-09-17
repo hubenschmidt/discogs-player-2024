@@ -11,6 +11,8 @@ import { SearchContext } from '../context/searchContext';
 import TrackDetail from './TrackDetail';
 import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
+import { PlaylistContext } from '../context/playlistContext';
+import { getPlaylist } from '../api';
 
 const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
@@ -23,6 +25,7 @@ const VinylShelf: FC = () => {
     const { selectedRelease, selectedDiscogsRelease, previewRelease } =
         discogsReleaseState;
     const { searchState } = useContext(SearchContext);
+    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState, dispatchNav } = useContext(NavContext);
     const { playlistOpen } = navState;
     const { searchSelection } = searchState;
@@ -48,20 +51,56 @@ const VinylShelf: FC = () => {
             }),
         };
 
-        getCollection(params, bearerToken)
-            .then((collection: CollectionResponse) => {
-                dispatchCollection({
-                    type: 'SET_COLLECTION',
-                    payload: collection,
-                });
-            })
-            .catch(error =>
-                console.error(
-                    'something went wrong with fetching collection,',
-                    error.response,
-                ),
-            );
+        if (!playlistOpen) {
+            getCollection(params, bearerToken)
+                .then((collection: CollectionResponse) => {
+                    dispatchCollection({
+                        type: 'SET_COLLECTION',
+                        payload: collection,
+                    });
+                })
+                .catch(error =>
+                    console.error(
+                        'something went wrong with fetching collection,',
+                        error.response,
+                    ),
+                );
+        }
     }, [currentPage, itemsPerPage, searchSelection]);
+
+    useEffect(() => {
+        if (playlistOpen) {
+            getPlaylist(
+                userState.username,
+                bearerToken,
+                playlistState.activePlaylistId,
+                {
+                    page: playlistState.playlistVideosPage,
+                    limit: playlistState.playlistVideosLimit,
+                },
+            )
+                .then(res => {
+                    dispatchPlaylist({
+                        type: 'SET_ACTIVE_PLAYLIST_ID',
+                        payload: res.playlist.Playlist_Id,
+                    });
+                    dispatchPlaylist({
+                        type: 'SET_PLAYLIST_DETAIL',
+                        payload: res,
+                    });
+                    dispatchCollection({
+                        type: 'SET_COLLECTION',
+                        payload: res.releases,
+                    });
+                })
+                .catch(console.error);
+        }
+    }, [
+        bearerToken,
+        playlistState.activePlaylistId,
+        playlistState.playlistVideosPage,
+        playlistState.playlistVideosLimit,
+    ]);
 
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
