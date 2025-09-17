@@ -346,6 +346,7 @@ export const getVideo = async (req: Request) => {
 export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { release_id } = req.params;
     const { uri, title, duration } = req.body;
+    console.log(title, 'video title');
 
     return db.sequelize.transaction(async (t: Transaction) => {
         const extractedUri = extractYouTubeVideoId(uri);

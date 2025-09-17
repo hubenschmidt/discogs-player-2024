@@ -261,20 +261,28 @@ export const fetchCollection = async (req: Request) => {
     return collection;
 };
 
+export const scrubTitle = (input?: string) => {
+    if (!input) return input;
+    // 1) strip tags (just in case)
+    const noTags = input.replace(/<[^>]*>/g, '');
+    // 2) normalize compatibility forms (turns math-bold chars into plain ASCII)
+    const normalized = noTags.normalize('NFKD');
+    // 3) remove zero-width chars
+    const noZW = normalized.replace(/[\u200B-\u200D\uFEFF]/g, '');
+    // 4) collapse whitespace
+    return noZW.replace(/\s+/g, ' ').trim();
+};
+
 export const fetchRelease = async (req: Request) => {
     const endpoint = `releases/${req.params.release_id}`;
     const response = await discogsClient_DEPRECATED(endpoint, 'get', null);
     const release = response?.data;
 
-    if (!Array.isArray(release.videos)) return release;
-
-    // Filter out Discogs bugged duplicates by 'uri'
-    const seen = new Set<string>();
-    release.videos = release.videos.filter((video: any) => {
-        if (!video.uri || seen.has(video.uri)) return false;
-        seen.add(video.uri);
-        return true;
-    });
-
+    if (Array.isArray(release?.videos)) {
+        release.videos = release.videos.map((video: any) => ({
+            ...video,
+            title: scrubTitle(video.title),
+        }));
+    }
     return response;
 };

@@ -165,20 +165,9 @@ html {
     height: 14px;
 }
 
-/* Self-hosted variable font example */
-@font-face {
-    font-family: 'JetBrains Mono Var';
-    src: url('/fonts/JetBrainsMono-Variable.woff2') format('woff2-variations');
-    font-weight: 100 800; /* <- important so the browser knows the range */
-    font-style: normal;
-    font-display: swap;
-}
-
 body {
     color: var(--foreground);
     background: var(--background);
-    /* font-family: 'JetBrains Mono Var', 'JetBrains Mono', Consolas, monospace;
-    font-weight: var(--fw-base); */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

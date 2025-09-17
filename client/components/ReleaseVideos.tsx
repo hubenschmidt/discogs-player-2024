@@ -207,6 +207,7 @@ const ReleaseVideos = () => {
                 </Group>
                 {activeDiscogs?.videos.map((video: any, idx: number) => {
                     const isSelected = selectedVideo?.uri === video.uri;
+                    console.log(video.title);
 
                     return (
                         <Button

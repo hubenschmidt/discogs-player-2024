@@ -28,7 +28,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const { queue, queueIndex, playbackMode, continuousPlay, selectedVideo } =
         discogsReleaseState;
     const { selectedRelease } = discogsReleaseState;
-
+    console.log(selectedRelease);
     const handleNextRelease = () => {
         if (!selectedRelease || !releases || releases.length === 0) return;
         const currentIndex = releases.findIndex(
@@ -177,7 +177,30 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         };
     }, [selectedVideo, width, height]);
 
-    return <div ref={playerRef} />;
+    return (
+        <div style={{ position: 'relative', width, height }}>
+            {/* The YouTube player */}
+            <div ref={playerRef} style={{ width: '100%', height: '100%' }} />
+
+            {/* Click-blocking shield */}
+            <div
+                aria-hidden="true"
+                tabIndex={-1}
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.preventDefault()}
+                onContextMenu={e => e.preventDefault()}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 2,
+                    // transparent but intercepts pointer events:
+                    background: 'transparent',
+                    pointerEvents: 'auto',
+                    cursor: 'default',
+                }}
+            />
+        </div>
+    );
 };
 
 export default CustomYouTubePlayer;
