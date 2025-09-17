@@ -4,11 +4,13 @@ import { UserContext } from '../context/userContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { DataTable, type Column, type PageData } from './DataTable';
-import { getPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { CollectionContext } from '../context/collectionContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { updateVideoPlayCount } from '../api';
+import { ActionIcon } from '@mantine/core';
+import { X } from 'lucide-react';
+import { NavContext } from '../context/navContext';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -16,6 +18,7 @@ const Playlist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
+    const { dispatchNav } = useContext(NavContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { items } = collectionState;
@@ -91,6 +94,10 @@ const Playlist = () => {
         },
     ];
 
+    const handleClose = () => {
+        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+    };
+
     // Auto-start first entry when videosPage loads (if nothing playing from this page)
     useEffect(() => {
         const first = videosPage?.items?.[0];
@@ -156,17 +163,32 @@ const Playlist = () => {
     return (
         <Stack gap="xs">
             <Group justify="space-between" align="center">
-                <Text fw={700} fz="lg" c="white">
-                    {pl?.playlist?.Name}
-                </Text>
-                <Badge variant="light">
-                    {pl?.playlist.Tracks_Count} track
-                    {pl?.videos?.length === 1 ? '' : 's'}
-                </Badge>
+                <Group align="center" gap="sm">
+                    <Text fw={700} fz="lg" c="white">
+                        {pl?.playlist?.Name}
+                    </Text>
+                    <Badge variant="light">
+                        {pl?.playlist.Tracks_Count} track
+                        {pl?.videos?.length === 1 ? '' : 's'}
+                    </Badge>
+                </Group>
+
+                <ActionIcon
+                    variant="light"
+                    radius="md"
+                    size="lg"
+                    aria-label="Close playlist"
+                    onClick={handleClose}
+                    title="Close playlist"
+                >
+                    <X size={18} />
+                </ActionIcon>
             </Group>
+
             {pl?.playlist?.Description && (
                 <Text c="white">{pl?.playlist?.Description}</Text>
             )}
+
             <DataTable<any>
                 data={videosPage}
                 columns={columns}

@@ -66,7 +66,7 @@ const VinylShelf: FC = () => {
                     ),
                 );
         }
-    }, [currentPage, itemsPerPage, searchSelection]);
+    }, [currentPage, itemsPerPage, searchSelection, playlistOpen]);
 
     useEffect(() => {
         if (playlistOpen) {
@@ -96,6 +96,7 @@ const VinylShelf: FC = () => {
                 .catch(console.error);
         }
     }, [
+        playlistOpen,
         bearerToken,
         playlistState.activePlaylistId,
         playlistState.playlistVideosPage,
