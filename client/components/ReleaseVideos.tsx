@@ -55,42 +55,32 @@ const ReleaseVideos = () => {
         idx: number,
         opts?: { openAdd?: boolean },
     ) => {
-        // If we were previewing a different release, promote it to selected first
-        if (previewRelease) {
-            dispatchDiscogsRelease({
-                type: 'MERGE_STATE',
-                payload: {
+        const items = activeDiscogs?.videos ?? [];
+        if (!items.length) return;
+
+        const startIndex = Math.max(0, Math.min(idx, items.length - 1));
+
+        dispatchDiscogsRelease({
+            type: 'MERGE_STATE',
+            payload: {
+                ...(previewRelease && {
                     selectedRelease: previewRelease,
                     selectedDiscogsRelease: activeDiscogs,
                     previewRelease: null,
                     previewDiscogsRelease: null,
-                },
-            });
-        }
+                }),
+                // queue fields (make sure your reducer uses these)
+                queue: items,
+                queueIndex: startIndex,
+                playbackMode: 'release',
 
-        // Seed queue & select the video
-        dispatchDiscogsRelease({
-            type: 'SET_PLAYBACK_QUEUE',
-            payload: {
-                items: activeDiscogs.videos,
-                startIndex: idx,
-                mode: 'release',
+                // selection + playback
+                selectedVideo: video,
+                isPlaying: true,
             },
         });
 
-        dispatchDiscogsRelease({
-            type: 'SET_SELECTED_VIDEO',
-            payload: video,
-        });
-
-        dispatchDiscogsRelease({
-            type: 'SET_IS_PLAYING',
-            payload: true,
-        });
-
-        if (opts?.openAdd) {
-            handleAdd();
-        }
+        if (opts?.openAdd) handleAdd();
     };
 
     // ---- Fetch full discogs for selected release
