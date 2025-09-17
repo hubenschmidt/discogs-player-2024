@@ -103,9 +103,28 @@ const VinylShelf: FC = () => {
         playlistState.playlistVideosLimit,
     ]);
 
+    useEffect(() => {
+        const rid = selectedRelease?.Release_Id;
+        if (!rid || !items?.length) return;
+
+        // is the selected release in the current shelf?
+        const idx = items.findIndex(r => r.Release_Id === rid);
+        if (idx === -1) return;
+
+        // already centered? (avoid churn)
+        const n = items.length;
+        const mid = Math.floor((n - 1) / 2);
+        if (items[mid]?.Release_Id === rid) return;
+        // center it
+        const centered = reorderReleases(items, idx);
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { ...collectionState, items: centered },
+        });
+    }, [items, selectedRelease?.Release_Id]);
+
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-        // dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
 
         const reorderedReleases = reorderReleases(items, index);
         dispatchCollection({
