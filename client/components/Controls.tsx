@@ -6,7 +6,6 @@ import {
     ChevronRight,
     Pause,
     Play,
-    StopCircle,
     Rewind,
     FastForward,
 } from 'lucide-react';

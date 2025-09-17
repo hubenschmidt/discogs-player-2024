@@ -17,6 +17,7 @@ import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
 import AddToPlaylistModal from './AddToPlaylistModal';
+import { NavContext } from '../context/navContext';
 
 const ReleaseVideos = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -31,6 +32,8 @@ const ReleaseVideos = () => {
         previewDiscogsRelease,
         playbackMode,
     } = discogsReleaseState;
+    const { navState } = useContext(NavContext);
+    const { navKey, playlistOpen } = navState;
     const { userState } = useContext(UserContext);
     const { username } = userState;
     const [loadingSel, setLoadingSel] = useState(false);
@@ -158,6 +161,7 @@ const ReleaseVideos = () => {
     ) {
         return <Text>No videos available</Text>;
     }
+    if (playlistOpen) return null;
 
     return (
         <Box>
