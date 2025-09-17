@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Controls from './Controls';
 import Volume from './Volume';
 import VinylShelf from './VinylShelf';
-import VideoPlaylist from './VideoPlaylist';
+import ReleaseVideos from './ReleaseVideos';
 import { UserContext } from '../context/userContext';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
@@ -88,6 +88,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
             </Center>
         );
     }
+    console.log('selectedVideo', selectedVideo);
 
     return collectionState.synced ? (
         <Box>
@@ -251,7 +252,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             span={{ base: 12, md: 6, lg: 4 }}
                             style={devStyle}
                         >
-                            <VideoPlaylist />
+                            <ReleaseVideos />
                         </Grid.Col>
                         <Grid.Col
                             span={{ base: 12, md: 6, lg: 8 }}

@@ -18,7 +18,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
 import AddToPlaylistModal from './AddToPlaylistModal';
 
-const VideoPlaylist = () => {
+const ReleaseVideos = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
@@ -214,4 +214,4 @@ const VideoPlaylist = () => {
     );
 };
 
-export default VideoPlaylist;
+export default ReleaseVideos;

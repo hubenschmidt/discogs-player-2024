@@ -19,7 +19,19 @@
     perspective: 800px;
     padding: 20px;
     /* border-top: 2px solid #e94560; */
-    background: #0f3460;
+    background: #58554b;
+    background-image: radial-gradient(
+            120% 80% at 50% -20%,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0) 60%
+        ),
+        linear-gradient(
+            135deg,
+            #58554b 0%,
+            #3f3c35 35%,
+            #2b2a27 70%,
+            #0e0e0f 100%
+        );
 }
 
 /* Controls container that overlays the shelf */

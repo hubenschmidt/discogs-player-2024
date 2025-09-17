@@ -90,6 +90,15 @@ export const createPlaylist = async (req: Request, user: any, video?: any) => {
 
 export const updatePlaylistMeta = async () => {};
 
+// helper: make a full YouTube URL when the DB stores the 11-char videoId
+const toYoutubeUrl = (raw?: string | null) => {
+    if (!raw) return raw ?? null;
+    // common case: 11-char YouTube ID
+    return /^[A-Za-z0-9_-]{11}$/.test(raw)
+        ? `https://www.youtube.com/watch?v=${raw}`
+        : raw;
+};
+
 export const getPlaylist = async (req: Request, user: any) => {
     const pid = Number(req.params.playlistId);
 
@@ -292,6 +301,9 @@ export const getPlaylist = async (req: Request, user: any) => {
 
     const videosEnriched = videosWithRelease.map((v: any) => ({
         ...v,
+        // lowercase aliases for frontend compatibility
+        title: v.Title,
+        uri: toYoutubeUrl(v.URI),
         createdAtFormatted: formatDate(v.createdAt, locale, tz),
         updatedAtFormatted: formatDate(v.updatedAt, locale, tz),
         durationFormatted: formatDuration(v.Duration),

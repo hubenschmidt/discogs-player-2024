@@ -11,7 +11,10 @@ import { CollectionContext } from '../context/collectionContext';
 const Playlist = () => {
     const { userState } = useContext(UserContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
+        DiscogsReleaseContext,
+    );
+    const { selectedVideo } = discogsReleaseState;
     const { dispatchCollection } = useContext(CollectionContext);
     const bearerToken = useBearerToken();
 
@@ -96,7 +99,6 @@ const Playlist = () => {
             },
         )
             .then(res => {
-                console.log(res);
                 dispatchPlaylist({
                     type: 'SET_ACTIVE_PLAYLIST_ID',
                     payload: res.playlist.Playlist_Id,

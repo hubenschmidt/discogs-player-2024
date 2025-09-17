@@ -221,7 +221,6 @@ export const DataTable = <T,>({
                                     style={{
                                         width: col.width,
                                         border: cellBorder,
-                                        fontVariationSettings: '"wght" 700',
                                     }}
                                     {...col.thProps}
                                 >
