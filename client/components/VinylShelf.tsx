@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef, FC } from 'react';
+import React, { useState, useEffect, useContext, FC } from 'react';
 import { getCollection, getPlaylist } from '../api';
 import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
@@ -32,7 +32,6 @@ const VinylShelf: FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // keeps odd # so center is a single record
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
-    const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
 
     // ⬇️ NEW loading flags
@@ -41,20 +40,18 @@ const VinylShelf: FC = () => {
     const isLoading = loadingFetch || loadingCenter;
 
     const MIN_SPINNER_MS = 300;
-    const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const centerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const clearTimer = (
-        r: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
-    ) => {
-        if (r.current) {
-            clearTimeout(r.current);
-            r.current = null;
-        }
-    };
-
-    // ---- fetch collection when not viewing a playlist
+    // NEW: auto-stop the center blur when it’s turned on
     useEffect(() => {
+        if (!loadingCenter) return;
+        const t = setTimeout(() => setLoadingCenter(false), MIN_SPINNER_MS);
+        return () => clearTimeout(t);
+    }, [loadingCenter]);
+
+    // ---------- fetch collection when not viewing a playlist ----------
+    useEffect(() => {
+        if (playlistOpen) return;
+
         const params: any = {
             username: userState.username,
             page: currentPage,
@@ -70,98 +67,87 @@ const VinylShelf: FC = () => {
             }),
         };
 
-        if (!playlistOpen) {
-            setLoadingFetch(true);
-            const started = Date.now();
-            let aborted = false;
+        let aborted = false;
+        let t: ReturnType<typeof setTimeout> | null = null;
+        const started = Date.now();
 
-            getCollection(params, bearerToken)
-                .then((collection: CollectionResponse) => {
-                    dispatchCollection({
-                        type: 'SET_COLLECTION',
-                        payload: collection,
-                    });
-                })
-                .catch(error => {
-                    console.error(
-                        'something went wrong with fetching collection,',
-                        error?.response || error,
-                    );
-                })
-                .finally(() => {
-                    if (aborted) return;
-                    const elapsed = Date.now() - started;
-                    const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
-                    clearTimer(fetchTimerRef);
-                    fetchTimerRef.current = setTimeout(() => {
-                        setLoadingFetch(false);
-                        fetchTimerRef.current = null;
-                    }, remain);
+        setLoadingFetch(true);
+
+        getCollection(params, bearerToken)
+            .then((collection: CollectionResponse) => {
+                if (aborted) return;
+                dispatchCollection({
+                    type: 'SET_COLLECTION',
+                    payload: collection,
                 });
+            })
+            .catch(err =>
+                console.error('fetch collection failed', err?.response || err),
+            )
+            .finally(() => {
+                if (aborted) return;
+                const elapsed = Date.now() - started;
+                const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
+                t = setTimeout(() => setLoadingFetch(false), remain);
+            });
 
-            return () => {
-                aborted = true;
-                clearTimer(fetchTimerRef);
-            };
-        }
+        return () => {
+            aborted = true;
+            if (t) clearTimeout(t);
+        };
     }, [
+        playlistOpen,
         currentPage,
         itemsPerPage,
         searchSelection,
-        playlistOpen,
         bearerToken,
         userState.username,
         dispatchCollection,
     ]);
 
-    // ---- fetch playlist when playlist is open
+    // ---------- fetch playlist when playlist is open ----------
     useEffect(() => {
-        if (playlistOpen) {
-            setLoadingFetch(true);
-            const started = Date.now();
-            let aborted = false;
+        if (!playlistOpen) return;
 
-            getPlaylist(
-                userState.username,
-                bearerToken,
-                playlistState.activePlaylistId,
-                {
-                    page: playlistState.playlistVideosPage,
-                    limit: playlistState.playlistVideosLimit,
-                },
-            )
-                .then(res => {
-                    if (aborted) return;
-                    dispatchPlaylist({
-                        type: 'SET_ACTIVE_PLAYLIST_ID',
-                        payload: res.playlist.Playlist_Id,
-                    });
-                    dispatchPlaylist({
-                        type: 'SET_PLAYLIST_DETAIL',
-                        payload: res,
-                    });
-                    dispatchCollection({
-                        type: 'SET_COLLECTION',
-                        payload: res.releases,
-                    });
-                })
-                .catch(console.error)
-                .finally(() => {
-                    if (aborted) return;
-                    const elapsed = Date.now() - started;
-                    const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
-                    clearTimer(fetchTimerRef);
-                    fetchTimerRef.current = setTimeout(() => {
-                        setLoadingFetch(false);
-                        fetchTimerRef.current = null;
-                    }, remain);
+        let aborted = false;
+        let t: ReturnType<typeof setTimeout> | null = null;
+        const started = Date.now();
+
+        setLoadingFetch(true);
+
+        getPlaylist(
+            userState.username,
+            bearerToken,
+            playlistState.activePlaylistId,
+            {
+                page: playlistState.playlistVideosPage,
+                limit: playlistState.playlistVideosLimit,
+            },
+        )
+            .then(res => {
+                if (aborted) return;
+                dispatchPlaylist({
+                    type: 'SET_ACTIVE_PLAYLIST_ID',
+                    payload: res.playlist.Playlist_Id,
                 });
+                dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
+                dispatchCollection({
+                    type: 'SET_COLLECTION',
+                    payload: res.releases,
+                });
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (aborted) return;
+                const elapsed = Date.now() - started;
+                const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
+                t = setTimeout(() => setLoadingFetch(false), remain);
+            });
 
-            return () => {
-                aborted = true;
-                clearTimer(fetchTimerRef);
-            };
-        }
+        return () => {
+            aborted = true;
+            if (t) clearTimeout(t);
+        };
     }, [
         playlistOpen,
         bearerToken,
@@ -173,7 +159,7 @@ const VinylShelf: FC = () => {
         dispatchCollection,
     ]);
 
-    // ---- Always center the currently-selected release (avoid churn)
+    // ---------- always center selected (skip when previewing; avoid churn) ----------
     useEffect(() => {
         const rid = selectedRelease?.Release_Id;
         if (!rid || !items?.length) return;
@@ -183,7 +169,7 @@ const VinylShelf: FC = () => {
 
         const n = items.length;
         const mid = Math.floor((n - 1) / 2);
-        if (items[mid]?.Release_Id === rid) return;
+        if (items[mid]?.Release_Id === rid) return; // already centered
 
         setLoadingCenter(true);
         const centered = reorderReleases(items, idx);
@@ -191,52 +177,35 @@ const VinylShelf: FC = () => {
             type: 'SET_COLLECTION',
             payload: { ...collectionState, items: centered },
         });
-
-        clearTimer(centerTimerRef);
-        centerTimerRef.current = setTimeout(() => {
-            setLoadingCenter(false);
-            centerTimerRef.current = null;
-        }, MIN_SPINNER_MS);
     }, [
         items,
         selectedRelease?.Release_Id,
+        previewRelease,
         dispatchCollection,
         collectionState,
     ]);
 
-    const endCenteringSoon = () => {
-        clearTimer(centerTimerRef);
-        centerTimerRef.current = setTimeout(() => {
-            setLoadingCenter(false);
-            centerTimerRef.current = null;
-        }, MIN_SPINNER_MS);
-    };
-
+    // ---------- click handlers ----------
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
 
         const isFirstSelection = !selectedRelease;
 
         if (isFirstSelection) {
-            // center the clicked record and select it (show blur)
-            setLoadingCenter(true);
-            const reordered = reorderReleases(items, index);
+            setLoadingCenter(true); // blur ON
             dispatchCollection({
                 type: 'SET_COLLECTION',
-                payload: { items: reordered },
+                payload: { items: reorderReleases(items, index) },
             });
-
-            if (shelfRef.current) {
-                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-            }
+            // (optional) keep your scrollTo if you want; see note below
 
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_RELEASE',
                 payload: release,
             });
-            endCenteringSoon();
+            // blur will auto-stop via the loadingCenter effect
         } else {
-            // preview only — no blur, no reorder
+            // preview only — no blur & no reorder
             dispatchDiscogsRelease({
                 type: 'SET_PREVIEW_RELEASE',
                 payload: release,
@@ -254,9 +223,7 @@ const VinylShelf: FC = () => {
             type: 'SET_COLLECTION',
             payload: { items: reorderReleases(items, newIndex) },
         });
-        if (shelfRef.current)
-            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        endCenteringSoon();
+        // blur auto-stops
     };
 
     const handleShelfNext = () => {
@@ -269,9 +236,7 @@ const VinylShelf: FC = () => {
             type: 'SET_COLLECTION',
             payload: { items: reorderReleases(items, newIndex) },
         });
-        if (shelfRef.current)
-            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        endCenteringSoon();
+        // blur auto-stops
     };
 
     const handleFirstPage = () => setCurrentPage(1);
@@ -307,7 +272,7 @@ const VinylShelf: FC = () => {
 
             <TrackDetail selectedDiscogsRelease={selectedDiscogsRelease} />
 
-            <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
+            <div className="vinyl-shelf" aria-busy={isLoading}>
                 {items?.map((release, i) => {
                     const n = items?.length;
                     let angle = 0;
