@@ -133,6 +133,7 @@ const Playlist = () => {
                 payload: target.release,
             });
         }
+        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
     }, [videosPage?.items]);
 
     // Count plays once per (releaseId|videoUri) while in playlist mode
@@ -225,6 +226,10 @@ const Playlist = () => {
                     dispatchDiscogsRelease({
                         type: 'SET_SELECTED_RELEASE',
                         payload: row.release,
+                    });
+                    dispatchDiscogsRelease({
+                        type: 'SET_IS_PLAYING',
+                        payload: true,
                     });
                 }}
                 onPageChange={page =>
