@@ -8,6 +8,7 @@ import { getPlaylist } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { CollectionContext } from '../context/collectionContext';
 import { reorderReleases } from '../lib/reorder-releases';
+import { updateVideoPlayCount } from '../api';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -156,6 +157,30 @@ const Playlist = () => {
             payload: { ...collectionState, items: centered },
         });
     }, [discogsReleaseState.selectedRelease?.Release_Id, items]);
+
+    // Count plays once per (releaseId|videoUri) while in playlist mode
+    useEffect(() => {
+        if (discogsReleaseState.playbackMode !== 'playlist') return;
+
+        const releaseId = discogsReleaseState.selectedRelease?.Release_Id;
+        const video = discogsReleaseState.selectedVideo;
+        const videoUri = video?.uri;
+
+        if (!releaseId || !videoUri) return;
+
+        updateVideoPlayCount(
+            releaseId,
+            video,
+            userState.username,
+            bearerToken,
+        ).catch(console.error);
+    }, [
+        discogsReleaseState.playbackMode,
+        discogsReleaseState.selectedRelease?.Release_Id,
+        discogsReleaseState.selectedVideo?.uri,
+        userState.username,
+        bearerToken,
+    ]);
 
     return (
         <Stack gap="xs">
