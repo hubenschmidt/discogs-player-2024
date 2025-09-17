@@ -28,7 +28,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const { queue, queueIndex, playbackMode, continuousPlay, selectedVideo } =
         discogsReleaseState;
     const { selectedRelease } = discogsReleaseState;
-    console.log(selectedRelease);
     const handleNextRelease = () => {
         if (!selectedRelease || !releases || releases.length === 0) return;
         const currentIndex = releases.findIndex(

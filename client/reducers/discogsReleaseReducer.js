@@ -9,6 +9,7 @@ export const SET_PREV_VIDEO = 'SET_PREV_VIDEO';
 export const SET_PLAYBACK_QUEUE = 'SET_PLAYBACK_QUEUE';
 export const SET_NEXT_IN_QUEUE = 'SET_NEXT_IN_QUEUE';
 export const SET_PREV_IN_QUEUE = 'SET_PREV_IN_QUEUE';
+export const SET_IS_PLAYING = 'SET_IS_PLAYING';
 export const MERGE_STATE = 'MERGE_STATE';
 
 export default initialState => {
@@ -35,7 +36,9 @@ export default initialState => {
             case SET_PREV_IN_QUEUE:
                 return setPrevInQueue(state);
             case SET_SELECTED_VIDEO:
-                return setSelectedVideo(state, action.payload); // we'll sync queueIndex here
+                return setSelectedVideo(state, action.payload); // sync queueIndex here
+            case SET_IS_PLAYING:
+                return setIsPlaying(state, action.payload);
             case MERGE_STATE:
                 return mergeState(state, action.payload);
             default:
@@ -140,17 +143,12 @@ const setPrevInQueue = state => {
     };
 };
 
-// const setSelectedVideo = (state, video) => {
-//     // keep reducer source-of-truth consistent:
-//     // if the selected video exists in the current queue, sync index
-//     const idx = state.queue?.findIndex(v => v.uri === video?.uri);
-//     console.log('set selected video called, ind', idx);
-//     return {
-//         ...state,
-//         selectedVideo: video,
-//         queueIndex: idx !== -1 ? idx : state.queueIndex,
-//     };
-// };
+const setIsPlaying = (state, payload) => {
+    return {
+        ...state,
+        isPlaying: payload,
+    };
+};
 
 const mergeState = (state, payload) => {
     return {

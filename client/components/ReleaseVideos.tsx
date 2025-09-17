@@ -83,6 +83,11 @@ const ReleaseVideos = () => {
             payload: video,
         });
 
+        dispatchDiscogsRelease({
+            type: 'SET_IS_PLAYING',
+            payload: true,
+        });
+
         if (opts?.openAdd) {
             handleAdd();
         }
@@ -160,6 +165,11 @@ const ReleaseVideos = () => {
                 payload: vids[0],
             });
         }
+
+        dispatchDiscogsRelease({
+            type: 'SET_IS_PLAYING',
+            payload: true,
+        });
     }, [selectedDiscogsRelease, previewDiscogsRelease]); // intentionally NOT watching selectedVideo
 
     // ---- B) Count plays exactly once per (releaseId|videoUri)

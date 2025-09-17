@@ -17,10 +17,10 @@ const Controls = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedVideo, continuousPlay } = discogsReleaseState;
+    const { selectedVideo, continuousPlay, isPlaying } = discogsReleaseState;
     const [playbackRate, setPlaybackRate] = useState('1');
     const [availableRates, setAvailableRates] = useState<number[]>([]);
-    const [isPlaying, setIsPlaying] = useState(true);
+    console.log(isPlaying);
 
     useEffect(() => {
         if (controls && controls.getAvailablePlaybackRates) {
@@ -37,12 +37,12 @@ const Controls = () => {
 
     const handlePlay = () => {
         controls?.play();
-        setIsPlaying(true);
+        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
     };
 
     const handlePause = () => {
         controls?.pause();
-        setIsPlaying(false);
+        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
 
     const handleFastForward = () => {
