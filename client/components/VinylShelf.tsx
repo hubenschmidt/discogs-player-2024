@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext, useRef, FC } from 'react';
-import { getCollection } from '../api';
+import { getCollection, getPlaylist } from '../api';
 import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Box, Group, ActionIcon, Text } from '@mantine/core';
+import { Box, Group, ActionIcon, Text, Loader } from '@mantine/core'; // ⬅️ Loader
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
@@ -12,7 +12,6 @@ import TrackDetail from './TrackDetail';
 import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { PlaylistContext } from '../context/playlistContext';
-import { getPlaylist } from '../api';
 
 const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
@@ -29,12 +28,32 @@ const VinylShelf: FC = () => {
     const { navState, dispatchNav } = useContext(NavContext);
     const { playlistOpen } = navState;
     const { searchSelection } = searchState;
+
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const offset = 1; // maintains odd number so records center in carousel
+    const offset = 1; // keeps odd # so center is a single record
     const [itemsPerPage, setItemsPerPage] = useState<number>(25);
     const shelfRef = useRef<HTMLDivElement>(null);
     const bearerToken = useBearerToken();
 
+    // ⬇️ NEW loading flags
+    const [loadingFetch, setLoadingFetch] = useState(false);
+    const [loadingCenter, setLoadingCenter] = useState(false);
+    const isLoading = loadingFetch || loadingCenter;
+
+    const MIN_SPINNER_MS = 300;
+    const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const centerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearTimer = (
+        r: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
+    ) => {
+        if (r.current) {
+            clearTimeout(r.current);
+            r.current = null;
+        }
+    };
+
+    // ---- fetch collection when not viewing a playlist
     useEffect(() => {
         const params: any = {
             username: userState.username,
@@ -52,6 +71,10 @@ const VinylShelf: FC = () => {
         };
 
         if (!playlistOpen) {
+            setLoadingFetch(true);
+            const started = Date.now();
+            let aborted = false;
+
             getCollection(params, bearerToken)
                 .then((collection: CollectionResponse) => {
                     dispatchCollection({
@@ -59,17 +82,45 @@ const VinylShelf: FC = () => {
                         payload: collection,
                     });
                 })
-                .catch(error =>
+                .catch(error => {
                     console.error(
                         'something went wrong with fetching collection,',
-                        error.response,
-                    ),
-                );
-        }
-    }, [currentPage, itemsPerPage, searchSelection, playlistOpen]);
+                        error?.response || error,
+                    );
+                })
+                .finally(() => {
+                    if (aborted) return;
+                    const elapsed = Date.now() - started;
+                    const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
+                    clearTimer(fetchTimerRef);
+                    fetchTimerRef.current = setTimeout(() => {
+                        setLoadingFetch(false);
+                        fetchTimerRef.current = null;
+                    }, remain);
+                });
 
+            return () => {
+                aborted = true;
+                clearTimer(fetchTimerRef);
+            };
+        }
+    }, [
+        currentPage,
+        itemsPerPage,
+        searchSelection,
+        playlistOpen,
+        bearerToken,
+        userState.username,
+        dispatchCollection,
+    ]);
+
+    // ---- fetch playlist when playlist is open
     useEffect(() => {
         if (playlistOpen) {
+            setLoadingFetch(true);
+            const started = Date.now();
+            let aborted = false;
+
             getPlaylist(
                 userState.username,
                 bearerToken,
@@ -80,6 +131,7 @@ const VinylShelf: FC = () => {
                 },
             )
                 .then(res => {
+                    if (aborted) return;
                     dispatchPlaylist({
                         type: 'SET_ACTIVE_PLAYLIST_ID',
                         payload: res.playlist.Playlist_Id,
@@ -93,7 +145,22 @@ const VinylShelf: FC = () => {
                         payload: res.releases,
                     });
                 })
-                .catch(console.error);
+                .catch(console.error)
+                .finally(() => {
+                    if (aborted) return;
+                    const elapsed = Date.now() - started;
+                    const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
+                    clearTimer(fetchTimerRef);
+                    fetchTimerRef.current = setTimeout(() => {
+                        setLoadingFetch(false);
+                        fetchTimerRef.current = null;
+                    }, remain);
+                });
+
+            return () => {
+                aborted = true;
+                clearTimer(fetchTimerRef);
+            };
         }
     }, [
         playlistOpen,
@@ -101,84 +168,102 @@ const VinylShelf: FC = () => {
         playlistState.activePlaylistId,
         playlistState.playlistVideosPage,
         playlistState.playlistVideosLimit,
+        userState.username,
+        dispatchPlaylist,
+        dispatchCollection,
     ]);
 
+    // ---- Always center the currently-selected release (avoid churn)
     useEffect(() => {
         const rid = selectedRelease?.Release_Id;
         if (!rid || !items?.length) return;
 
-        // is the selected release in the current shelf?
         const idx = items.findIndex(r => r.Release_Id === rid);
         if (idx === -1) return;
 
-        // already centered? (avoid churn)
         const n = items.length;
         const mid = Math.floor((n - 1) / 2);
         if (items[mid]?.Release_Id === rid) return;
-        // center it
+
+        setLoadingCenter(true);
         const centered = reorderReleases(items, idx);
         dispatchCollection({
             type: 'SET_COLLECTION',
             payload: { ...collectionState, items: centered },
         });
-    }, [items, selectedRelease?.Release_Id]);
+
+        clearTimer(centerTimerRef);
+        centerTimerRef.current = setTimeout(() => {
+            setLoadingCenter(false);
+            centerTimerRef.current = null;
+        }, MIN_SPINNER_MS);
+    }, [
+        items,
+        selectedRelease?.Release_Id,
+        dispatchCollection,
+        collectionState,
+    ]);
+
+    const endCenteringSoon = () => {
+        clearTimer(centerTimerRef);
+        centerTimerRef.current = setTimeout(() => {
+            setLoadingCenter(false);
+            centerTimerRef.current = null;
+        }, MIN_SPINNER_MS);
+    };
 
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-
-        const reorderedReleases = reorderReleases(items, index);
+        setLoadingCenter(true);
+        const reordered = reorderReleases(items, index);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { items: reorderedReleases },
+            payload: { items: reordered },
         });
-
-        if (shelfRef.current) {
+        if (shelfRef.current)
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        }
-
         if (!selectedRelease) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_RELEASE',
                 payload: release,
             });
-            return;
+        } else {
+            dispatchDiscogsRelease({
+                type: 'SET_PREVIEW_RELEASE',
+                payload: release,
+            });
         }
-
-        // else if release is already playing, set preview
-        dispatchDiscogsRelease({
-            type: 'SET_PREVIEW_RELEASE',
-            payload: release,
-        });
+        endCenteringSoon();
     };
 
     const handleShelfPrev = () => {
         if (items.length < 2) return;
-        const n = items.length;
-        const mid = Math.floor((n - 1) / 2);
+        const n = items.length,
+            mid = Math.floor((n - 1) / 2);
         const newIndex = (mid - 1 + n) % n;
-        const reorderedReleases = reorderReleases(items, newIndex);
+        setLoadingCenter(true);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { items: reorderedReleases },
+            payload: { items: reorderReleases(items, newIndex) },
         });
-        if (shelfRef.current) {
+        if (shelfRef.current)
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        }
+        endCenteringSoon();
     };
 
     const handleShelfNext = () => {
         if (items.length < 2) return;
-        const n = items.length;
-        const mid = Math.floor((n - 1) / 2);
+        const n = items.length,
+            mid = Math.floor((n - 1) / 2);
         const newIndex = (mid + 1) % n;
-        const reorderedReleases = reorderReleases(items, newIndex);
+        setLoadingCenter(true);
         dispatchCollection({
             type: 'SET_COLLECTION',
-            payload: { items: reorderedReleases },
+            payload: { items: reorderReleases(items, newIndex) },
         });
-        if (shelfRef.current) {
+        if (shelfRef.current)
             shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        }
+        endCenteringSoon();
     };
 
     const handleFirstPage = () => setCurrentPage(1);
@@ -196,19 +281,32 @@ const VinylShelf: FC = () => {
     };
 
     return (
-        <div className="vinyl-shelf-container">
+        <div className="vinyl-shelf-container" style={{ position: 'relative' }}>
+            {/* Overlay loader */}
+            {isLoading && (
+                <Box
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: 'rgba(0,0,0,0.25)',
+                        zIndex: 2,
+                        backdropFilter: 'blur(2px)',
+                    }}
+                ></Box>
+            )}
+
             <TrackDetail selectedDiscogsRelease={selectedDiscogsRelease} />
-            <div className="vinyl-shelf" ref={shelfRef}>
+
+            <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {
                     const n = items?.length;
                     let angle = 0;
-                    if (n > 1) {
-                        angle = -90 + 180 * (i / (n - 1));
-                    }
+                    if (n > 1) angle = -90 + 180 * (i / (n - 1));
+
                     const isSelected =
                         selectedRelease?.Release_Id === release.Release_Id;
-
-                    // preview highlight only if preview exists AND it's not the same as selected
                     const isPreview =
                         previewRelease &&
                         previewRelease.Release_Id === release.Release_Id &&
@@ -219,7 +317,12 @@ const VinylShelf: FC = () => {
                         <Box
                             key={release.Release_Id}
                             className="vinyl-record"
-                            onClick={() => handleRecordClick(release, i)}
+                            onClick={() =>
+                                !isLoading && handleRecordClick(release, i)
+                            }
+                            style={{
+                                pointerEvents: isLoading ? 'none' : 'auto',
+                            }}
                         >
                             <Box
                                 className={`record-cover ${
@@ -236,53 +339,60 @@ const VinylShelf: FC = () => {
                     );
                 })}
             </div>
+
+            {/* Hide shelf controls when playlist is open; also disable during loading */}
             {!playlistOpen && (
                 <>
                     <div className="shelf-controls">
                         <ActionIcon
                             onClick={handleShelfPrev}
-                            disabled={items?.length < 2}
+                            disabled={isLoading || items?.length < 2}
                         >
                             <ChevronLeft />
                         </ActionIcon>
                         <ActionIcon
                             onClick={handleShelfNext}
-                            disabled={items?.length < 2}
+                            disabled={isLoading || items?.length < 2}
                         >
                             <ChevronRight />
                         </ActionIcon>
                     </div>
-                    {/* Server Pagination Controls */}
+
                     {items?.length > 1 && (
                         <Group className="shelf-pagination">
                             <ActionIcon
                                 onClick={handleFirstPage}
-                                disabled={currentPage <= 1}
+                                disabled={isLoading || currentPage <= 1}
                             >
                                 <SkipBack />
                             </ActionIcon>
                             <ActionIcon
                                 onClick={handlePrevPage}
-                                disabled={currentPage <= 1}
+                                disabled={isLoading || currentPage <= 1}
                             >
                                 <ChevronLeft />
                             </ActionIcon>
-                            <Text c={'white'}>{currentPage}</Text>
+                            <Text c="white">{currentPage}</Text>
                             <ActionIcon
                                 onClick={handleNextPage}
-                                disabled={currentPage >= totalPages}
+                                disabled={
+                                    isLoading || currentPage >= totalPages
+                                }
                             >
                                 <ChevronRight />
                             </ActionIcon>
                             <ActionIcon
                                 onClick={handleLastPage}
-                                disabled={currentPage >= totalPages}
+                                disabled={
+                                    isLoading || currentPage >= totalPages
+                                }
                             >
                                 <SkipForward />
                             </ActionIcon>
                             <select
                                 value={itemsPerPage}
                                 onChange={handleItemsPerPageChange}
+                                disabled={isLoading}
                             >
                                 <option value={5}>5</option>
                                 <option value={10 + offset}>10</option>
