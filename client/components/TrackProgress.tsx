@@ -6,9 +6,14 @@ import classes from '../styles/Slider.module.css';
 
 const fmt = (s: number) => {
     if (!isFinite(s) || s < 0) s = 0;
-    const m = Math.floor(s / 60);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
     const ss = Math.floor(s % 60);
-    return `${m}:${ss.toString().padStart(2, '0')}`;
+    return h
+        ? `${h}:${m.toString().padStart(2, '0')}:${ss
+              .toString()
+              .padStart(2, '0')}`
+        : `${m}:${ss.toString().padStart(2, '0')}`;
 };
 
 const POLL_MS = 250;
@@ -19,68 +24,90 @@ const TrackProgress = () => {
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedVideo } = discogsReleaseState;
 
-    const [pos, setPos] = useState(0); // seconds
-    const [dur, setDur] = useState<number>(0); // seconds
+    const [pos, setPos] = useState(0);
+    const [dur, setDur] = useState(0);
     const seekingRef = useRef(false);
 
-    // When the track changes, reset progress and (re)derive duration.
+    // 1) reset on track change, prefer provided duration
     useEffect(() => {
         if (!selectedVideo) return;
+
         setPos(0);
-        // prefer backend-provided duration if present; else ask the player
-        const dv = Number((selectedVideo as any)?.duration) || 0;
-        if (dv > 0) {
-            setDur(dv);
-        } else if (controls?.getDuration) {
-            // sometimes YT returns 0 right away; try once after a tick
-            const d = controls.getDuration() || 0;
-            if (d > 0) {
-                setDur(d);
-            } else {
-                setTimeout(() => setDur(controls.getDuration() || 0), 300);
-            }
-        } else {
-            setDur(0);
+
+        const provided = Number((selectedVideo as any)?.duration) || 0;
+        if (provided > 0) {
+            setDur(provided);
+            return;
         }
+
+        setDur(0);
+    }, [selectedVideo]);
+
+    // 2) if no provided duration, try YouTube API duration (no nesting)
+    useEffect(() => {
+        if (!selectedVideo) return;
+        if (Number((selectedVideo as any)?.duration) > 0) return;
+        if (!controls?.getDuration) return;
+
+        const first = controls.getDuration?.() || 0;
+        if (first > 0) {
+            setDur(first);
+            return;
+        }
+
+        const t = setTimeout(() => {
+            const later = controls.getDuration?.() || 0;
+            if (later > 0) setDur(later);
+        }, 300);
+
+        return () => clearTimeout(t);
     }, [selectedVideo, controls]);
 
-    // Poll current time
+    // 3) poll current time; opportunistically fill duration (no nesting)
     useEffect(() => {
-        if (!controls || !selectedVideo) return;
-        const id = setInterval(() => {
-            if (seekingRef.current) return; // don't fight the user while dragging
-            const t = controls.getCurrentTime?.() ?? 0;
-            setPos(t);
-            // if duration was unknown, try to learn it lazily
-            if (!dur && controls.getDuration) {
-                const d = controls.getDuration() || 0;
-                if (d > 0) setDur(d);
-            }
-        }, POLL_MS);
+        if (!controls) return;
+        if (!selectedVideo) return;
+
+        const tick = () => {
+            if (seekingRef.current) return;
+
+            const now = controls.getCurrentTime?.() ?? 0;
+            setPos(now);
+
+            if (dur) return;
+            if (!controls.getDuration) return;
+
+            const d = controls.getDuration() || 0;
+            if (d > 0) setDur(d);
+        };
+
+        const id = setInterval(tick, POLL_MS);
         return () => clearInterval(id);
     }, [controls, selectedVideo, dur]);
 
     if (!selectedVideo) return null;
 
-    const clampedDur = dur > 0 ? dur : Math.max(dur, pos); // never let max < value
+    const max = dur || Math.max(dur, pos) || 1;
+    const value = Math.min(pos, max);
 
     return (
         <div>
             <Group justify="space-between" mb={4}>
                 <Text size="sm" c="dimmed">
-                    {fmt(pos)}
+                    {fmt(value)}
                 </Text>
                 <Text size="sm" c="dimmed">
-                    {fmt(clampedDur)}
+                    {fmt(max)}
                 </Text>
             </Group>
 
             <Slider
                 min={0}
-                max={clampedDur || 1}
-                value={Math.min(pos, clampedDur || 1)}
+                max={max}
+                value={value}
+                step={0.1}
+                label={v => fmt(Number(v))}
                 onChange={v => {
-                    // live-preview while dragging
                     seekingRef.current = true;
                     setPos(v as number);
                 }}
@@ -88,7 +115,7 @@ const TrackProgress = () => {
                     seekingRef.current = false;
                     controls?.seekTo?.(v as number);
                 }}
-                classNames={classes} // reuse your volume slider styles
+                classNames={classes}
                 mb="xs"
             />
         </div>
