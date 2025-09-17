@@ -8,7 +8,6 @@ import { Box, Group, ActionIcon, Text } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
-import TrackDetail from './TrackDetail';
 import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { PlaylistContext } from '../context/playlistContext';
@@ -21,8 +20,7 @@ const VinylShelf: FC = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedRelease, selectedDiscogsRelease, previewRelease } =
-        discogsReleaseState;
+    const { selectedRelease, previewRelease } = discogsReleaseState;
     const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState, dispatchNav } = useContext(NavContext);
@@ -276,8 +274,6 @@ const VinylShelf: FC = () => {
                     }}
                 ></Box>
             )}
-
-            <TrackDetail selectedDiscogsRelease={selectedDiscogsRelease} />
 
             <div className="vinyl-shelf" aria-busy={isLoading}>
                 {items?.map((release, i) => {

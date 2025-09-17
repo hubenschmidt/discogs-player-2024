@@ -186,6 +186,15 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         >
                             <Search />
                         </Grid.Col>
+
+                        <Grid.Col
+                            span={{ base: 12, md: 12, lg: 12 }}
+                            style={devStyle}
+                        >
+                            <TrackDetail
+                                selectedDiscogsRelease={selectedDiscogsRelease}
+                            />
+                        </Grid.Col>
                     </Grid>
                 </Box>
 
