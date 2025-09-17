@@ -122,6 +122,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
                                 seekTo: (seconds: number) =>
                                     event.target.seekTo(seconds, true),
                                 videoTitle: event.target.videoTitle,
+                                getDuration: () => event.target.getDuration(),
                             },
                         });
                         dispatchPlayer({

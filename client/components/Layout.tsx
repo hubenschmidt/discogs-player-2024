@@ -25,6 +25,7 @@ import Search from './Search';
 import Navbar from './NavBar';
 import Playlists from './Playlists';
 import Playlist from './Playlist';
+import TrackProgress from './TrackProgress';
 import { NavContext } from '../context/navContext';
 
 type Props = {
@@ -191,6 +192,15 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 <Grid mb="sm">
                     <Grid.Col span={{ base: 12 }}>
                         <VinylShelf />
+                    </Grid.Col>
+                </Grid>
+
+                <Grid mb="sm">
+                    <Grid.Col
+                        span={{ base: 12, md: 12, lg: 12 }}
+                        style={devStyle}
+                    >
+                        <TrackProgress />
                     </Grid.Col>
                 </Grid>
 
