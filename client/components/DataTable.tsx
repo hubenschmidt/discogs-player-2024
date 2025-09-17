@@ -99,11 +99,9 @@ export const DataTable = <T,>({
     cellBorder,
 
     // selection
-    defaultSelectedRowKey = null,
     selectedRowKey: controlledSelected,
     onSelectionChange,
     selectOnRowClick = true,
-    preserveSelection = false,
 
     selectedRowClassName,
     selectedRowStyle,
@@ -112,38 +110,10 @@ export const DataTable = <T,>({
     const keyOf = (row: T, idx: number) => (rowKey ? rowKey(row, idx) : idx);
 
     // uncontrolled internal selection
-    const [internalSelected, setInternalSelected] = useState<React.Key | null>(
-        defaultSelectedRowKey,
-    );
+    const [internalSelected, setInternalSelected] = useState(null);
 
     // controlled wins
     const selectedKey = controlledSelected ?? internalSelected;
-
-    // keep internal in sync if default changes and we are uncontrolled
-    useEffect(() => {
-        if (controlledSelected === undefined) {
-            setInternalSelected(defaultSelectedRowKey);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [defaultSelectedRowKey]);
-
-    // clear selection if selectedKey isn’t on current page (unless preserving)
-    useEffect(() => {
-        if (selectedKey == null || preserveSelection) return;
-        const exists = items.some(
-            (row, idx) => String(keyOf(row, idx)) === String(selectedKey),
-        );
-        if (!exists) {
-            if (controlledSelected === undefined) setInternalSelected(null);
-            onSelectionChange?.(null, undefined);
-        }
-    }, [
-        items,
-        selectedKey,
-        preserveSelection,
-        controlledSelected,
-        onSelectionChange,
-    ]);
 
     const handleSelect = (key: React.Key | null, row?: T) => {
         if (controlledSelected === undefined) setInternalSelected(key);

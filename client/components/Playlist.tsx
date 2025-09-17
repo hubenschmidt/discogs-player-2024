@@ -182,9 +182,7 @@ const Playlist = () => {
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
-                        queue.findIndex(
-                            v => (v.uri ?? v.URI) === (row.uri ?? row.URI),
-                        ),
+                        queue.findIndex(v => v.uri === row.uri),
                     );
 
                     dispatchDiscogsRelease({
