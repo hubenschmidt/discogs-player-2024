@@ -8,6 +8,10 @@ const initialState = {
     previewDiscogsRelease: null,
     continuousPlay: false,
     selectedVideo: null,
+    // NEW:
+    playbackMode: 'release' | 'playlist',
+    queue: [], // array of videos (from playlist or release)
+    queueIndex: -1, // index into queue (selectedVideo should match queue[queueIndex]
 };
 
 export const DiscogsReleaseContext = createContext(initialState);

@@ -67,11 +67,11 @@ const Controls = () => {
     };
 
     const handleNextVideo = () => {
-        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
+        dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
 
     const handlePrevVideo = () => {
-        dispatchDiscogsRelease({ type: 'SET_PREV_VIDEO' });
+        dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
     };
 
     return selectedVideo ? (

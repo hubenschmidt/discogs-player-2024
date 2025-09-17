@@ -119,6 +119,44 @@ const Playlist = () => {
         playlistState.playlistVideosLimit,
     ]);
 
+    // Auto-start first entry when videosPage loads (if nothing playing from this page)
+    useEffect(() => {
+        const first = videosPage?.items?.[0];
+        if (!first) return;
+
+        // create a queue from this page's playlist rows
+        const queue = videosPage.items;
+
+        dispatchDiscogsRelease({
+            type: 'SET_PLAYBACK_QUEUE',
+            payload: { items: queue, startIndex: 0, mode: 'playlist' },
+        });
+
+        // keep selectedRelease in sync (and shelf centering you already do)
+        dispatchDiscogsRelease({
+            type: 'SET_SELECTED_RELEASE',
+            payload: first.release,
+        });
+    }, [videosPage?.items]);
+
+    useEffect(() => {
+        const rid = discogsReleaseState.selectedRelease?.Release_Id;
+        if (!rid || !items?.length) return;
+
+        const idx = items.findIndex(r => r.Release_Id === rid);
+        if (idx === -1) return;
+
+        // avoid churn if it's already centered
+        const mid = Math.floor((items.length - 1) / 2);
+        if (items[mid]?.Release_Id === rid) return;
+
+        const centered = reorderReleases(items, idx);
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { ...collectionState, items: centered },
+        });
+    }, [discogsReleaseState.selectedRelease?.Release_Id, items]);
+
     return (
         <Stack gap="xs">
             <Group justify="space-between" align="center">
@@ -138,6 +176,18 @@ const Playlist = () => {
                 columns={columns}
                 emptyText="No tracks yet"
                 onRowClick={row => {
+                    const queue = videosPage?.items ?? [];
+                    const startIndex = Math.max(
+                        0,
+                        queue.findIndex(
+                            v => (v.uri ?? v.URI) === (row.uri ?? row.URI),
+                        ),
+                    );
+
+                    dispatchDiscogsRelease({
+                        type: 'SET_PLAYBACK_QUEUE',
+                        payload: { items: queue, startIndex, mode: 'playlist' },
+                    });
                     // select the video; if you also want to sync a release selection:
                     dispatchDiscogsRelease({
                         type: 'SET_SELECTED_VIDEO',

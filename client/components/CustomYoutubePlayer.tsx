@@ -25,8 +25,14 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedDiscogsRelease, continuousPlay, selectedVideo } =
-        discogsReleaseState;
+    const {
+        selectedDiscogsRelease,
+        queue,
+        queueIndex,
+        playbackMode,
+        continuousPlay,
+        selectedVideo,
+    } = discogsReleaseState;
     const { selectedRelease } = discogsReleaseState;
 
     const handleNextRelease = () => {
@@ -43,25 +49,28 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     };
 
     const handleVideoEnd = () => {
-        if (
-            !selectedDiscogsRelease ||
-            !selectedDiscogsRelease.videos ||
-            selectedDiscogsRelease.videos.length === 0
-        )
-            return;
+        // No queue, nothing to do
+        if (!queue || queue.length === 0 || queueIndex < 0) return;
 
-        const videos = selectedDiscogsRelease.videos;
-        const currentIndex = videos.findIndex(v => v.uri === selectedVideo.uri);
+        const atEnd = queueIndex >= queue.length - 1;
 
-        const isLastVideo = currentIndex === videos.length - 1;
-
-        if (isLastVideo && !continuousPlay) {
-            handleNextRelease();
+        if (atEnd && !continuousPlay) {
+            // What happens at the end depends on source:
+            if (playbackMode === 'release') {
+                // your existing behavior
+                handleNextRelease?.();
+            } else {
+                // playbackMode === 'playlist'
+                // Option A: stop (do nothing)
+                // Option B: ask Playlist to go to the next page (recommended)
+                //   e.g., emit a callback/dispatch an event your Playlist listens to,
+                //   then your "auto-start first entry" effect will kick in on the new page
+            }
             return;
         }
 
-        // If not at the last video, dispatch NEXT_VIDEO
-        dispatchDiscogsRelease({ type: 'SET_NEXT_VIDEO' });
+        // Otherwise just advance within the queue
+        dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
     const safeSetVolume = (target: any, volume: number, attempts = 5) => {
         try {

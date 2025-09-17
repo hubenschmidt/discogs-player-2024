@@ -125,6 +125,17 @@ const ReleaseVideos = () => {
         ).catch(console.error);
     }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
 
+    // when selectedDiscogsRelease changes, seed queue with its videos
+    useEffect(() => {
+        const vids = selectedDiscogsRelease?.videos ?? [];
+        if (!vids.length) return;
+
+        dispatchDiscogsRelease({
+            type: 'SET_PLAYBACK_QUEUE',
+            payload: { items: vids, startIndex: 0, mode: 'release' },
+        });
+    }, [selectedDiscogsRelease?.id]); // or Release_Id, or videos array ref
+
     if (loading) return <Loader />;
     if (
         selectedDiscogsRelease &&
@@ -188,9 +199,18 @@ const ReleaseVideos = () => {
                                 }
 
                                 dispatchDiscogsRelease({
-                                    type: 'SET_SELECTED_VIDEO',
-                                    payload: video,
+                                    type: 'SET_PLAYBACK_QUEUE',
+                                    payload: {
+                                        items: activeDiscogs.videos,
+                                        startIndex: idx,
+                                        mode: 'release',
+                                    },
                                 });
+
+                                // dispatchDiscogsRelease({
+                                //     type: 'SET_SELECTED_VIDEO',
+                                //     payload: video,
+                                // });
                             }}
                             mt="-16px"
                             styles={{
