@@ -20,7 +20,7 @@ export const getStylesByGenre = async (req: Request) => {
 };
 
 export const updatePlayHistory = async (req: Request) => {
-    console.trace(req.auth);
+    console.log('updatePlayHistory is called---------');
     const user = await repos.getUser(req);
     const video = await repos.updateVideoPlayCount(req, user);
     const historyEntry = await repos.createHistoryEntry(req, user, video);

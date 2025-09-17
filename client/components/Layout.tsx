@@ -245,7 +245,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {/* Video Playlist Section */}
-                {selectedRelease && (
+                {/* Video Playlist Section */}
+                {selectedRelease && !playlistOpen && (
                     <Grid mb="sm">
                         <Grid.Col
                             span={{ base: 12, md: 6, lg: 4 }}
@@ -261,7 +262,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Grid.Col>
                     </Grid>
                 )}
-
                 {/* YouTube Player Section */}
                 {selectedVideo && (
                     <Box mb="sm">
