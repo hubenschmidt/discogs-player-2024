@@ -214,26 +214,34 @@ const VinylShelf: FC = () => {
 
     const handleRecordClick = (release: Release, index: number) => {
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-        setLoadingCenter(true);
-        const reordered = reorderReleases(items, index);
-        dispatchCollection({
-            type: 'SET_COLLECTION',
-            payload: { items: reordered },
-        });
-        if (shelfRef.current)
-            shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        if (!selectedRelease) {
+
+        const isFirstSelection = !selectedRelease;
+
+        if (isFirstSelection) {
+            // center the clicked record and select it (show blur)
+            setLoadingCenter(true);
+            const reordered = reorderReleases(items, index);
+            dispatchCollection({
+                type: 'SET_COLLECTION',
+                payload: { items: reordered },
+            });
+
+            if (shelfRef.current) {
+                shelfRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_RELEASE',
                 payload: release,
             });
+            endCenteringSoon();
         } else {
+            // preview only — no blur, no reorder
             dispatchDiscogsRelease({
                 type: 'SET_PREVIEW_RELEASE',
                 payload: release,
             });
         }
-        endCenteringSoon();
     };
 
     const handleShelfPrev = () => {
