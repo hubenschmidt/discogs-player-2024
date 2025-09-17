@@ -118,7 +118,7 @@ export const getPlaylist = async (req: Request, user: any) => {
             updatedAt: 'updatedAt', // Video.updatedAt
             createdAt: 'createdAt', // Video.createdAt
         },
-        defaultOrder: 'DESC',
+        defaultOrder: 'ASC',
     });
 
     // Optional separate paging for RELEASES (defaults to same as videos)
