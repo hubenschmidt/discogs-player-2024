@@ -130,6 +130,9 @@ const ReleaseVideos = () => {
         const vids = selectedDiscogsRelease?.videos ?? [];
         if (!vids.length) return;
 
+        // only seed if we are explicitly in 'release' mode
+        if (discogsReleaseState.playbackMode !== 'release') return;
+
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
             payload: { items: vids, startIndex: 0, mode: 'release' },

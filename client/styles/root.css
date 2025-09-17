@@ -182,3 +182,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+.playlist-row-selected {
+    outline: 2px solid #6cf;
+    background: rgba(108, 204, 255, 0.08);
+}

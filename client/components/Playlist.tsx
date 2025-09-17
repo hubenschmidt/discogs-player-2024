@@ -175,6 +175,9 @@ const Playlist = () => {
                 data={videosPage}
                 columns={columns}
                 emptyText="No tracks yet"
+                rowKey={row => row.uri}
+                selectedRowKey={discogsReleaseState.selectedVideo?.uri}
+                selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Group,
@@ -12,40 +12,6 @@ import {
 import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 
 type SortDir = 'ASC' | 'DESC';
-
-export type DataTableProps<T> = {
-    data?: PageData<T> | null;
-    columns: Column<T>[];
-
-    // paging
-    onPageChange?: (page: number) => void;
-    pageValue?: number; // optional: requested/controlled page
-    onPageSizeChange?: (size: number) => void;
-    pageSizeValue?: number; // requested/controlled page size
-    pageSizeOptions?: number[]; // defaults below
-
-    // sorting
-    sortBy?: string;
-    sortDirection?: SortDir;
-    onSortChange?: (s: { sortBy: string; direction: SortDir }) => void;
-
-    // rows
-    rowKey?: (row: T, index: number) => React.Key;
-    onRowClick?: (row: T) => void;
-
-    // UI
-    emptyText?: string;
-    highlightOnHover?: boolean;
-    withTableBorder?: boolean;
-    withColumnBorders?: boolean;
-    scrollMinWidth?: number | string;
-    tableStyle?: React.CSSProperties;
-    topRight?: React.ReactNode;
-    bottomRight?: React.ReactNode;
-
-    // Border applied to all header/data cells unless overridden in thProps/tdProps
-    cellBorder?: string; // e.g. "4px solid black"
-};
 
 export type PageData<T> = {
     items: T[];
@@ -63,10 +29,51 @@ export type Column<T> = {
     visibleFrom?: MantineBreakpoint;
     thProps?: React.ComponentProps<typeof Table.Th>;
     tdProps?: React.ComponentProps<typeof Table.Td>;
-    /** enable click-to-sort on this column */
     sortable?: boolean;
-    /** explicit key to send to backend; defaults to string accessor if present */
     sortKey?: string;
+};
+
+export type DataTableProps<T> = {
+    data?: PageData<T> | null;
+    columns: Column<T>[];
+
+    // paging
+    onPageChange?: (page: number) => void;
+    pageValue?: number;
+    onPageSizeChange?: (size: number) => void;
+    pageSizeValue?: number;
+    pageSizeOptions?: number[];
+
+    // sorting
+    sortBy?: string;
+    sortDirection?: SortDir;
+    onSortChange?: (s: { sortBy: string; direction: SortDir }) => void;
+
+    // rows
+    rowKey?: (row: T, index: number) => React.Key;
+    onRowClick?: (row: T) => void;
+
+    // selection
+    defaultSelectedRowKey?: React.Key | null;
+    selectedRowKey?: React.Key | null; // controlled
+    onSelectionChange?: (key: React.Key | null, row?: T) => void;
+    selectOnRowClick?: boolean;
+    preserveSelection?: boolean;
+
+    // UI
+    emptyText?: string;
+    highlightOnHover?: boolean;
+    withTableBorder?: boolean;
+    withColumnBorders?: boolean;
+    scrollMinWidth?: number | string;
+    tableStyle?: React.CSSProperties;
+    topRight?: React.ReactNode;
+    bottomRight?: React.ReactNode;
+    selectedRowClassName?: string;
+    selectedRowStyle?: React.CSSProperties;
+
+    // cells
+    cellBorder?: string;
 };
 
 export const DataTable = <T,>({
@@ -90,12 +97,63 @@ export const DataTable = <T,>({
     tableStyle,
     topRight,
     cellBorder,
+
+    // selection
+    defaultSelectedRowKey = null,
+    selectedRowKey: controlledSelected,
+    onSelectionChange,
+    selectOnRowClick = true,
+    preserveSelection = false,
+
+    selectedRowClassName,
+    selectedRowStyle,
 }: DataTableProps<T>) => {
     const items = data?.items ?? [];
+    const keyOf = (row: T, idx: number) => (rowKey ? rowKey(row, idx) : idx);
+
+    // uncontrolled internal selection
+    const [internalSelected, setInternalSelected] = useState<React.Key | null>(
+        defaultSelectedRowKey,
+    );
+
+    // controlled wins
+    const selectedKey = controlledSelected ?? internalSelected;
+
+    // keep internal in sync if default changes and we are uncontrolled
+    useEffect(() => {
+        if (controlledSelected === undefined) {
+            setInternalSelected(defaultSelectedRowKey);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [defaultSelectedRowKey]);
+
+    // clear selection if selectedKey isn’t on current page (unless preserving)
+    useEffect(() => {
+        if (selectedKey == null || preserveSelection) return;
+        const exists = items.some(
+            (row, idx) => String(keyOf(row, idx)) === String(selectedKey),
+        );
+        if (!exists) {
+            if (controlledSelected === undefined) setInternalSelected(null);
+            onSelectionChange?.(null, undefined);
+        }
+    }, [
+        items,
+        selectedKey,
+        preserveSelection,
+        controlledSelected,
+        onSelectionChange,
+    ]);
+
+    const handleSelect = (key: React.Key | null, row?: T) => {
+        if (controlledSelected === undefined) setInternalSelected(key);
+        onSelectionChange?.(key, row);
+    };
+
+    // paging
     const page = data?.currentPage ?? 1;
     const totalPages = Math.max(data?.totalPages ?? 1, 1);
     const effectivePage = Math.min(pageValue ?? page, totalPages);
-
     const sizeFromData = data?.pageSize ?? items.length;
     const effectivePageSize =
         pageSizeValue ?? sizeFromData ?? pageSizeOptions[0];
@@ -166,7 +224,6 @@ export const DataTable = <T,>({
                         ? `Showing ${items.length} item(s)`
                         : emptyText}
                 </Text>
-
                 <Group gap="xs" align="center">
                     {onPageSizeChange && (
                         <Group gap={6} align="center">
@@ -200,7 +257,7 @@ export const DataTable = <T,>({
                         withEdges
                         size="sm"
                         radius="md"
-                        classNames={{ control: 'pg-control' }} // you already style these
+                        classNames={{ control: 'pg-control' }}
                     />
                 </Group>
             </Group>
@@ -232,21 +289,37 @@ export const DataTable = <T,>({
 
                     <Table.Tbody>
                         {items.map((row, idx) => {
-                            const key = rowKey ? rowKey(row, idx) : idx;
+                            const key = keyOf(row, idx);
+                            const selected =
+                                selectedKey != null &&
+                                String(key) === String(selectedKey);
+
+                            const handleRowClick = () => {
+                                onRowClick?.(row);
+                                if (selectOnRowClick) handleSelect(key, row);
+                            };
 
                             return (
                                 <Table.Tr
                                     key={key}
-                                    onClick={() => onRowClick!(row)}
+                                    onClick={handleRowClick}
+                                    data-row-key={String(key)}
+                                    data-selected={selected ? 'true' : 'false'}
+                                    className={
+                                        selected
+                                            ? selectedRowClassName
+                                            : undefined
+                                    }
+                                    style={
+                                        selected ? selectedRowStyle : undefined
+                                    }
                                 >
                                     {columns.map((col, ci) => (
                                         <Table.Td
                                             key={ci}
                                             visibleFrom={col.visibleFrom}
                                             {...col.tdProps}
-                                            style={{
-                                                border: cellBorder,
-                                            }}
+                                            style={{ border: cellBorder }}
                                         >
                                             {getCellContent(col, row)}
                                         </Table.Td>
