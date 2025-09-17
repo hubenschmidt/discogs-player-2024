@@ -284,5 +284,14 @@ export const fetchRelease = async (req: Request) => {
             title: scrubTitle(video.title),
         }));
     }
+
+    // Filter out Discogs bugged duplicates by 'uri'
+    const seen = new Set<string>();
+    release.videos = release.videos.filter((video: any) => {
+        if (!video.uri || seen.has(video.uri)) return false;
+        seen.add(video.uri);
+        return true;
+    });
+
     return response;
 };
