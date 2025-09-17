@@ -43,25 +43,26 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
     };
 
     const handleVideoEnd = () => {
-        if (!queue || queue.length === 0 || queueIndex < 0) return;
+        if (!queue?.length || queueIndex < 0) return;
 
         const atEnd = queueIndex >= queue.length - 1;
+        const inPlaylist = playbackMode === 'playlist';
 
-        if (playbackMode === 'playlist') {
-            // In playlists: advance within the list; stop at the end (or loop if you want)
-            if (atEnd) {
-                // To loop the playlist, uncomment:
-                dispatchDiscogsRelease({
-                    type: 'SET_PLAYBACK_QUEUE',
-                    payload: { items: queue, startIndex: 0, mode: 'playlist' },
-                });
-                return;
-            }
+        // Playlist mode
+        if (inPlaylist && atEnd) {
+            // Loop playlist; replace with `return;` to stop instead.
+            dispatchDiscogsRelease({
+                type: 'SET_PLAYBACK_QUEUE',
+                payload: { items: queue, startIndex: 0, mode: 'playlist' },
+            });
+            return;
+        }
+        if (inPlaylist) {
             dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
             return;
         }
 
-        // Release mode (your existing behavior)
+        // Release mode
         if (atEnd && !continuousPlay) {
             handleNextRelease?.();
             return;
@@ -69,6 +70,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
 
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
+
     const safeSetVolume = (target: any, volume: number, attempts = 5) => {
         try {
             target?.setVolume(volume);
