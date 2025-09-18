@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Stack, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { Menu, ChevronLeft } from 'lucide-react';
 import { NavContext } from '../context/navContext';
@@ -8,7 +8,7 @@ type SidebarLinkProps = {
     active?: boolean;
     collapsed: boolean;
     onClick: () => void;
-    href?: string; // allow external links
+    href?: string;
 };
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({
@@ -31,7 +31,6 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
             transitionProps={{ duration: 0 }}
         >
             {href ? (
-                // Normal anchor for external navigation (logout)
                 <a href={href} className="sidebar-link">
                     {content}
                 </a>
@@ -64,8 +63,40 @@ const NavBar: React.FC<NavBarProps> = ({ isCollapsed, setIsCollapsed }) => {
         { key: 'logout', label: 'Logout', href: '/auth/logout' },
     ];
 
+    // ⬇️ NEW: ref + outside click / Esc handlers
+    const rootRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (isCollapsed) return;
+
+        const handlePointerDown = (e: Event) => {
+            const el = rootRef.current;
+            if (!el) return;
+            if (!el.contains(e.target as Node)) {
+                setIsCollapsed(true);
+            }
+        };
+
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsCollapsed(true);
+        };
+
+        // use capture so it fires even if something stops propagation
+        document.addEventListener('mousedown', handlePointerDown, true);
+        document.addEventListener('touchstart', handlePointerDown, true);
+        window.addEventListener('keydown', handleKey);
+
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown, true);
+            document.removeEventListener('touchstart', handlePointerDown, true);
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, [isCollapsed, setIsCollapsed]);
+    // ⬆️ NEW
+
     return (
         <Stack
+            ref={rootRef} // ⬅️ NEW
             pos="fixed"
             top={8}
             left={8}
@@ -86,6 +117,7 @@ const NavBar: React.FC<NavBarProps> = ({ isCollapsed, setIsCollapsed }) => {
                     size="lg"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     aria-label="Toggle sidebar"
+                    aria-expanded={!isCollapsed} // a11y hint
                     color="white"
                 >
                     {isCollapsed ? (
