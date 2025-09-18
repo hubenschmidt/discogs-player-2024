@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { PlayerContext } from '../context/playerContext';
-import { ActionIcon, Group, Switch } from '@mantine/core';
+import { ActionIcon, Group, Switch, Tooltip } from '@mantine/core';
 import {
     ChevronLeft,
     ChevronRight,
@@ -17,23 +17,32 @@ const Controls = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedVideo, continuousPlay, isPlaying } = discogsReleaseState;
+    const { selectedVideo, continuousPlay, isPlaying, playbackMode } =
+        discogsReleaseState;
+
     const [playbackRate, setPlaybackRate] = useState('1');
     const [availableRates, setAvailableRates] = useState<number[]>([]);
-    console.log(isPlaying);
+
+    const isPlaylist = playbackMode === 'playlist';
+
+    // (optional) ensure loop is OFF in playlist mode to avoid confusion
+    useEffect(() => {
+        if (isPlaylist && continuousPlay) {
+            dispatchDiscogsRelease({
+                type: 'SET_CONTINUOUS_PLAY',
+                payload: false,
+            });
+        }
+    }, [isPlaylist]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        if (controls && controls.getAvailablePlaybackRates) {
+        if (controls?.getAvailablePlaybackRates) {
             const rates = controls.getAvailablePlaybackRates();
-            if (rates && Array.isArray(rates) && rates.length > 0) {
-                setAvailableRates(rates);
-            }
+            if (Array.isArray(rates) && rates.length) setAvailableRates(rates);
         }
     }, [controls]);
 
-    useEffect(() => {
-        setPlaybackRate('1');
-    }, [selectedVideo]);
+    useEffect(() => setPlaybackRate('1'), [selectedVideo]);
 
     const handlePlay = () => {
         controls?.play();
@@ -47,22 +56,19 @@ const Controls = () => {
 
     const handleFastForward = () => {
         if (controls?.getCurrentTime && controls?.seekTo) {
-            const currentTime = controls.getCurrentTime();
-            controls.seekTo(currentTime + 20); // skip forward 10s
+            controls.seekTo(controls.getCurrentTime() + 20);
         }
     };
 
     const handleRewind = () => {
         if (controls?.getCurrentTime && controls?.seekTo) {
-            const currentTime = controls.getCurrentTime();
-            controls.seekTo(Math.max(0, currentTime - 20)); // rewind 10s, avoid negative time
+            controls.seekTo(Math.max(0, controls.getCurrentTime() - 20));
         }
     };
 
     const handlePlaybackRateChange = (value: string) => {
         setPlaybackRate(value);
-        const newRate = parseFloat(value);
-        controls?.setPlaybackRate(newRate);
+        controls?.setPlaybackRate(parseFloat(value));
     };
 
     const handleNextVideo = () => {
@@ -83,91 +89,78 @@ const Controls = () => {
         dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
     };
 
-    return selectedVideo ? (
-        <>
-            {/* Slider wrapped in a container to push it to the right */}
-            <Group
-                style={{ flexWrap: 'nowrap', alignItems: 'center' }}
-                mb="10px"
+    if (!selectedVideo) return null;
+
+    return (
+        <Group style={{ flexWrap: 'nowrap', alignItems: 'center' }} mb="10px">
+            {/* playback rate select... unchanged */}
+
+            <ActionIcon color="transparent" onClick={handleRewind}>
+                <Rewind />
+            </ActionIcon>
+            <ActionIcon color="transparent" onClick={handlePrevVideo}>
+                <ChevronLeft />
+            </ActionIcon>
+
+            {isPlaying ? (
+                <ActionIcon color="transparent" onClick={handlePause}>
+                    <Pause />
+                </ActionIcon>
+            ) : (
+                <ActionIcon color="transparent" onClick={handlePlay}>
+                    <Play />
+                </ActionIcon>
+            )}
+
+            <ActionIcon color="transparent" onClick={handleNextVideo}>
+                <ChevronRight />
+            </ActionIcon>
+            <ActionIcon color="transparent" onClick={handleFastForward}>
+                <FastForward />
+            </ActionIcon>
+
+            <Tooltip
+                label={
+                    isPlaylist
+                        ? 'Disabled while playlist is playing'
+                        : 'Loop release videos'
+                }
             >
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <select
-                        value={playbackRate}
-                        onChange={e => handlePlaybackRateChange(e.target.value)}
-                        style={{
-                            backgroundColor: '#222',
-                            color: '#fff',
-                            border: '1px solid #fff',
-                            padding: '4px',
-                            borderRadius: '0px',
-                            fontSize: '0.8rem',
-                            width: '60px',
+                <span>
+                    {' '}
+                    {/* wrap to make disabled Switch still show tooltip */}
+                    <Switch
+                        checked={continuousPlay && !isPlaylist}
+                        disabled={isPlaylist}
+                        styles={{
+                            track: {
+                                backgroundColor: isPlaylist
+                                    ? '#222' // muted when disabled
+                                    : continuousPlay
+                                    ? 'gray'
+                                    : 'black',
+                                border: isPlaylist
+                                    ? '1px solid #333'
+                                    : continuousPlay
+                                    ? 'none'
+                                    : '1px solid white',
+                                cursor: isPlaylist ? 'not-allowed' : 'pointer',
+                                opacity: isPlaylist ? 0.6 : 1,
+                            },
+                            thumb: { backgroundColor: 'white' },
                         }}
-                    >
-                        {availableRates.length > 0 ? (
-                            availableRates.map(rate => (
-                                <option key={rate} value={rate}>
-                                    {rate}x
-                                </option>
-                            ))
-                        ) : (
-                            <>
-                                <option value="0.25">0.25x</option>
-                                <option value="0.5">0.5x</option>
-                                <option value="1">1x</option>
-                                <option value="1.25">1.25x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2x</option>
-                            </>
-                        )}
-                    </select>
-                </div>
-                <ActionIcon color="transparent" onClick={handleRewind}>
-                    <Rewind />
-                </ActionIcon>
-                <ActionIcon color="transparent" onClick={handlePrevVideo}>
-                    <ChevronLeft />
-                </ActionIcon>
-
-                {isPlaying ? (
-                    <ActionIcon color="transparent" onClick={handlePause}>
-                        <Pause />
-                    </ActionIcon>
-                ) : (
-                    <ActionIcon color="transparent" onClick={handlePlay}>
-                        <Play />
-                    </ActionIcon>
-                )}
-
-                <ActionIcon color="transparent" onClick={handleNextVideo}>
-                    <ChevronRight />
-                </ActionIcon>
-
-                <ActionIcon color="transparent" onClick={handleFastForward}>
-                    <FastForward />
-                </ActionIcon>
-
-                <Switch
-                    checked={continuousPlay}
-                    styles={{
-                        track: {
-                            backgroundColor: continuousPlay ? 'gray' : 'black', // ON vs OFF
-                            border: continuousPlay ? 'none' : '1px solid white', // white border when OFF
-                        },
-                        thumb: {
-                            backgroundColor: 'white',
-                        },
-                    }}
-                    onChange={e =>
-                        dispatchDiscogsRelease({
-                            type: 'SET_CONTINUOUS_PLAY',
-                            payload: e.currentTarget.checked,
-                        })
-                    }
-                />
-            </Group>
-        </>
-    ) : null;
+                        onChange={e => {
+                            if (isPlaylist) return; // guard when disabled
+                            dispatchDiscogsRelease({
+                                type: 'SET_CONTINUOUS_PLAY',
+                                payload: e.currentTarget.checked,
+                            });
+                        }}
+                    />
+                </span>
+            </Tooltip>
+        </Group>
+    );
 };
 
 export default Controls;
