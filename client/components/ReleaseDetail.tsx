@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import {
     Box,
     Card,
@@ -10,7 +10,9 @@ import {
     Badge,
     Anchor,
     Divider,
+    Modal,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 
 const formatDate = (iso?: string) => {
@@ -33,21 +35,20 @@ const ReleaseDetail: React.FC = () => {
         Year,
         Cover_Image,
         Thumb,
-        Artists = [],
-        Labels = [],
-        Genres = [],
-        Styles = [],
+        Artists,
+        Labels,
+        Genres,
+        Styles,
         Date_Added,
         Release_Id,
-    } = rel || ({} as any);
+    } = rel;
 
-    const discogsUrl = useMemo(
-        () =>
-            Release_Id
-                ? `https://www.discogs.com/release/${Release_Id}`
-                : undefined,
-        [Release_Id],
-    );
+    const [opened, { open, close }] = useDisclosure(false);
+
+    const imgSrc = Cover_Image || Thumb || '';
+    const discogsUrl = Release_Id
+        ? `https://www.discogs.com/release/${Release_Id}`
+        : undefined;
 
     if (!rel) return null;
 
@@ -59,11 +60,7 @@ const ReleaseDetail: React.FC = () => {
                 </Text>
             </Group>
 
-            <Card
-                radius="md"
-                p="md"
-                style={{ background: '#0e0e0f', color: 'none' }}
-            >
+            <Card radius="md" p="md" style={{ background: '#0e0e0f' }}>
                 {/* Header */}
                 <Group justify="space-between" align="center" mb="xs">
                     <Group gap="sm" align="baseline">
@@ -97,11 +94,73 @@ const ReleaseDetail: React.FC = () => {
                     <Grid.Col span={{ base: 12, sm: 4, md: 3 }}>
                         <Image
                             radius="md"
-                            src={Cover_Image || Thumb}
+                            src={imgSrc}
                             alt={Title || 'Cover'}
                             mah={420}
                             fit="cover"
+                            onClick={imgSrc ? open : undefined}
+                            style={{ cursor: imgSrc ? 'zoom-in' : 'default' }}
+                            role={imgSrc ? 'button' : undefined}
+                            tabIndex={imgSrc ? 0 : -1}
+                            onKeyDown={
+                                imgSrc
+                                    ? e => {
+                                          if (
+                                              e.key === 'Enter' ||
+                                              e.key === ' '
+                                          ) {
+                                              e.preventDefault();
+                                              open();
+                                          }
+                                      }
+                                    : undefined
+                            }
                         />
+
+                        {/* Full-size viewer */}
+                        <Modal.Root
+                            opened={opened}
+                            onClose={close}
+                            centered
+                            size="auto"
+                        >
+                            <Modal.Overlay backgroundOpacity={0.65} blur={2} />
+
+                            <Modal.Content
+                                style={{
+                                    backgroundColor: '#000',
+                                    color: 'white',
+                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    borderRadius: 12,
+                                }}
+                            >
+                                <Modal.Header
+                                    style={{
+                                        backgroundColor: '#141516',
+                                    }}
+                                >
+                                    <Modal.CloseButton
+                                        style={{ color: 'white' }}
+                                    />
+                                </Modal.Header>
+
+                                <Modal.Body
+                                    style={{
+                                        backgroundColor: '#141516',
+                                        paddingBottom: 8,
+                                    }}
+                                >
+                                    <Image
+                                        src={imgSrc}
+                                        alt={Title || 'Cover'}
+                                        radius="md"
+                                        fit="contain"
+                                        maw="90vw"
+                                        mah="80vh"
+                                    />
+                                </Modal.Body>
+                            </Modal.Content>
+                        </Modal.Root>
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 8, md: 9 }}>
