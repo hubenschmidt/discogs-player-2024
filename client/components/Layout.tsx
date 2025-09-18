@@ -28,6 +28,7 @@ import Playlist from './Playlist';
 import TrackProgress from './TrackProgress';
 import { NavContext } from '../context/navContext';
 import ReleaseDetail from './ReleaseDetail';
+import CollapsibleWrapper from './CollapsibleWrapper';
 
 type Props = {
     children?: ReactNode;
@@ -200,7 +201,9 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 {/* Vinyl Shelf Section */}
                 <Grid mb="sm">
                     <Grid.Col span={{ base: 12 }}>
-                        <VinylShelf />
+                        <CollapsibleWrapper title="Collection" defaultOpen>
+                            <VinylShelf />
+                        </CollapsibleWrapper>
                     </Grid.Col>
                 </Grid>
 
