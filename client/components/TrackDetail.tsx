@@ -7,6 +7,15 @@ interface TrackDetailProps {
     preview?: boolean;
 }
 
+const scrubTitle = (s?: string) =>
+    (s ?? '')
+        .normalize('NFKD') // turn 𝐀 → A, 𝟗 → 9, etc.
+        .replace(/[\u0300-\u036f]/g, '') // remove combining marks
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width chars
+        .replace(/<[^>]*>/g, '') // strip HTML tags just in case
+        .replace(/\s+/g, ' ')
+        .trim();
+
 const TrackDetail: React.FC<TrackDetailProps> = ({
     selectedDiscogsRelease,
     preview,
@@ -22,7 +31,9 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                 <Box className="track-detail-content">
                     {!preview && (
                         <Text className="track-detail-text" lh={1}>
-                            ♪ {controls?.videoTitle || 'No title available'}
+                            ♪{' '}
+                            {scrubTitle(controls?.videoTitle) ||
+                                'No title available'}
                         </Text>
                     )}
 
