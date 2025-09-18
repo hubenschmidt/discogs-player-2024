@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useContext, FC } from 'react';
+import React, { useEffect, useRef, useContext, useState, FC } from 'react';
+import { ActionIcon, Group, Text, Tooltip } from '@mantine/core';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlayerContext } from '../context/playerContext';
@@ -6,7 +8,7 @@ import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
     width?: string;
-    height?: string;
+    height?: string; // e.g. "430px"
 }
 
 declare global {
@@ -16,40 +18,47 @@ declare global {
     }
 }
 
-const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
-    const playerRef = useRef<HTMLDivElement>(null); // keep DOM refs inside the component and not in PlayerContext
+const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
+    width = '100%',
+    height = '430px',
+}) => {
+    const playerRef = useRef<HTMLDivElement>(null);
     const playerInstance = useRef<any>(null);
+
     const { dispatchPlayer } = useContext(PlayerContext);
     const { collectionState } = useContext(CollectionContext);
     const { releases } = collectionState;
+
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { queue, queueIndex, playbackMode, continuousPlay, selectedVideo } =
-        discogsReleaseState;
-    const { selectedRelease } = discogsReleaseState;
+    const {
+        queue,
+        queueIndex,
+        playbackMode,
+        continuousPlay,
+        selectedVideo,
+        selectedRelease,
+    } = discogsReleaseState;
+
+    // collapsed by default
+    const [collapsed, setCollapsed] = useState(true);
+
     const handleNextRelease = () => {
-        if (!selectedRelease || !releases || releases.length === 0) return;
-        const currentIndex = releases.findIndex(
+        if (!selectedRelease || !releases?.length) return;
+        const i = releases.findIndex(
             r => r.Release_Id === selectedRelease.Release_Id,
         );
-        const nextIndex = (currentIndex + 1) % releases.length;
-        const nextRelease = releases[nextIndex];
-        dispatchDiscogsRelease({
-            type: 'SET_SELECTED_RELEASE',
-            payload: nextRelease,
-        });
+        const next = releases[(i + 1) % releases.length];
+        dispatchDiscogsRelease({ type: 'SET_SELECTED_RELEASE', payload: next });
     };
 
     const handleVideoEnd = () => {
         if (!queue?.length || queueIndex < 0) return;
-
         const atEnd = queueIndex >= queue.length - 1;
         const inPlaylist = playbackMode === 'playlist';
 
-        // Playlist mode
         if (inPlaylist && atEnd) {
-            // Loop playlist; replace with `return;` to stop instead.
             dispatchDiscogsRelease({
                 type: 'SET_PLAYBACK_QUEUE',
                 payload: { items: queue, startIndex: 0, mode: 'playlist' },
@@ -60,92 +69,70 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
             dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
             return;
         }
-
-        // Release mode
         if (atEnd && !continuousPlay) {
-            handleNextRelease?.();
+            handleNextRelease();
             return;
         }
-
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
     };
 
-    const safeSetVolume = (target: any, volume: number, attempts = 5) => {
+    const safeSetVolume = (t: any, v: number, n = 5) => {
         try {
-            target?.setVolume(volume);
-        } catch (err) {
-            if (attempts > 0) {
-                setTimeout(
-                    () => safeSetVolume(target, volume, attempts - 1),
-                    10,
-                );
-            }
+            t?.setVolume(v);
+        } catch {
+            if (n > 0) setTimeout(() => safeSetVolume(t, v, n - 1), 10);
         }
     };
 
-    // Function to create the YouTube player
     const createPlayer = () => {
-        if (playerRef.current && selectedVideo.uri) {
-            playerInstance.current = new window.YT.Player(playerRef.current, {
-                height,
-                width,
-                videoId: extractYouTubeVideoId(selectedVideo.uri),
-                playerVars: {
-                    autoplay: 1,
-                    controls: 0,
-                    rel: 0, // prevents showing related videos from other channels
-                    iv_load_policy: 3, // <- hide annotations/cards
-                    fs: 0, // <- no fullscreen button (optional)
-                    disablekb: 1, // <- disable keyboard controls (optional)
-                    playsinline: 1, // <- inline playback on mobile
+        if (!playerRef.current || !selectedVideo?.uri) return;
+        playerInstance.current = new window.YT.Player(playerRef.current, {
+            height,
+            width,
+            videoId: extractYouTubeVideoId(selectedVideo.uri),
+            playerVars: {
+                autoplay: 1,
+                controls: 0,
+                rel: 0,
+                iv_load_policy: 3,
+                fs: 0,
+                disablekb: 1,
+                playsinline: 1,
+            },
+            events: {
+                onReady: (e: any) => {
+                    dispatchPlayer({
+                        type: 'SET_CONTROLS',
+                        payload: {
+                            play: () => e.target.playVideo(),
+                            pause: () => e.target.pauseVideo(),
+                            stop: () => e.target.stopVideo(),
+                            setVolume: (v: number) =>
+                                safeSetVolume(e.target, v),
+                            setPlaybackRate: (r: number) =>
+                                e.target.setPlaybackRate(r),
+                            getAvailablePlaybackRates: () =>
+                                e.target.getAvailablePlaybackRates(),
+                            getCurrentTime: () => e.target.getCurrentTime(),
+                            seekTo: (s: number) => e.target.seekTo(s, true),
+                            videoTitle: e.target.videoTitle,
+                            getDuration: () => e.target.getDuration(),
+                        },
+                    });
+                    dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
                 },
-                events: {
-                    onReady: (event: any) => {
-                        // enable case we need to wait a little to ensure the player is fully ready
-                        // setTimeout(() => {
-                        dispatchPlayer({
-                            type: 'SET_CONTROLS',
-                            payload: {
-                                // explicitly set some controls from YouTube API.. add more if needed
-                                play: () => event.target.playVideo(),
-                                pause: () => event.target.pauseVideo(),
-                                stop: () => event.target.stopVideo(),
-                                setVolume: (volume: number) =>
-                                    safeSetVolume(event.target, volume),
-                                setPlaybackRate: (rate: number) =>
-                                    event.target.setPlaybackRate(rate),
-                                getAvailablePlaybackRates: () =>
-                                    event.target.getAvailablePlaybackRates(),
-                                getCurrentTime: () =>
-                                    event.target.getCurrentTime(),
-                                seekTo: (seconds: number) =>
-                                    event.target.seekTo(seconds, true),
-                                videoTitle: event.target.videoTitle,
-                                getDuration: () => event.target.getDuration(),
-                            },
-                        });
-                        dispatchPlayer({
-                            type: 'SET_PLAYER_READY',
-                            payload: true,
-                        });
-                        // }, 50);
-                    },
-
-                    onStateChange: (event: any) => {
-                        // When the video ends (state 0), call onEnd
-                        if (event.data === window.YT.PlayerState.ENDED) {
-                            handleVideoEnd();
-                        }
-                    },
+                onStateChange: (e: any) => {
+                    if (e.data === window.YT.PlayerState.ENDED)
+                        handleVideoEnd();
                 },
-            });
-        }
+            },
+        });
     };
 
+    // keep selectedVideo in sync with queue index
     useEffect(() => {
         const next = queue?.[queueIndex];
-        if (!next) return;
-        if (selectedVideo?.uri !== next?.uri) {
+        if (next && selectedVideo?.uri !== next?.uri) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_VIDEO',
                 payload: next,
@@ -153,52 +140,103 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({ width, height }) => {
         }
     }, [queueIndex, queue, selectedVideo?.uri, dispatchDiscogsRelease]);
 
+    // load YT api & create player
     useEffect(() => {
-        // Check if the YT API is loaded
         if (!window.YT || !window.YT.Player) {
-            // Load the YouTube IFrame API script
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             document.body.appendChild(tag);
-
-            // Set the callback for when the API is ready
-            window.onYouTubeIframeAPIReady = () => {
-                createPlayer();
-            };
+            window.onYouTubeIframeAPIReady = () => createPlayer();
         } else {
             createPlayer();
         }
-
-        // Cleanup on unmount
-        return () => {
-            if (playerInstance.current && playerInstance.current.destroy) {
-                playerInstance.current.destroy();
-            }
-        };
+        return () => playerInstance.current?.destroy?.();
     }, [selectedVideo, width, height]);
 
-    return (
-        <div style={{ position: 'relative', width, height }}>
-            {/* The YouTube player */}
-            <div ref={playerRef} style={{ width: '100%', height: '100%' }} />
+    const expandedH = height;
+    const collapsedH = '0px';
 
-            {/* Click-blocking shield */}
-            <div
-                aria-hidden="true"
-                tabIndex={-1}
-                onClick={e => e.stopPropagation()}
-                onMouseDown={e => e.preventDefault()}
-                onContextMenu={e => e.preventDefault()}
+    return (
+        <div style={{ width, marginTop: 8 }}>
+            {/* Header bar with chevron (always visible) */}
+            <Group
+                justify="space-between"
+                align="center"
+                px="xs"
+                py={4}
                 style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 2,
-                    // transparent but intercepts pointer events:
                     background: 'transparent',
-                    pointerEvents: 'auto',
-                    cursor: 'default',
+                    borderTop: '1px solid rgba(255,255,255,0.12)',
+                    borderRight: '1px solid rgba(255,255,255,0.12)',
+                    borderLeft: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 8,
                 }}
-            />
+            >
+                <Text fw={700} fz="lg" c="white">
+                    Video
+                </Text>
+                <Tooltip
+                    label={collapsed ? 'Show video' : 'Hide video'}
+                    withArrow
+                >
+                    <ActionIcon
+                        variant="light"
+                        radius="md"
+                        onClick={() => setCollapsed(c => !c)}
+                        aria-label={
+                            collapsed ? 'Expand video' : 'Collapse video'
+                        }
+                        title={collapsed ? 'Expand video' : 'Collapse video'}
+                        style={{ color: 'white' }}
+                    >
+                        {collapsed ? (
+                            <ChevronDown size={16} />
+                        ) : (
+                            <ChevronUp size={16} />
+                        )}
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            {/* Collapsible body */}
+            <div
+                style={{
+                    width: '100%',
+                    height: collapsed ? collapsedH : expandedH,
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderTop: 'none',
+                    borderRadius: '0 0 8px 8px',
+                    background: '#000',
+                    transition: 'height 200ms ease',
+                    position: 'relative',
+                }}
+            >
+                {/* The YouTube player */}
+                <div
+                    ref={playerRef}
+                    style={{ width: '100%', height: '100%' }}
+                />
+
+                {/* Click-blocking shield (only when expanded) */}
+                {!collapsed && (
+                    <div
+                        aria-hidden="true"
+                        tabIndex={-1}
+                        onClick={e => e.stopPropagation()}
+                        onMouseDown={e => e.preventDefault()}
+                        onContextMenu={e => e.preventDefault()}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 2,
+                            background: 'transparent',
+                            pointerEvents: 'auto',
+                            cursor: 'default',
+                        }}
+                    />
+                )}
+            </div>
         </div>
     );
 };
