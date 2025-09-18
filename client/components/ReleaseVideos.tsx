@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import {
     Box,
     Stack,
@@ -33,8 +33,6 @@ const ReleaseVideos = () => {
     } = discogsReleaseState;
     const { userState } = useContext(UserContext);
     const { username } = userState;
-    const [loadingSel, setLoadingSel] = useState(false);
-    const [loadingPrev, setLoadingPrev] = useState(false);
     const bearerToken = useBearerToken();
 
     const handleAdd = async () => {
@@ -86,10 +84,8 @@ const ReleaseVideos = () => {
     // ---- Fetch full discogs for selected release
     useEffect(() => {
         if (!selectedRelease?.Release_Id) return;
-        setLoadingSel(true);
         getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
             .then(full => {
-                console.log(full);
                 dispatchDiscogsRelease({
                     type: 'SET_SELECTED_DISCOGS_RELEASE',
                     payload: full,
@@ -100,14 +96,12 @@ const ReleaseVideos = () => {
                     'fetch selected discogs failed',
                     err?.response || err,
                 ),
-            )
-            .finally(() => setLoadingSel(false));
+            );
     }, [selectedRelease?.Release_Id]);
 
     // ---- Fetch full discogs for preview release
     useEffect(() => {
         if (!previewRelease?.Release_Id) return;
-        setLoadingPrev(true);
         getDiscogsRelease(previewRelease.Release_Id, bearerToken)
             .then(full => {
                 dispatchDiscogsRelease({
@@ -120,13 +114,11 @@ const ReleaseVideos = () => {
                     'fetch preview discogs failed',
                     err?.response || err,
                 ),
-            )
-            .finally(() => setLoadingPrev(false));
+            );
     }, [previewRelease?.Release_Id]);
 
     // Which release's videos to show
     const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
-    const loading = loadingPrev || loadingSel;
 
     // ---- A) Auto-select first video (no API call here)
     useEffect(() => {
@@ -206,7 +198,6 @@ const ReleaseVideos = () => {
                 </Group>
                 {activeDiscogs?.videos.map((video: any, idx: number) => {
                     const isSelected = selectedVideo?.uri === video.uri;
-                    console.log(video.title);
 
                     return (
                         <Button
