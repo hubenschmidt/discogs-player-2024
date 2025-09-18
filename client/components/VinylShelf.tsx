@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, FC } from 'react';
+import React, { useState, useEffect, useContext, useRef, FC } from 'react';
 import { getCollection, getPlaylist } from '../api';
 import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
@@ -44,10 +44,27 @@ const VinylShelf: FC = () => {
         searchSelection?.Release_Id
     );
 
+    const shelfRef = useRef<HTMLDivElement | null>(null);
+
     const shelfShowsPlaylist =
         playlistOpen && !showSearchShelf && !shelfCollectionOverride;
 
-    // NEW: auto-stop the center blur when it’s turned on
+    // after either collection or playlist fetch finishes, reset scroll
+    useEffect(() => {
+        if (!loadingFetch && shelfRef.current) {
+            // make sure DOM has the new items before resetting
+            requestAnimationFrame(() => {
+                if (shelfRef.current)
+                    shelfRef.current.scrollTo({
+                        left: 0,
+                        top: 0,
+                        behavior: 'auto',
+                    });
+            });
+        }
+    }, [loadingFetch]);
+
+    // auto-stop the center blur when it’s turned on
     useEffect(() => {
         if (!loadingCenter) return;
         const t = setTimeout(() => setLoadingCenter(false), MIN_SPINNER_MS);
@@ -113,7 +130,6 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch playlist when playlist is open ----------
     useEffect(() => {
-        console.log(shelfShowsPlaylist);
         if (!shelfShowsPlaylist) return; // <- only when we actually want the playlist showing on shelf
 
         let aborted = false;
@@ -277,7 +293,7 @@ const VinylShelf: FC = () => {
                 ></Box>
             )}
 
-            <div className="vinyl-shelf" aria-busy={isLoading}>
+            <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {
                     const n = items?.length;
                     let angle = 0;
