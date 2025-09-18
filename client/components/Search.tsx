@@ -6,9 +6,10 @@ import {
     ScrollArea,
     Box,
     Tooltip,
+    ActionIcon, 
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
-import { Search as SearchIcon, Sparkles } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, RotateCcw } from 'lucide-react';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { searchCollection } from '../api';
@@ -20,18 +21,13 @@ const Search = () => {
     const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
     const bearerToken = useBearerToken();
-    // Ref for the container of the search input + dropdown
     const containerRef = useRef<HTMLDivElement>(null);
 
     // todo.. implement AI mode
     const [aiMode, setAiMode] = useState(false);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key !== 'Enter') return;
-        const trimmed = query.trim();
-        if (trimmed) return; // non-empty search behaves as usual
-
-        // Empty Enter: reset search + force shelf to show full collection
+    const triggerOpenSearch = () => {
+        // Reset search + force shelf to show full collection
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
         dispatchSearch({ type: 'SET_OPEN', payload: false });
         dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
@@ -42,7 +38,13 @@ const Search = () => {
         });
     };
 
-    // Effect: search when query changes
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
+        if (query.trim()) return; // non-empty behaves as usual
+        triggerOpenSearch();
+    };
+
+    // search when query changes
     useEffect(() => {
         if (debouncedQuery.trim().length > 0) {
             dispatchSearch({ type: 'SET_OPEN', payload: true });
@@ -71,7 +73,7 @@ const Search = () => {
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
     }, [debouncedQuery, searchType]);
 
-    // Effect: handle clicks outside
+    // clicks outside: close dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -81,16 +83,13 @@ const Search = () => {
                 dispatchSearch({ type: 'SET_OPEN', payload: false });
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
+        return () =>
             document.removeEventListener('mousedown', handleClickOutside);
-        };
     }, []);
 
     return (
         <Box pos="relative" w="100%" ref={containerRef}>
-            {/* Search input */}
             <TextInput
                 placeholder={aiMode ? 'Ask' : 'Search'}
                 size="lg"
@@ -118,6 +117,21 @@ const Search = () => {
                         </Box>
                     </Tooltip>
                 }
+                // ⬇️ NEW: mobile-friendly “open search” button
+                rightSection={
+                    <Tooltip label="Show full collection" position="right">
+                        <ActionIcon
+                            variant="subtle"
+                            aria-label="Show full collection"
+                            onClick={triggerOpenSearch}
+                            // prevent the input from losing focus on mobile tap
+                            onMouseDown={e => e.preventDefault()}
+                        >
+                            <RotateCcw size={16} />
+                        </ActionIcon>
+                    </Tooltip>
+                }
+                rightSectionWidth={40}
                 value={query}
                 onChange={e =>
                     dispatchSearch({
@@ -140,7 +154,6 @@ const Search = () => {
                 }}
             />
 
-            {/* Dropdown results */}
             {open && (
                 <Paper
                     shadow="md"
@@ -154,7 +167,6 @@ const Search = () => {
                         backgroundColor: '#1a1a1a',
                     }}
                 >
-                    {/* Tabs */}
                     <Tabs
                         value={searchType}
                         onChange={tab =>
@@ -172,7 +184,6 @@ const Search = () => {
                         </Tabs.List>
                     </Tabs>
 
-                    {/* Results list */}
                     <ScrollArea.Autosize mah={300}>
                         {results.length > 0
                             ? results.map((item, idx) => (
@@ -222,7 +233,6 @@ const Search = () => {
                                               <span>{item.Title}</span>
                                           </Box>
                                       )}
-
                                       {item.Artist_Id && (
                                           <Box>
                                               <span
@@ -236,7 +246,6 @@ const Search = () => {
                                               {item.Name}
                                           </Box>
                                       )}
-
                                       {item.Label_Id && (
                                           <Box>
                                               <span
