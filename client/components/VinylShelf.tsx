@@ -21,11 +21,11 @@ const VinylShelf: FC = () => {
         DiscogsReleaseContext,
     );
     const { selectedRelease, previewRelease } = discogsReleaseState;
-    const { searchState } = useContext(SearchContext);
+    const { searchState, dispatchSearch } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState, dispatchNav } = useContext(NavContext);
     const { playlistOpen } = navState;
-    const { searchSelection } = searchState;
+    const { searchSelection, shelfCollectionOverride } = searchState;
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // keeps odd # so center is a single record
@@ -44,7 +44,8 @@ const VinylShelf: FC = () => {
         searchSelection?.Release_Id
     );
 
-    const shelfShowsPlaylist = playlistOpen && !showSearchShelf;
+    const shelfShowsPlaylist =
+        playlistOpen && !showSearchShelf && !shelfCollectionOverride;
 
     // NEW: auto-stop the center blur when it’s turned on
     useEffect(() => {
@@ -112,6 +113,7 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch playlist when playlist is open ----------
     useEffect(() => {
+        console.log(shelfShowsPlaylist);
         if (!shelfShowsPlaylist) return; // <- only when we actually want the playlist showing on shelf
 
         let aborted = false;

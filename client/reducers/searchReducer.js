@@ -3,6 +3,7 @@ export const SET_RESULTS = 'SET_RESULTS';
 export const SET_SEARCH_TYPE = 'SET_SEARCH_TYPE';
 export const SET_OPEN = 'SET_OPEN';
 export const SET_SEARCH_SELECTION = 'SET_SEARCH_SELECTION';
+export const SET_SHELF_COLLECTION_OVERRIDE = 'SET_SHELF_COLLECTION_OVERRIDE';
 
 export default initialState => {
     return (state, action) => {
@@ -17,6 +18,8 @@ export default initialState => {
                 return { ...state, open: action.payload };
             case SET_SEARCH_SELECTION:
                 return { ...state, searchSelection: action.payload };
+            case SET_SHELF_COLLECTION_OVERRIDE:
+                return { ...state, shelfCollectionOverride: action.payload };
             default:
                 return state;
         }

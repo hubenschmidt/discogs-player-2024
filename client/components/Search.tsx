@@ -23,8 +23,24 @@ const Search = () => {
     // Ref for the container of the search input + dropdown
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // todo.. implemnt AI mode
+    // todo.. implement AI mode
     const [aiMode, setAiMode] = useState(false);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
+        const trimmed = query.trim();
+        if (trimmed) return; // non-empty search behaves as usual
+
+        // Empty Enter: reset search + force shelf to show full collection
+        dispatchSearch({ type: 'SET_RESULTS', payload: [] });
+        dispatchSearch({ type: 'SET_OPEN', payload: false });
+        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
+        dispatchSearch({ type: 'SET_QUERY', payload: '' });
+        dispatchSearch({
+            type: 'SET_SHELF_COLLECTION_OVERRIDE',
+            payload: true,
+        });
+    };
 
     // Effect: search when query changes
     useEffect(() => {
@@ -114,6 +130,7 @@ const Search = () => {
                         dispatchSearch({ type: 'SET_OPEN', payload: true });
                     }
                 }}
+                onKeyDown={handleKeyDown}
                 styles={{
                     input: {
                         backgroundColor: 'transparent',
@@ -182,6 +199,10 @@ const Search = () => {
                                           });
                                           dispatchSearch({
                                               type: 'SET_OPEN',
+                                              payload: false,
+                                          });
+                                          dispatchSearch({
+                                              type: 'SET_SHELF_COLLECTION_OVERRIDE',
                                               payload: false,
                                           });
                                       }}

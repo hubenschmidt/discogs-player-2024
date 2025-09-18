@@ -231,6 +231,10 @@ const Playlist = () => {
                         type: 'SET_IS_PLAYING',
                         payload: true,
                     });
+                    dispatchSearch({
+                        type: 'SET_SHELF_COLLECTION_OVERRIDE',
+                        payload: false,
+                    });
                 }}
                 onPageChange={page =>
                     dispatchPlaylist({

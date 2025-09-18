@@ -7,6 +7,7 @@ const initialState = {
     results: [],
     searchType: 'all',
     open: false,
+    shelfCollectionOverride: false,
 };
 
 export const SearchContext = createContext(initialState);

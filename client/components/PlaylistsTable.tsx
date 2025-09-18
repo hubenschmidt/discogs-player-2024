@@ -3,6 +3,7 @@ import { Text } from '@mantine/core';
 import { PlaylistContext } from '../context/playlistContext';
 import { NavContext } from '../context/navContext';
 import { DataTable, type Column } from './DataTable';
+import { SearchContext } from '../context/searchContext';
 
 type Playlist = {
     Playlist_Id: number;
@@ -18,6 +19,7 @@ type Playlist = {
 const PlaylistsTable = () => {
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { dispatchNav } = useContext(NavContext);
+    const { dispatchSearch } = useContext(SearchContext);
 
     const columns: Column<Playlist>[] = [
         {
@@ -59,6 +61,11 @@ const PlaylistsTable = () => {
         dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: true });
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
         dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: true });
+        dispatchSearch({
+            type: 'SET_SHELF_COLLECTION_OVERRIDE',
+            payload: false,
+        });
+        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null }); // <-- add this
     };
 
     return (
