@@ -319,7 +319,7 @@ const VinylShelf: FC = () => {
             </div>
 
             {/* Hide shelf controls when playlist is open; also disable during loading */}
-            {!playlistOpen && (
+            {!shelfShowsPlaylist && (
                 <>
                     <div className="shelf-controls">
                         <ActionIcon
