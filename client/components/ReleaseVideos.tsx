@@ -89,6 +89,7 @@ const ReleaseVideos = () => {
         setLoadingSel(true);
         getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
             .then(full => {
+                console.log(full);
                 dispatchDiscogsRelease({
                     type: 'SET_SELECTED_DISCOGS_RELEASE',
                     payload: full,

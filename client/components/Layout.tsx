@@ -45,7 +45,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         previewDiscogsRelease,
         selectedDiscogsRelease,
         selectedRelease,
-        previewRelease,
         selectedVideo,
     } = discogsReleaseState;
     const bearerToken = useBearerToken();
