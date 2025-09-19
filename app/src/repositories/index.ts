@@ -140,7 +140,14 @@ export const getHistory = async (req: Request, user: any) => {
             {
                 model: db.Video,
                 as: 'Video',
-                attributes: ['URI', 'Title', 'Duration'],
+                attributes: ['Video_Id', 'URI', 'Title', 'Duration'],
+                include: [
+                    {
+                        model: db.User,
+                        attributes: ['User_Id'],
+                        through: { attributes: ['Video_Id', 'Play_Count'] },
+                    },
+                ],
             },
             {
                 model: db.Release,
@@ -181,12 +188,17 @@ export const getHistory = async (req: Request, user: any) => {
         order: orderClause,
     });
 
-    return toPagedResponse(
-        count,
-        page,
-        limit,
-        rows.map((r: any) => r.get({ plain: true })),
-    );
+    // Lift Play_Count onto Video, then remove the nested Users array
+    const items = rows.map((r: any) => {
+        const plain = r.get({ plain: true });
+        const nestedCount = plain?.Video?.Users?.[0]?.UserVideo?.Play_Count;
+        if (plain?.Video) {
+            plain.Video.Play_Count = nestedCount ?? null; // or ?? 0 if you prefer
+            delete plain.Video.Users;
+        }
+        return plain;
+    });
+    return toPagedResponse(count, page, limit, items);
 };
 
 export const createPlaylist = async (req: Request, user: any, video?: any) => {
