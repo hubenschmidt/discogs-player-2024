@@ -1,14 +1,5 @@
 import React, { useEffect, useContext } from 'react';
-import {
-    Box,
-    Stack,
-    Button,
-    Text,
-    Loader,
-    ActionIcon,
-    Tooltip,
-    Group,
-} from '@mantine/core';
+import { Box, Stack, Button, ActionIcon, Tooltip } from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlaylistContext } from '../context/playlistContext';

@@ -53,14 +53,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [tracksOpen, setTracksOpen] = React.useState(true);
 
-    let borderStyle = '.5px solid black';
-    let devStyle = {
-        borderRight: borderStyle,
-        borderTop: borderStyle,
-        borderBottom: borderStyle,
-        borderLeft: borderStyle,
-    };
-
     const showPreviewTrackDetail =
         previewDiscogsRelease &&
         previewDiscogsRelease.id !== selectedDiscogsRelease?.id;
@@ -136,7 +128,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         <Grid.Col
                             span={{ base: 11, md: 6, lg: 1.5 }}
                             style={{
-                                ...devStyle,
                                 position: 'relative',
                                 zIndex: 1000,
                             }}
@@ -187,17 +178,11 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             </Box>
                         </Grid.Col>
 
-                        <Grid.Col
-                            span={{ base: 12, md: 6, lg: 10 }}
-                            style={devStyle}
-                        >
+                        <Grid.Col span={{ base: 12, md: 6, lg: 10 }}>
                             <Search />
                         </Grid.Col>
 
-                        <Grid.Col
-                            span={{ base: 12, md: 12, lg: 12 }}
-                            style={devStyle}
-                        >
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                             <TrackDetail
                                 selectedDiscogsRelease={selectedDiscogsRelease}
                             />
@@ -206,26 +191,17 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Box>
 
                 <Grid mb="sm">
-                    <Grid.Col
-                        span={{ base: 12, md: 12, lg: 12 }}
-                        style={devStyle}
-                    >
+                    <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                         <TrackProgress />
                     </Grid.Col>
                 </Grid>
 
                 <Grid mb="sm">
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 6 }}
-                        style={devStyle}
-                    >
+                    <Grid.Col span={{ base: 12, md: 6, lg: 6 }}>
                         <Volume />
                         <Controls />
                     </Grid.Col>
-                    <Grid.Col
-                        span={{ base: 12, md: 6, lg: 6 }}
-                        style={devStyle}
-                    ></Grid.Col>
+                    <Grid.Col span={{ base: 12, md: 6, lg: 6 }}></Grid.Col>
                 </Grid>
 
                 <Grid mb="sm">
@@ -238,10 +214,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {showPreviewTrackDetail && (
                     <Grid mb="sm">
-                        <Grid.Col
-                            span={{ base: 12, md: 12, lg: 12 }}
-                            style={devStyle}
-                        >
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                             <TrackDetail
                                 selectedDiscogsRelease={previewDiscogsRelease}
                                 preview={true}
@@ -252,10 +225,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {navKey === 'playlists' && (
                     <Grid mb="sm">
-                        <Grid.Col
-                            span={{ base: 12, md: 12, lg: 12 }}
-                            style={devStyle}
-                        >
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                             <Playlists />
                         </Grid.Col>
                     </Grid>
@@ -263,10 +233,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {playlistOpen && (
                     <Grid mb="sm">
-                        <Grid.Col
-                            span={{ base: 12, md: 12, lg: 12 }}
-                            style={devStyle}
-                        >
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                             <Playlist />
                         </Grid.Col>
                     </Grid>
@@ -281,16 +248,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         onOpenChange={setTracksOpen}
                     >
                         <Grid mb="sm">
-                            <Grid.Col
-                                span={{ base: 12, md: 6, lg: 4 }}
-                                style={devStyle}
-                            >
+                            <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
                                 <ReleaseVideos />
                             </Grid.Col>
-                            <Grid.Col
-                                span={{ base: 12, md: 6, lg: 8 }}
-                                style={devStyle}
-                            >
+                            <Grid.Col span={{ base: 12, md: 6, lg: 8 }}>
                                 <ReleaseDetail />
                             </Grid.Col>
                         </Grid>
