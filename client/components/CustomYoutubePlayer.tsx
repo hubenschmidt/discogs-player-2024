@@ -1,6 +1,4 @@
-import React, { useEffect, useRef, useContext, useState, FC } from 'react';
-import { ActionIcon, Group, Text, Tooltip } from '@mantine/core';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useEffect, useRef, useContext, FC } from 'react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlayerContext } from '../context/playerContext';
@@ -40,9 +38,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         selectedVideo,
         selectedRelease,
     } = discogsReleaseState;
-
-    // collapsed by default
-    const [collapsed, setCollapsed] = useState(true);
 
     const handleNextRelease = () => {
         if (!selectedRelease || !releases?.length) return;
@@ -84,12 +79,20 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         }
     };
 
-    const createPlayer = () => {
+    const createOrLoadPlayer = () => {
         if (!playerRef.current || !selectedVideo?.uri) return;
+        const videoId = extractYouTubeVideoId(selectedVideo.uri);
+
+        // If we already have a player, just load the new video
+        if (playerInstance.current?.loadVideoById) {
+            playerInstance.current.loadVideoById(videoId);
+            return;
+        }
+
         playerInstance.current = new window.YT.Player(playerRef.current, {
             height,
             width,
-            videoId: extractYouTubeVideoId(selectedVideo.uri),
+            videoId,
             playerVars: {
                 autoplay: 1,
                 controls: 0,
@@ -140,103 +143,40 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         }
     }, [queueIndex, queue, selectedVideo?.uri, dispatchDiscogsRelease]);
 
-    // load YT api & create player
+    // load YT api & init/reload player
     useEffect(() => {
         if (!window.YT || !window.YT.Player) {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             document.body.appendChild(tag);
-            window.onYouTubeIframeAPIReady = () => createPlayer();
+            window.onYouTubeIframeAPIReady = () => createOrLoadPlayer();
         } else {
-            createPlayer();
+            createOrLoadPlayer();
         }
         return () => playerInstance.current?.destroy?.();
-    }, [selectedVideo, width, height]);
-
-    const expandedH = height;
-    const collapsedH = '0px';
+    }, [selectedVideo?.uri, width, height]);
 
     return (
-        <div style={{ width, marginTop: 8 }}>
-            {/* Header bar with chevron (always visible) */}
-            <Group
-                justify="space-between"
-                align="center"
-                px="xs"
-                py={4}
-                style={{
-                    background: 'transparent',
-                    borderTop: '1px solid rgba(255,255,255,0.12)',
-                    borderRight: '1px solid rgba(255,255,255,0.12)',
-                    borderLeft: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 8,
-                }}
-            >
-                <Text fw={700} fz="lg" c="white">
-                    Video
-                </Text>
-                <Tooltip
-                    label={collapsed ? 'Show video' : 'Hide video'}
-                    withArrow
-                >
-                    <ActionIcon
-                        variant="light"
-                        radius="md"
-                        onClick={() => setCollapsed(c => !c)}
-                        aria-label={
-                            collapsed ? 'Expand video' : 'Collapse video'
-                        }
-                        title={collapsed ? 'Expand video' : 'Collapse video'}
-                        style={{ color: 'white' }}
-                    >
-                        {collapsed ? (
-                            <ChevronDown size={16} />
-                        ) : (
-                            <ChevronUp size={16} />
-                        )}
-                    </ActionIcon>
-                </Tooltip>
-            </Group>
+        <div style={{ position: 'relative', width, height }}>
+            {/* The YouTube player */}
+            <div ref={playerRef} style={{ width: '100%', height: '100%' }} />
 
-            {/* Collapsible body */}
+            {/* Click-blocking shield (prevents accidental clicks on the iframe) */}
             <div
+                aria-hidden="true"
+                tabIndex={-1}
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.preventDefault()}
+                onContextMenu={e => e.preventDefault()}
                 style={{
-                    width: '100%',
-                    height: collapsed ? collapsedH : expandedH,
-                    overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderTop: 'none',
-                    borderRadius: '0 0 8px 8px',
-                    background: '#000',
-                    transition: 'height 200ms ease',
-                    position: 'relative',
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 2,
+                    background: 'transparent',
+                    pointerEvents: 'auto',
+                    cursor: 'default',
                 }}
-            >
-                {/* The YouTube player */}
-                <div
-                    ref={playerRef}
-                    style={{ width: '100%', height: '100%' }}
-                />
-
-                {/* Click-blocking shield (only when expanded) */}
-                {!collapsed && (
-                    <div
-                        aria-hidden="true"
-                        tabIndex={-1}
-                        onClick={e => e.stopPropagation()}
-                        onMouseDown={e => e.preventDefault()}
-                        onContextMenu={e => e.preventDefault()}
-                        style={{
-                            position: 'absolute',
-                            inset: 0,
-                            zIndex: 2,
-                            background: 'transparent',
-                            pointerEvents: 'auto',
-                            cursor: 'default',
-                        }}
-                    />
-                )}
-            </div>
+            />
         </div>
     );
 };

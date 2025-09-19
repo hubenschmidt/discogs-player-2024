@@ -27,7 +27,7 @@ const Volume = () => {
             min={0}
             max={100}
             onChangeEnd={handleVolumeChange}
-            mb="10"
+            mb="8"
             classNames={classes}
         />
     ) : null;

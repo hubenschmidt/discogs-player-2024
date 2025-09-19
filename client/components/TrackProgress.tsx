@@ -92,7 +92,7 @@ const TrackProgress = () => {
 
     return (
         <div>
-            <Group justify="space-between" mb={4}>
+            <Group justify="space-between">
                 <Text size="sm" c="dimmed">
                     {fmt(value)}
                 </Text>

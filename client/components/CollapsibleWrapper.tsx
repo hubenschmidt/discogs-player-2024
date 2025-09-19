@@ -31,7 +31,14 @@ const CollapsibleWrapper: React.FC<Props> = ({
     const toggle = () => setOpen(!open);
 
     return (
-        <Box p="xs" style={{ background: '#0e0e0f', borderRadius: 8 }}>
+        <Box
+            p="xs"
+            style={{
+                background: '#0e0e0f',
+                borderRadius: 8,
+                marginTop: '8px',
+            }}
+        >
             <Group justify="space-between" align="center">
                 {title ? (
                     <Text fw={700} c="white" mb="5">

@@ -77,7 +77,6 @@ const Controls = () => {
         <Group
             className="player-controls"
             style={{ flexWrap: 'nowrap', alignItems: 'center' }}
-            mb="10px"
         >
             <ActionIcon color="transparent" onClick={handleRewind}>
                 <Rewind />
