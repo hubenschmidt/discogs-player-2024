@@ -162,6 +162,7 @@ export const getHistory = async (
     params: any,
 ): Promise<any> => {
     const qs = new URLSearchParams();
+    console.log(params.orderBy);
 
     if (params.page != null) qs.set('page', String(params.page));
     if (params.limit != null) qs.set('limit', String(params.limit));

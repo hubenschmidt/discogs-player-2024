@@ -34,7 +34,15 @@ const History: React.FC = () => {
     // server-driven controls
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(50);
-    const [sortBy, setSortBy] = useState('Played_At');
+    const [sortBy, setSortBy] = useState<
+        | 'playedAt'
+        | 'videoTitle'
+        | 'releaseTitle'
+        | 'artistName'
+        | 'genreName'
+        | 'styleName'
+    >('playedAt');
+
     const [direction, setDirection] = useState<'ASC' | 'DESC'>('DESC');
 
     const [data, setData] = useState<PageData<HistoryRow> | null>(null);
@@ -121,6 +129,8 @@ const History: React.FC = () => {
                 ),
                 visibleFrom: 'sm',
                 width: '20%',
+                sortable: true,
+                sortKey: 'artistName',
                 tdProps: {
                     style: {
                         whiteSpace: 'nowrap',
@@ -147,6 +157,8 @@ const History: React.FC = () => {
                 ),
                 visibleFrom: 'md',
                 width: '18%',
+                sortable: true,
+                sortKey: 'genreName',
                 tdProps: {
                     style: {
                         whiteSpace: 'nowrap',
@@ -173,6 +185,8 @@ const History: React.FC = () => {
                 ),
                 visibleFrom: 'md',
                 width: '18%',
+                sortable: true,
+                sortKey: 'styleName',
                 tdProps: {
                     style: {
                         whiteSpace: 'nowrap',
@@ -199,6 +213,7 @@ const History: React.FC = () => {
             sortBy={sortBy}
             sortDirection={direction}
             onSortChange={({ sortBy: sb, direction: dir }) => {
+                if (loading) return; // guard against double clicks during fetch
                 setSortBy(sb as typeof sortBy);
                 setDirection(dir);
                 setPage(1); // typically reset to page 1 when sort changes

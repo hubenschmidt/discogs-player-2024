@@ -73,15 +73,54 @@ export const createHistoryEntry = async (
 };
 
 export const getHistory = async (req: Request, user: any) => {
+    // Accept the same sort keys the frontend emits
     const { page, limit, offset, order, orderBy } = parsePaging(req, {
         defaultLimit: 50,
         maxLimit: 250,
-        defaultOrderBy: 'Played_At',
+        defaultOrderBy: 'playedAt', // <-- frontend default
         allowedOrderBy: {
-            Played_At: 'Played_At',
+            playedAt: 'playedAt',
+            videoTitle: 'videoTitle',
+            releaseTitle: 'releaseTitle',
+            artistName: 'artistName',
+            genreName: 'genreName',
+            styleName: 'styleName',
         },
         defaultOrder: 'DESC',
     });
+
+    // map UI keys -> Sequelize path order (must match "as" aliases above)
+    const ORDER_MAP: Record<string, any[]> = {
+        playedAt: [['Played_At', order]],
+        videoTitle: [[{ model: db.Video, as: 'Video' }, 'Title', order]],
+        releaseTitle: [[{ model: db.Release, as: 'Release' }, 'Title', order]],
+        artistName: [
+            [
+                { model: db.Release, as: 'Release' },
+                { model: db.Artist, as: 'Artists' },
+                'Name',
+                order,
+            ],
+        ],
+        genreName: [
+            [
+                { model: db.Release, as: 'Release' },
+                { model: db.Genre, as: 'Genres' },
+                'Name',
+                order,
+            ],
+        ],
+        styleName: [
+            [
+                { model: db.Release, as: 'Release' },
+                { model: db.Style, as: 'Styles' },
+                'Name',
+                order,
+            ],
+        ],
+    };
+
+    const orderClause = ORDER_MAP[orderBy] ?? ORDER_MAP.playedAt;
 
     const { count, rows } = await db.History.findAndCountAll({
         where: { User_Id: user.User_Id },
@@ -93,34 +132,37 @@ export const getHistory = async (req: Request, user: any) => {
             },
             {
                 model: db.Release,
-                attributes: ['Title'], // nested Release with alias
+                attributes: ['Title'],
                 include: [
                     {
                         model: db.Artist,
                         attributes: ['Name'],
-                        through: { attributes: [] }, // hide ReleaseArtist,
+                        through: { attributes: [] },
                     },
                     {
                         model: db.Label,
                         attributes: ['Name'],
-                        through: { attributes: [] }, // hide ReleaseLabel,
+                        through: { attributes: [] },
                     },
                     {
                         model: db.Genre,
                         attributes: ['Name'],
-                        through: { attributes: [] }, // hide ReleaseGenre,
+                        through: { attributes: [] },
                     },
                     {
                         model: db.Style,
                         attributes: ['Name'],
-                        through: { attributes: [] }, // hide ReleaseStyle,
+                        through: { attributes: [] },
                     },
                 ],
             },
         ],
-        offset: offset,
-        limit: limit,
-        order: [[orderBy, order]],
+        // Important when joining through many-to-many tables + using limit/offset
+        distinct: true,
+        subQuery: false,
+        offset,
+        limit,
+        order: orderClause,
     });
 
     return toPagedResponse(
