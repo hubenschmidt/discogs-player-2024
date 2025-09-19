@@ -78,7 +78,7 @@ const History: React.FC = () => {
                 render: r => <Text>{fmtTime(r.Played_At)}</Text>,
                 width: 200,
                 sortable: true,
-                sortKey: 'playedAt', // <- what we send to API
+                sortKey: 'playedAt',
             },
             {
                 header: <Text fw={700}>Video</Text>,
@@ -105,35 +105,81 @@ const History: React.FC = () => {
             },
             {
                 header: <Text fw={700}>Artists</Text>,
-                render: r =>
-                    (r.Release?.Artists ?? [])
-                        .map(a => a?.Name)
-                        .filter(Boolean)
-                        .join(', ') || '—',
+                render: r => (
+                    <Text
+                        lineClamp={1}
+                        title={(r.Release?.Artists ?? [])
+                            .map(a => a?.Name)
+                            .filter(Boolean)
+                            .join(', ')}
+                    >
+                        {(r.Release?.Artists ?? [])
+                            .map(a => a?.Name)
+                            .filter(Boolean)
+                            .join(', ') || '—'}
+                    </Text>
+                ),
                 visibleFrom: 'sm',
-            },
-            {
-                header: <Text fw={700}>Labels</Text>,
-                render: r =>
-                    (r.Release?.Labels ?? [])
-                        .map(l => l?.Name)
-                        .filter(Boolean)
-                        .join(', ') || '—',
-                visibleFrom: 'md',
-            },
-            {
-                header: <Text fw={700}>Genres / Styles</Text>,
-                render: r => {
-                    const g = (r.Release?.Genres ?? [])
-                        .map(x => x?.Name)
-                        .filter(Boolean);
-                    const s = (r.Release?.Styles ?? [])
-                        .map(x => x?.Name)
-                        .filter(Boolean);
-                    const txt = [...g, ...s].join(', ');
-                    return txt || '—';
+                width: '20%',
+                tdProps: {
+                    style: {
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    },
                 },
-                visibleFrom: 'lg',
+            },
+            {
+                header: <Text fw={700}>Genres</Text>,
+                render: r => (
+                    <Text
+                        lineClamp={1}
+                        title={(r.Release?.Genres ?? [])
+                            .map(g => g?.Name)
+                            .filter(Boolean)
+                            .join(', ')}
+                    >
+                        {(r.Release?.Genres ?? [])
+                            .map(g => g?.Name)
+                            .filter(Boolean)
+                            .join(', ') || '—'}
+                    </Text>
+                ),
+                visibleFrom: 'md',
+                width: '18%',
+                tdProps: {
+                    style: {
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    },
+                },
+            },
+            {
+                header: <Text fw={700}>Styles</Text>,
+                render: r => (
+                    <Text
+                        lineClamp={1}
+                        title={(r.Release?.Styles ?? [])
+                            .map(s => s?.Name)
+                            .filter(Boolean)
+                            .join(', ')}
+                    >
+                        {(r.Release?.Styles ?? [])
+                            .map(s => s?.Name)
+                            .filter(Boolean)
+                            .join(', ') || '—'}
+                    </Text>
+                ),
+                visibleFrom: 'md',
+                width: '18%',
+                tdProps: {
+                    style: {
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    },
+                },
             },
         ],
         [],
