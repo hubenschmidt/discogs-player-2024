@@ -277,7 +277,7 @@ const VinylShelf: FC = () => {
     };
 
     return (
-        <div className="vinyl-shelf-container" style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }}>
             {/* Overlay loader */}
             {isLoading && (
                 <Box
@@ -366,7 +366,9 @@ const VinylShelf: FC = () => {
                             >
                                 <ChevronLeft />
                             </ActionIcon>
-                            <Text c="white">{currentPage}</Text>
+                            <Text c="white" mt="10">
+                                {currentPage}
+                            </Text>
                             <ActionIcon
                                 onClick={handleNextPage}
                                 disabled={

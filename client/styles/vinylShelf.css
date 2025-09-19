@@ -1,13 +1,6 @@
 /* VinylShelf.css */
 
 /* Overall container with dark background and retro font */
-.vinyl-shelf-container {
-    position: relative; /* allows absolutely-positioned children */
-    width: 100%;
-    /* text-align: center; */
-    border-top: 3px solid #414040;
-    box-shadow: 0 0 15px rgba(#1a1a2e, 69, 96, 0.8);
-}
 
 /* Vinyl shelf container with a neon border and subtle chrome feel */
 .vinyl-shelf {
@@ -19,6 +12,7 @@
     padding: 20px;
     background: var(--surface-base);
     background-image: var(--surface-grad-radial), var(--surface-grad-linear);
+    border-radius: 4px;
 }
 
 /* Controls container that overlays the shelf */
@@ -108,15 +102,13 @@
 
 /* Pagination controls styled with neon accents */
 .shelf-pagination {
-    margin-top: 1px;
     display: grid;
     grid-auto-flow: column;
-    gap: 0.5rem;
     justify-content: center;
 }
 
 .shelf-pagination button {
-    margin: 10px 10px 10px 10px;
+    margin-top: 10px;
     background-color: transparent;
     color: #fff;
     cursor: pointer;
@@ -136,6 +128,7 @@
 
 .shelf-pagination select,
 .shelf-pagination input {
+    margin-top: 10px;
     margin-left: 5px;
     padding: 3px 6px;
     background-color: #222;
