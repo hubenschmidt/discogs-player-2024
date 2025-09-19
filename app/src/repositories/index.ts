@@ -135,42 +135,47 @@ export const getHistory = async (req: Request, user: any) => {
 
     const { count, rows } = await db.History.findAndCountAll({
         where: { User_Id: user.User_Id },
-        attributes: ['Played_At'],
+        attributes: ['History_Id', 'Played_At'],
         include: [
             {
                 model: db.Video,
+                as: 'Video',
                 attributes: ['URI', 'Title', 'Duration'],
             },
             {
                 model: db.Release,
+                as: 'Release',
                 attributes: ['Title'],
                 include: [
                     {
                         model: db.Artist,
+                        as: 'Artists',
                         attributes: ['Name'],
                         through: { attributes: [] },
                     },
                     {
                         model: db.Label,
+                        as: 'Labels',
                         attributes: ['Name'],
                         through: { attributes: [] },
                     },
                     {
                         model: db.Genre,
+                        as: 'Genres',
                         attributes: ['Name'],
                         through: { attributes: [] },
                     },
                     {
                         model: db.Style,
+                        as: 'Styles',
                         attributes: ['Name'],
                         through: { attributes: [] },
                     },
                 ],
             },
         ],
-        // Important when joining through many-to-many tables + using limit/offset
+        // Remove subQuery:false
         distinct: true,
-        subQuery: false,
         offset,
         limit,
         order: orderClause,

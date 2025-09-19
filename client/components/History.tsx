@@ -33,7 +33,7 @@ const History: React.FC = () => {
 
     // server-driven controls
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(50);
+    const [limit, setLimit] = useState(25);
     const [sortBy, setSortBy] = useState<
         | 'playedAt'
         | 'videoTitle'
@@ -91,7 +91,7 @@ const History: React.FC = () => {
                 sortKey: 'playedAt',
             },
             {
-                header: <Text fw={700}>Video</Text>,
+                header: <Text fw={700}>Track</Text>,
                 render: r => (
                     <Text lineClamp={1} title={r.Video?.Title ?? ''}>
                         {r.Video?.Title ?? '—'}
@@ -238,6 +238,7 @@ const History: React.FC = () => {
             pageValue={data?.currentPage ?? page}
             onPageChange={p => setPage(p)}
             pageSizeValue={data?.pageSize ?? limit}
+            pageSizeOptions={[5, 10, 25, 50, 100, 250]}
             onPageSizeChange={sz => {
                 setLimit(sz);
                 setPage(1); // reset to first page when size changes
