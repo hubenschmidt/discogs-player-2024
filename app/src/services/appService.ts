@@ -26,6 +26,11 @@ export const updatePlayHistory = async (req: Request) => {
     return { video, historyEntry };
 };
 
+export const getHistory = async (req: Request) => {
+    const user = await repos.getUser(req);
+    return await repos.getHistory(req, user);
+};
+
 export const createPlaylist = async (req: Request) => {
     const user = await repos.getUser(req);
 

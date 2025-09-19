@@ -1,6 +1,6 @@
 const db = require('../models');
 import { Request } from 'express';
-import { Op } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import { Transaction } from 'sequelize';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { parsePaging, toPagedResponse } from '../lib/pagination';
@@ -69,6 +69,46 @@ export const createHistoryEntry = async (
         Video_Id: video.Video_Id,
         Release_Id: release_id,
         Played_At: new Date(),
+    });
+};
+
+export const getHistory = async (req: Request, user: any) => {
+    return db.History.findAll({
+        where: { User_Id: user.User_Id },
+        attributes: ['Played_At'],
+        include: [
+            {
+                model: db.Video,
+                attributes: ['URI', 'Title', 'Duration'],
+            },
+            {
+                model: db.Release,
+                attributes: ['Title'], // nested Release with alias
+                include: [
+                    {
+                        model: db.Artist,
+                        attributes: ['Name'],
+                        through: { attributes: [] }, // hide ReleaseArtist,
+                    },
+                    {
+                        model: db.Label,
+                        attributes: ['Name'],
+                        through: { attributes: [] }, // hide ReleaseLabel,
+                    },
+                    {
+                        model: db.Genre,
+                        attributes: ['Name'],
+                        through: { attributes: [] }, // hide ReleaseGenre,
+                    },
+                    {
+                        model: db.Style,
+                        attributes: ['Name'],
+                        through: { attributes: [] }, // hide ReleaseStyle,
+                    },
+                ],
+            },
+        ],
+        order: [['Played_At', 'DESC']],
     });
 };
 

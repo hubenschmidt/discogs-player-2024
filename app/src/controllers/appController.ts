@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
+import { nextTick } from 'process';
 
 export const search = async (
     req: Request,
@@ -65,6 +66,20 @@ export const updatePlayHistory = async (
     try {
         const video = await appService.updatePlayHistory(req);
         res.status(200).json(video);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const getHistory = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const history = await appService.getHistory(req);
+        res.status(200).json(history);
     } catch (error) {
         console.error(error);
         next(error);
