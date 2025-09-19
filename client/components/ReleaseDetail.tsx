@@ -55,7 +55,7 @@ const ReleaseDetail: React.FC = () => {
     return (
         <Stack>
             <Group justify="space-between" align="center" mb="10px">
-                <Text fw={700} fz="lg" c="white">
+                <Text fw={700} c="white">
                     About
                 </Text>
             </Group>

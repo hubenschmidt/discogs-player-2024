@@ -23,7 +23,6 @@ const CollapsibleWrapper: React.FC<Props> = ({
             style={{
                 background: '#0e0e0f',
                 borderRadius: 8,
-                border: '1px solid rgba(255,255,255,0.08)',
             }}
         >
             <Group justify="space-between" align="center">

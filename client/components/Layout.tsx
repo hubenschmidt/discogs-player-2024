@@ -198,15 +198,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 </Box>
 
-                {/* Vinyl Shelf Section */}
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12 }}>
-                        <CollapsibleWrapper title="Collection" defaultOpen>
-                            <VinylShelf />
-                        </CollapsibleWrapper>
-                    </Grid.Col>
-                </Grid>
-
                 <Grid mb="sm">
                     <Grid.Col
                         span={{ base: 12, md: 12, lg: 12 }}
@@ -228,6 +219,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         span={{ base: 12, md: 6, lg: 6 }}
                         style={devStyle}
                     ></Grid.Col>
+                </Grid>
+
+                <Grid mb="sm">
+                    <Grid.Col span={{ base: 12 }}>
+                        <CollapsibleWrapper title="Collection" defaultOpen>
+                            <VinylShelf />
+                        </CollapsibleWrapper>
+                    </Grid.Col>
                 </Grid>
 
                 {showPreviewTrackDetail && (
@@ -268,20 +267,22 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Video Playlist Section */}
                 {selectedRelease && (
-                    <Grid mb="sm">
-                        <Grid.Col
-                            span={{ base: 12, md: 6, lg: 4 }}
-                            style={devStyle}
-                        >
-                            <ReleaseVideos />
-                        </Grid.Col>
-                        <Grid.Col
-                            span={{ base: 12, md: 6, lg: 8 }}
-                            style={devStyle}
-                        >
-                            <ReleaseDetail />
-                        </Grid.Col>
-                    </Grid>
+                    <CollapsibleWrapper title="Tracks" defaultOpen>
+                        <Grid mb="sm">
+                            <Grid.Col
+                                span={{ base: 12, md: 6, lg: 4 }}
+                                style={devStyle}
+                            >
+                                <ReleaseVideos />
+                            </Grid.Col>
+                            <Grid.Col
+                                span={{ base: 12, md: 6, lg: 8 }}
+                                style={devStyle}
+                            >
+                                <ReleaseDetail />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
                 )}
                 {/* YouTube Player Section */}
                 {selectedVideo && (

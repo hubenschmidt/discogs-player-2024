@@ -189,13 +189,8 @@ const ReleaseVideos = () => {
     }, [selectedDiscogsRelease?.id, playbackMode, selectedVideo?.uri]);
 
     return (
-        <Box>
+        <Box mt="21">
             <Stack>
-                <Group justify="space-between" align="center" mb="10px">
-                    <Text fw={700} fz="lg" c="white">
-                        Tracks
-                    </Text>
-                </Group>
                 {activeDiscogs?.videos.map((video: any, idx: number) => {
                     const isSelected = selectedVideo?.uri === video.uri;
 
