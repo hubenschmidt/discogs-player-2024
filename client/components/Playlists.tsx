@@ -7,7 +7,7 @@ import {
     Group,
     Stack,
     Text,
-    Box,
+    Divider,
     ActionIcon,
 } from '@mantine/core';
 import { UserContext } from '../context/userContext';
@@ -96,30 +96,35 @@ const Playlists = () => {
 
     return (
         <>
-            <Group align="center">
-                <Text fw={700} size="lg">
-                    Playlists
-                </Text>
-                <Button variant="light" onClick={() => setOpen(true)}>
-                    Create
-                </Button>
+            <Stack gap="xs">
+                <Group justify="space-between" align="center">
+                    <Text fw={700} size="lg">
+                        Playlists
+                    </Text>
+                    <Button
+                        mb="-10"
+                        variant="light"
+                        onClick={() => setOpen(true)}
+                    >
+                        Create
+                    </Button>
 
-                <ActionIcon
-                    ml="auto" // <- pushes this item to the far right
-                    variant="light"
-                    radius="md"
-                    size="lg"
-                    aria-label="Close playlists"
-                    onClick={() => handleClose(null)}
-                >
-                    <X size={18} />
-                </ActionIcon>
-            </Group>
+                    <ActionIcon
+                        ml="auto" // <- pushes this item to the far right
+                        variant="light"
+                        radius="md"
+                        size="lg"
+                        aria-label="Close playlists"
+                        onClick={() => handleClose(null)}
+                    >
+                        <X size={18} />
+                    </ActionIcon>
+                </Group>
+                <Divider my="xs" color="rgba(255,255,255,0.12)" />
+            </Stack>
 
             {playlists?.items?.length > 0 ? (
-                <Box>
-                    <PlaylistsTable />
-                </Box>
+                <PlaylistsTable />
             ) : (
                 <Text c="dimmed">No playlists yet</Text>
             )}

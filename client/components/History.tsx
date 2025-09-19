@@ -1,9 +1,11 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
-import { Text } from '@mantine/core';
+import { Text, Group, Stack, ActionIcon, Divider } from '@mantine/core';
+import { X } from 'lucide-react';
 import { getHistory } from '../api';
 import { UserContext } from '../context/userContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { DataTable, type Column, type PageData } from './DataTable';
+import { NavContext } from '../context/navContext';
 
 type HistoryRow = {
     Played_At: string;
@@ -36,6 +38,7 @@ const fmtDur = (s?: string) => {
 
 const History: React.FC = () => {
     const { userState } = useContext(UserContext);
+    const { dispatchNav } = useContext(NavContext);
     const bearerToken = useBearerToken();
 
     // server-driven controls
@@ -54,9 +57,12 @@ const History: React.FC = () => {
     >('playedAt');
 
     const [direction, setDirection] = useState<'ASC' | 'DESC'>('DESC');
-
     const [data, setData] = useState<PageData<HistoryRow> | null>(null);
     const [loading, setLoading] = useState(false);
+
+    const handleClose = () => {
+        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -254,36 +260,58 @@ const History: React.FC = () => {
     );
 
     return (
-        <DataTable<HistoryRow>
-            data={data}
-            columns={columns}
-            pageValue={data?.currentPage ?? page}
-            onPageChange={p => setPage(p)}
-            pageSizeValue={data?.pageSize ?? limit}
-            pageSizeOptions={[5, 10, 25, 50, 100, 250]}
-            onPageSizeChange={sz => {
-                setLimit(sz);
-                setPage(1); // reset to first page when size changes
-            }}
-            sortBy={sortBy}
-            sortDirection={direction}
-            onSortChange={({ sortBy: sb, direction: dir }) => {
-                if (loading) return; // guard against double clicks during fetch
-                setSortBy(sb as typeof sortBy);
-                setDirection(dir);
-                setPage(1); // typically reset to page 1 when sort changes
-            }}
-            emptyText={loading ? 'Loading…' : 'No history yet'}
-            tableStyle={{
-                tableLayout: 'fixed',
-                width: '100%',
-                backgroundColor: '#0e0e0f',
-                color: 'var(--mantine-color-white)',
-                border: 'transparent',
-                ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
-            }}
-            cellBorder="4px solid #141414"
-        />
+        <>
+            <Stack gap="xs">
+                <Group justify="space-between" align="center">
+                    <Text fw={700} fz="lg" c="white">
+                        History
+                    </Text>
+                    <ActionIcon
+                        variant="light"
+                        radius="md"
+                        size="lg"
+                        aria-label="Close history"
+                        onClick={handleClose}
+                        title="Close history"
+                    >
+                        <X size={18} />
+                    </ActionIcon>
+                </Group>
+
+                <Divider my="xs" color="rgba(255,255,255,0.12)" />
+            </Stack>
+
+            <DataTable<HistoryRow>
+                data={data}
+                columns={columns}
+                pageValue={data?.currentPage ?? page}
+                onPageChange={p => setPage(p)}
+                pageSizeValue={data?.pageSize ?? limit}
+                pageSizeOptions={[5, 10, 25, 50, 100, 250]}
+                onPageSizeChange={sz => {
+                    setLimit(sz);
+                    setPage(1); // reset to first page when size changes
+                }}
+                sortBy={sortBy}
+                sortDirection={direction}
+                onSortChange={({ sortBy: sb, direction: dir }) => {
+                    if (loading) return; // guard against double clicks during fetch
+                    setSortBy(sb as typeof sortBy);
+                    setDirection(dir);
+                    setPage(1); // typically reset to page 1 when sort changes
+                }}
+                emptyText={loading ? 'Loading…' : 'No history yet'}
+                tableStyle={{
+                    tableLayout: 'fixed',
+                    width: '100%',
+                    backgroundColor: '#0e0e0f',
+                    color: 'var(--mantine-color-white)',
+                    border: 'transparent',
+                    ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
+                }}
+                cellBorder="4px solid #141414"
+            />
+        </>
     );
 };
 
