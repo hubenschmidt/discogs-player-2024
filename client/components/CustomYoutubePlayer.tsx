@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useContext, FC } from 'react';
+import React, { useEffect, useRef, useContext, useState, FC } from 'react';
+import { Group } from '@mantine/core';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlayerContext } from '../context/playerContext';
@@ -38,6 +39,9 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         selectedVideo,
         selectedRelease,
     } = discogsReleaseState;
+
+    // collapsed by default
+    const [collapsed, setCollapsed] = useState(true);
 
     const handleNextRelease = () => {
         if (!selectedRelease || !releases?.length) return;
@@ -79,20 +83,12 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         }
     };
 
-    const createOrLoadPlayer = () => {
+    const createPlayer = () => {
         if (!playerRef.current || !selectedVideo?.uri) return;
-        const videoId = extractYouTubeVideoId(selectedVideo.uri);
-
-        // If we already have a player, just load the new video
-        if (playerInstance.current?.loadVideoById) {
-            playerInstance.current.loadVideoById(videoId);
-            return;
-        }
-
         playerInstance.current = new window.YT.Player(playerRef.current, {
             height,
             width,
-            videoId,
+            videoId: extractYouTubeVideoId(selectedVideo.uri),
             playerVars: {
                 autoplay: 1,
                 controls: 0,
@@ -143,40 +139,63 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         }
     }, [queueIndex, queue, selectedVideo?.uri, dispatchDiscogsRelease]);
 
-    // load YT api & init/reload player
+    // load YT api & create player
     useEffect(() => {
         if (!window.YT || !window.YT.Player) {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             document.body.appendChild(tag);
-            window.onYouTubeIframeAPIReady = () => createOrLoadPlayer();
+            window.onYouTubeIframeAPIReady = () => createPlayer();
         } else {
-            createOrLoadPlayer();
+            createPlayer();
         }
         return () => playerInstance.current?.destroy?.();
-    }, [selectedVideo?.uri, width, height]);
+    }, [selectedVideo, width, height]);
 
     return (
-        <div style={{ position: 'relative', width, height }}>
-            {/* The YouTube player */}
-            <div ref={playerRef} style={{ width: '100%', height: '100%' }} />
-
-            {/* Click-blocking shield (prevents accidental clicks on the iframe) */}
-            <div
-                aria-hidden="true"
-                tabIndex={-1}
-                onClick={e => e.stopPropagation()}
-                onMouseDown={e => e.preventDefault()}
-                onContextMenu={e => e.preventDefault()}
+        <div style={{ width }}>
+            {/* Header bar with chevron (always visible) */}
+            <Group
+                justify="space-between"
+                align="center"
+                px="xs"
+                py={4}
                 style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 2,
                     background: 'transparent',
-                    pointerEvents: 'auto',
-                    cursor: 'default',
                 }}
-            />
+            ></Group>
+            <div
+                style={{
+                    width: '100%',
+                    height: '430px',
+                    overflow: 'hidden',
+                    transition: 'height 200ms ease',
+                    position: 'relative',
+                }}
+            >
+                {/* The YouTube player */}
+                <div
+                    ref={playerRef}
+                    style={{ width: '100%', height: '100%' }}
+                />
+
+                {/* Click-blocking shield  */}
+                <div
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onClick={e => e.stopPropagation()}
+                    onMouseDown={e => e.preventDefault()}
+                    onContextMenu={e => e.preventDefault()}
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        zIndex: 2,
+                        background: 'transparent',
+                        pointerEvents: 'auto',
+                        cursor: 'default',
+                    }}
+                />
+            </div>
         </div>
     );
 };
