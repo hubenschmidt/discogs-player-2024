@@ -39,6 +39,7 @@ const History: React.FC = () => {
         | 'videoTitle'
         | 'releaseTitle'
         | 'artistName'
+        | 'labelName'
         | 'genreName'
         | 'styleName'
     >('playedAt');
@@ -112,7 +113,7 @@ const History: React.FC = () => {
                 sortKey: 'releaseTitle',
             },
             {
-                header: <Text fw={700}>Artists</Text>,
+                header: <Text fw={700}>Artist</Text>,
                 render: r => (
                     <Text
                         lineClamp={1}
@@ -140,7 +141,35 @@ const History: React.FC = () => {
                 },
             },
             {
-                header: <Text fw={700}>Genres</Text>,
+                header: <Text fw={700}>Label</Text>,
+                render: r => (
+                    <Text
+                        lineClamp={1}
+                        title={(r.Release?.Labels ?? [])
+                            .map(a => a?.Name)
+                            .filter(Boolean)
+                            .join(', ')}
+                    >
+                        {(r.Release?.Labels ?? [])
+                            .map(a => a?.Name)
+                            .filter(Boolean)
+                            .join(', ') || '—'}
+                    </Text>
+                ),
+                visibleFrom: 'sm',
+                width: '20%',
+                sortable: true,
+                sortKey: 'labelName',
+                tdProps: {
+                    style: {
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    },
+                },
+            },
+            {
+                header: <Text fw={700}>Genre</Text>,
                 render: r => (
                     <Text
                         lineClamp={1}
@@ -168,7 +197,7 @@ const History: React.FC = () => {
                 },
             },
             {
-                header: <Text fw={700}>Styles</Text>,
+                header: <Text fw={700}>Style</Text>,
                 render: r => (
                     <Text
                         lineClamp={1}

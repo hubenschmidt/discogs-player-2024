@@ -83,6 +83,7 @@ export const getHistory = async (req: Request, user: any) => {
             videoTitle: 'videoTitle',
             releaseTitle: 'releaseTitle',
             artistName: 'artistName',
+            labelName: 'labelName',
             genreName: 'genreName',
             styleName: 'styleName',
         },
@@ -96,8 +97,16 @@ export const getHistory = async (req: Request, user: any) => {
         releaseTitle: [[{ model: db.Release, as: 'Release' }, 'Title', order]],
         artistName: [
             [
-                { model: db.Release, as: 'Release' },
+                { model: db.Release, as: 'Release' }, // need the alias for it to work..
                 { model: db.Artist, as: 'Artists' },
+                'Name',
+                order,
+            ],
+        ],
+        labelName: [
+            [
+                { model: db.Release, as: 'Release' },
+                { model: db.Label, as: 'Labels' },
                 'Name',
                 order,
             ],
@@ -121,6 +130,7 @@ export const getHistory = async (req: Request, user: any) => {
     };
 
     const orderClause = ORDER_MAP[orderBy] ?? ORDER_MAP.playedAt;
+    console.log(orderClause);
 
     const { count, rows } = await db.History.findAndCountAll({
         where: { User_Id: user.User_Id },
