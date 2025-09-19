@@ -73,7 +73,17 @@ export const createHistoryEntry = async (
 };
 
 export const getHistory = async (req: Request, user: any) => {
-    return db.History.findAll({
+    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+        defaultLimit: 50,
+        maxLimit: 250,
+        defaultOrderBy: 'Played_At',
+        allowedOrderBy: {
+            Played_At: 'Played_At',
+        },
+        defaultOrder: 'DESC',
+    });
+
+    const { count, rows } = await db.History.findAndCountAll({
         where: { User_Id: user.User_Id },
         attributes: ['Played_At'],
         include: [
@@ -108,8 +118,17 @@ export const getHistory = async (req: Request, user: any) => {
                 ],
             },
         ],
-        order: [['Played_At', 'DESC']],
+        offset: offset,
+        limit: limit,
+        order: [[orderBy, order]],
     });
+
+    return toPagedResponse(
+        count,
+        page,
+        limit,
+        rows.map((r: any) => r.get({ plain: true })),
+    );
 };
 
 export const createPlaylist = async (req: Request, user: any, video?: any) => {
@@ -386,7 +405,6 @@ export const getVideo = async (req: Request) => {
 export const updateVideoPlayCount = async (req: Request, user: any) => {
     const { release_id } = req.params;
     const { uri, title, duration } = req.body;
-    console.log(title, 'video title');
 
     return db.sequelize.transaction(async (t: Transaction) => {
         const extractedUri = extractYouTubeVideoId(uri);

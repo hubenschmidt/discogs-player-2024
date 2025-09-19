@@ -159,8 +159,19 @@ export const updateVideoPlayCount = async (
 export const getHistory = async (
     username: string,
     token: BearerToken,
+    params: any,
 ): Promise<any> => {
-    const uri = `/api/app/${username}/history`;
+    const qs = new URLSearchParams();
+
+    if (params.page != null) qs.set('page', String(params.page));
+    if (params.limit != null) qs.set('limit', String(params.limit));
+    if (params.orderBy) qs.set('orderBy', params.orderBy);
+    if (params.order) qs.set('order', params.order);
+    if (params.q) qs.set('q', params.q);
+
+    const qsStr = qs.toString();
+    const uri = `/api/app/${username}/history${qsStr ? `?${qsStr}` : ''}`;
+
     const response: AxiosResponse<any> = await requestHandler(
         'GET',
         uri,
