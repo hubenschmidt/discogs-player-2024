@@ -123,8 +123,9 @@ const ReleaseDetail: React.FC = () => {
                             onClose={close}
                             centered
                             size="auto"
+                            zIndex={1000}
                         >
-                            <Modal.Overlay backgroundOpacity={0.65} blur={2} />
+                            <Modal.Overlay />
 
                             <Modal.Content
                                 style={{
@@ -139,6 +140,32 @@ const ReleaseDetail: React.FC = () => {
                                         backgroundColor: '#141516',
                                     }}
                                 >
+                                    <Group>
+                                        <Text c="dimmed">
+                                            a:{' '}
+                                            {Artists.length
+                                                ? Artists.map(
+                                                      (a: any) => a?.Name,
+                                                  )
+                                                      .filter(Boolean)
+                                                      .join(', ')
+                                                : '—'}
+                                        </Text>
+                                        <Text c="dimmed">
+                                            r: {Title || 'Untitled'}
+                                        </Text>
+                                        <Text c="dimmed">
+                                            #:{' '}
+                                            {Labels.length
+                                                ? Labels.map((l: any) =>
+                                                      [l?.Name, l?.Cat_No]
+                                                          .filter(Boolean)
+                                                          .join(' • '),
+                                                  ).join(', ')
+                                                : '—'}
+                                        </Text>
+                                    </Group>
+
                                     <Modal.CloseButton
                                         style={{ color: 'white' }}
                                     />
