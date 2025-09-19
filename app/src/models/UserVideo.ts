@@ -31,5 +31,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         },
     );
 
+    UserVideo.associate = (models: any) => {
+        UserVideo.belongsTo(models.Video, { foreignKey: 'Video_Id' });
+        UserVideo.belongsTo(models.User, { foreignKey: 'User_Id' });
+    };
+
     return UserVideo;
 };

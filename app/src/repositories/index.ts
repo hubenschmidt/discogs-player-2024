@@ -80,6 +80,7 @@ export const getHistory = async (req: Request, user: any) => {
         defaultOrderBy: 'playedAt', // <-- frontend default
         allowedOrderBy: {
             playedAt: 'playedAt',
+            playCount: 'playCount',
             videoTitle: 'videoTitle',
             releaseTitle: 'releaseTitle',
             duration: 'duration',
@@ -94,12 +95,20 @@ export const getHistory = async (req: Request, user: any) => {
     // map UI keys -> Sequelize path order (must match "as" aliases above)
     const ORDER_MAP: Record<string, any[]> = {
         playedAt: [['Played_At', order]],
+        playCount: [
+            [
+                { model: db.Video, as: 'Video' },
+                { model: db.UserVideo, as: 'UserVideo' },
+                'Play_Count',
+                order,
+            ],
+        ],
         videoTitle: [[{ model: db.Video, as: 'Video' }, 'Title', order]],
         duration: [[{ model: db.Video, as: 'Video' }, 'Duration', order]],
         releaseTitle: [[{ model: db.Release, as: 'Release' }, 'Title', order]],
         artistName: [
             [
-                { model: db.Release, as: 'Release' }, // need the alias for it to work..
+                { model: db.Release, as: 'Release' },
                 { model: db.Artist, as: 'Artists' },
                 'Name',
                 order,
@@ -143,9 +152,9 @@ export const getHistory = async (req: Request, user: any) => {
                 attributes: ['Video_Id', 'URI', 'Title', 'Duration'],
                 include: [
                     {
-                        model: db.User,
-                        attributes: ['User_Id'],
-                        through: { attributes: ['Video_Id', 'Play_Count'] },
+                        model: db.UserVideo,
+                        attributes: ['Play_Count'],
+                        where: { User_Id: user.User_Id }, // constrain to the current user
                     },
                 ],
             },
@@ -181,24 +190,19 @@ export const getHistory = async (req: Request, user: any) => {
                 ],
             },
         ],
-        // Remove subQuery:false
+        subQuery: false,
         distinct: true,
         offset,
         limit,
         order: orderClause,
     });
 
-    // Lift Play_Count onto Video, then remove the nested Users array
-    const items = rows.map((r: any) => {
-        const plain = r.get({ plain: true });
-        const nestedCount = plain?.Video?.Users?.[0]?.UserVideo?.Play_Count;
-        if (plain?.Video) {
-            plain.Video.Play_Count = nestedCount ?? null; // or ?? 0 if you prefer
-            delete plain.Video.Users;
-        }
-        return plain;
-    });
-    return toPagedResponse(count, page, limit, items);
+    return toPagedResponse(
+        count,
+        page,
+        limit,
+        rows.map((r: any) => r.get({ plain: true })),
+    );
 };
 
 export const createPlaylist = async (req: Request, user: any, video?: any) => {

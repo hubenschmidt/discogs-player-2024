@@ -7,7 +7,14 @@ import { DataTable, type Column, type PageData } from './DataTable';
 
 type HistoryRow = {
     Played_At: string;
-    Video?: { URI?: string; Title?: string; Duration?: string };
+    Video?: {
+        URI?: string;
+        Title?: string;
+        Duration?: string;
+        UserVideo?: {
+            Play_Count: string;
+        };
+    };
     Release?: {
         Title?: string;
         Artists?: { Name?: string }[];
@@ -36,6 +43,7 @@ const History: React.FC = () => {
     const [limit, setLimit] = useState(25);
     const [sortBy, setSortBy] = useState<
         | 'playedAt'
+        | 'playCount'
         | 'videoTitle'
         | 'duration'
         | 'releaseTitle'
@@ -89,6 +97,20 @@ const History: React.FC = () => {
                 width: 200,
                 sortable: true,
                 sortKey: 'playedAt',
+            },
+            {
+                header: <Text fw={700}>Count</Text>,
+                render: r => (
+                    <Text
+                        lineClamp={1}
+                        title={r.Video?.UserVideo?.Play_Count ?? ''}
+                    >
+                        {r.Video?.UserVideo?.Play_Count ?? '—'}
+                    </Text>
+                ),
+                width: 120,
+                sortable: true,
+                sortKey: 'playCount',
             },
             {
                 header: <Text fw={700}>Track</Text>,

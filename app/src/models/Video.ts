@@ -43,6 +43,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
             foreignKey: 'Video_Id',
             otherKey: 'Playlist_Id',
         });
+
+        Video.hasOne(models.UserVideo, { foreignKey: 'Video_Id' });
     };
 
     return Video;
