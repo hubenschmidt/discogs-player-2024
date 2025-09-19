@@ -4,14 +4,14 @@
 
 .track::before {
     background-color: black;
-    border: 2px solid white;
+    border: 2px solid gray;
 }
 
 .bar {
-    background-color: white;
+    background-color: gray;
 }
 
 .thumb {
-    border: 2px solid white;
+    border: 2px solid gray;
     background-color: black;
 }

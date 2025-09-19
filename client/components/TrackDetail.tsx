@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Text, Group } from '@mantine/core';
+import { Box, Text, Group, Paper } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
 
 interface TrackDetailProps {
@@ -26,42 +26,57 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
     if (!selectedDiscogsRelease) return null;
 
     return (
-        <Box m="0 3.5 3 3">
-            <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>
-                <Box className="track-detail-content">
-                    {!preview && (
-                        <Text className="track-detail-text" lh={1}>
-                            ♪{' '}
-                            {scrubTitle(controls?.videoTitle) ||
-                                'No title available'}
-                        </Text>
-                    )}
+        <Box>
+            <Paper
+                radius="md" // lg/xl if you want more roundness
+                p="xs"
+                className={preview ? 'preview' : undefined}
+                style={{ background: '#0e0e0f' }}
+            >
+                <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>
+                    <Box className="track-detail-content">
+                        {!preview && (
+                            <Text className="track-detail-text" lh={1}>
+                                ♪{' '}
+                                {scrubTitle(controls?.videoTitle) ||
+                                    'No title available'}
+                            </Text>
+                        )}
 
-                    {/* Artist */}
-                    <Group gap={2}>
-                        <Text className="track-detail-text" lh={1}>
-                            a: {selectedDiscogsRelease?.artists_sort}
-                        </Text>
-                    </Group>
+                        {/* Artist */}
+                        <Group gap={2}>
+                            <Text className="track-detail-text" lh={1}>
+                                a: {selectedDiscogsRelease?.artists_sort}
+                            </Text>
+                        </Group>
 
-                    {/* Release */}
-                    <Group gap={2}>
-                        <Text className="track-detail-text" lh={1}>
-                            r: {selectedDiscogsRelease?.title} (
-                            {selectedDiscogsRelease?.year})
-                        </Text>
-                    </Group>
+                        {/* Release */}
+                        <Group gap={2}>
+                            <Text className="track-detail-text" lh={1}>
+                                r: {selectedDiscogsRelease?.title} (
+                                {selectedDiscogsRelease?.year})
+                            </Text>
+                        </Group>
 
-                    {/* Label + Catalog number */}
-                    <Group gap={2}>
-                        <Text className="track-detail-text" lh={1} style={{}}>
-                            #:{' '}
-                            {selectedDiscogsRelease?.labels?.[0]?.catno || ''} (
-                            {selectedDiscogsRelease?.labels?.[0]?.name || ''})
-                        </Text>
-                    </Group>
+                        {/* Label + Catalog number */}
+                        <Group gap={2}>
+                            <Text
+                                className="track-detail-text"
+                                lh={1}
+                                style={{}}
+                            >
+                                #:{' '}
+                                {selectedDiscogsRelease?.labels?.[0]?.catno ||
+                                    ''}{' '}
+                                (
+                                {selectedDiscogsRelease?.labels?.[0]?.name ||
+                                    ''}
+                                )
+                            </Text>
+                        </Group>
+                    </Box>
                 </Box>
-            </Box>
+            </Paper>
         </Box>
     );
 };

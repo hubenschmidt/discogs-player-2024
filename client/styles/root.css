@@ -34,8 +34,26 @@ b {
     font-weight: 600; /* or 700 */
 }
 
-html {
-    font-variation-settings: 'wght' var(--fw-base);
+:root {
+    --surface-base: #58554b;
+    --surface-grad-radial: radial-gradient(
+        120% 80% at 50% -20%,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0) 60%
+    );
+    --surface-grad-linear: linear-gradient(
+        135deg,
+        #58554b 0%,
+        #3f3c35 35%,
+        #2b2a27 70%,
+        #0e0e0f 100%
+    );
+}
+
+/* optional utility */
+.surface-etched {
+    background: var(--surface-base);
+    background-image: var(--surface-grad-radial), var(--surface-grad-linear);
 }
 
 .pg-control {
@@ -111,11 +129,13 @@ html {
 }
 
 .track-detail-box {
-    background-color: #1e1e1f;
+    border-radius: 5px;
     color: white;
     padding: 8px 2px 8px 4px;
     margin-left: -2px;
     margin-right: -2px;
+    background: var(--surface-base);
+    background-image: var(--surface-grad-radial), var(--surface-grad-linear);
 }
 
 .track-detail-box.preview {
