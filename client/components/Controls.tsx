@@ -19,10 +19,6 @@ const Controls = () => {
     );
     const { selectedVideo, continuousPlay, isPlaying, playbackMode } =
         discogsReleaseState;
-
-    const [playbackRate, setPlaybackRate] = useState('1');
-    const [availableRates, setAvailableRates] = useState<number[]>([]);
-
     const isPlaylist = playbackMode === 'playlist';
 
     // (optional) ensure loop is OFF in playlist mode to avoid confusion
@@ -34,15 +30,6 @@ const Controls = () => {
             });
         }
     }, [isPlaylist]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        if (controls?.getAvailablePlaybackRates) {
-            const rates = controls.getAvailablePlaybackRates();
-            if (Array.isArray(rates) && rates.length) setAvailableRates(rates);
-        }
-    }, [controls]);
-
-    useEffect(() => setPlaybackRate('1'), [selectedVideo]);
 
     const handlePlay = () => {
         controls?.play();
@@ -66,11 +53,6 @@ const Controls = () => {
         }
     };
 
-    const handlePlaybackRateChange = (value: string) => {
-        setPlaybackRate(value);
-        controls?.setPlaybackRate(parseFloat(value));
-    };
-
     const handleNextVideo = () => {
         dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
         dispatchDiscogsRelease({
@@ -92,9 +74,11 @@ const Controls = () => {
     if (!selectedVideo) return null;
 
     return (
-        <Group style={{ flexWrap: 'nowrap', alignItems: 'center' }} mb="10px">
-            {/* playback rate select... unchanged */}
-
+        <Group
+            className="player-controls"
+            style={{ flexWrap: 'nowrap', alignItems: 'center' }}
+            mb="10px"
+        >
             <ActionIcon color="transparent" onClick={handleRewind}>
                 <Rewind />
             </ActionIcon>

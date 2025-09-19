@@ -44,12 +44,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const {
         previewDiscogsRelease,
+        previewRelease,
         selectedDiscogsRelease,
         selectedRelease,
         selectedVideo,
     } = discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
+    const [tracksOpen, setTracksOpen] = React.useState(true);
 
     let borderStyle = '.5px solid black';
     let devStyle = {
@@ -75,6 +77,11 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 .catch(err => console.log(err));
         }
     }, [userState.username]);
+
+    // whenever selectedRelease changes (or becomes truthy), force it open
+    React.useEffect(() => {
+        if (selectedRelease) setTracksOpen(true);
+    }, [selectedRelease?.Release_Id, previewRelease?.Release_Id]); // include preview if you want: , previewRelease?.Release_Id
 
     if (userState.notAuthed) {
         return <DiscogsAuthPrompt />;
@@ -267,7 +274,12 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Video Playlist Section */}
                 {selectedRelease && (
-                    <CollapsibleWrapper title="Tracks" defaultOpen>
+                    <CollapsibleWrapper
+                        title="Tracks"
+                        defaultOpen
+                        isOpen={tracksOpen}
+                        onOpenChange={setTracksOpen}
+                    >
                         <Grid mb="sm">
                             <Grid.Col
                                 span={{ base: 12, md: 6, lg: 4 }}

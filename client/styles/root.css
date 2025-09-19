@@ -176,3 +176,10 @@ body {
     outline: 2px solid #6cf;
     background: rgba(108, 204, 255, 0.08);
 }
+
+.player-controls .mantine-ActionIcon-root {
+    transition: background-color 120ms ease;
+}
+.player-controls .mantine-ActionIcon-root:hover {
+    background-color: rgba(111, 111, 111, 0.9);
+}

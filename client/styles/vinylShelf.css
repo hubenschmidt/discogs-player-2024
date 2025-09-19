@@ -5,7 +5,6 @@
     position: relative; /* allows absolutely-positioned children */
     width: 100%;
     /* text-align: center; */
-    background: #000000;
     border-top: 3px solid #414040;
     box-shadow: 0 0 15px rgba(#1a1a2e, 69, 96, 0.8);
 }
@@ -137,6 +136,9 @@
 .shelf-pagination button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+.shelf-pagination .mantine-ActionIcon-root:hover {
+    background-color: rgba(111, 111, 111, 0.9); /* highlight on hover */
 }
 
 .shelf-pagination span {

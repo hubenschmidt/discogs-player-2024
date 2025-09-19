@@ -1,30 +1,37 @@
-import React, { useState, type ReactNode } from 'react';
-import { Box, Group, Text, ActionIcon, Collapse, Divider } from '@mantine/core';
+import React from 'react';
+import { Box, Group, Text, ActionIcon, Collapse } from '@mantine/core';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 type Props = {
     title?: string;
     defaultOpen?: boolean;
-    children: ReactNode;
-    rightExtras?: ReactNode; // optional extra controls in header
+    isOpen?: boolean; // controlled
+    onOpenChange?: (v: boolean) => void; // controlled
+    children: React.ReactNode;
+    rightExtras?: React.ReactNode;
 };
 
 const CollapsibleWrapper: React.FC<Props> = ({
     title,
     defaultOpen = true,
+    isOpen,
+    onOpenChange,
     children,
     rightExtras,
 }) => {
-    const [open, setOpen] = useState(defaultOpen);
+    // internal state only used when NOT controlled
+    const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+
+    const open = isOpen ?? internalOpen;
+    const setOpen = (v: boolean) => {
+        if (isOpen === undefined) setInternalOpen(v); // uncontrolled path
+        onOpenChange?.(v); // notify parent if controlled
+    };
+
+    const toggle = () => setOpen(!open);
 
     return (
-        <Box
-            p="xs"
-            style={{
-                background: '#0e0e0f',
-                borderRadius: 8,
-            }}
-        >
+        <Box p="xs" style={{ background: '#0e0e0f', borderRadius: 8 }}>
             <Group justify="space-between" align="center">
                 {title ? (
                     <Text fw={700} c="white" mb="5">
@@ -42,7 +49,7 @@ const CollapsibleWrapper: React.FC<Props> = ({
                         aria-label={
                             open ? 'Collapse section' : 'Expand section'
                         }
-                        onClick={() => setOpen(o => !o)}
+                        onClick={toggle}
                     >
                         {open ? (
                             <ChevronUp size={18} />
