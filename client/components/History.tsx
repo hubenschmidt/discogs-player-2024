@@ -37,6 +37,7 @@ const History: React.FC = () => {
     const [sortBy, setSortBy] = useState<
         | 'playedAt'
         | 'videoTitle'
+        | 'duration'
         | 'releaseTitle'
         | 'artistName'
         | 'labelName'
@@ -103,7 +104,9 @@ const History: React.FC = () => {
             {
                 header: <Text fw={700}>Duration</Text>,
                 render: r => fmtDur(r.Video?.Duration),
-                width: 90,
+                width: 120,
+                sortable: true,
+                sortKey: 'duration',
             },
             {
                 header: <Text fw={700}>Release</Text>,

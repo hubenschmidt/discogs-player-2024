@@ -82,6 +82,7 @@ export const getHistory = async (req: Request, user: any) => {
             playedAt: 'playedAt',
             videoTitle: 'videoTitle',
             releaseTitle: 'releaseTitle',
+            duration: 'duration',
             artistName: 'artistName',
             labelName: 'labelName',
             genreName: 'genreName',
@@ -94,6 +95,7 @@ export const getHistory = async (req: Request, user: any) => {
     const ORDER_MAP: Record<string, any[]> = {
         playedAt: [['Played_At', order]],
         videoTitle: [[{ model: db.Video, as: 'Video' }, 'Title', order]],
+        duration: [[{ model: db.Video, as: 'Video' }, 'Duration', order]],
         releaseTitle: [[{ model: db.Release, as: 'Release' }, 'Title', order]],
         artistName: [
             [
@@ -130,7 +132,6 @@ export const getHistory = async (req: Request, user: any) => {
     };
 
     const orderClause = ORDER_MAP[orderBy] ?? ORDER_MAP.playedAt;
-    console.log(orderClause);
 
     const { count, rows } = await db.History.findAndCountAll({
         where: { User_Id: user.User_Id },
