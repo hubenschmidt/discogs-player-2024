@@ -29,6 +29,7 @@ import TrackProgress from './TrackProgress';
 import { NavContext } from '../context/navContext';
 import ReleaseDetail from './ReleaseDetail';
 import CollapsibleWrapper from './CollapsibleWrapper';
+import History from './History';
 
 type Props = {
     children?: ReactNode;
@@ -219,6 +220,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                 selectedDiscogsRelease={previewDiscogsRelease}
                                 preview={true}
                             />
+                        </Grid.Col>
+                    </Grid>
+                )}
+
+                {navKey === 'history' && (
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                            <History />
                         </Grid.Col>
                     </Grid>
                 )}

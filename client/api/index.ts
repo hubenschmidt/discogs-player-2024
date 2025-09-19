@@ -156,6 +156,20 @@ export const updateVideoPlayCount = async (
     return response.data;
 };
 
+export const getHistory = async (
+    username: string,
+    token: BearerToken,
+): Promise<any> => {
+    const uri = `/api/app/${username}/history`;
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        token,
+    );
+    return response.data;
+};
+
 export type OrderDir = 'ASC' | 'DESC';
 
 export type PaginationParams = {
