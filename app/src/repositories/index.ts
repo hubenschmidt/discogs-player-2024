@@ -573,6 +573,41 @@ export const getUser = async (req: Request) => {
     return userEntry?.get();
 };
 
+function parseStringList(input: unknown): string[] | null {
+    if (input == null) return null;
+
+    // If repeated query keys: ?genre=a&genre=b
+    if (Array.isArray(input)) {
+        return input
+            .flatMap(v => String(v).split(',')) // also accept comma-separated
+            .map(s => s.trim().replace(/^['"]|['"]$/g, '')) // strip quotes
+            .filter(Boolean);
+    }
+
+    if (typeof input === 'string') {
+        const trimmed = input.trim();
+
+        // Optional: support JSON-ish arrays like "['blues','jazz']" or '["blues","jazz"]'
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+            try {
+                const arr = JSON.parse(trimmed.replace(/'/g, '"'));
+                if (Array.isArray(arr)) {
+                    return arr.map(s => String(s).trim()).filter(Boolean);
+                }
+            } catch {
+                /* fall through to comma split */
+            }
+        }
+
+        return trimmed
+            .split(',')
+            .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+            .filter(Boolean);
+    }
+
+    return null;
+}
+
 export const getCollection = async (req: Request) => {
     try {
         const { page, limit, offset, order, orderBy } = parsePaging(req, {
@@ -590,13 +625,9 @@ export const getCollection = async (req: Request) => {
             defaultOrder: 'DESC',
         });
 
-        const { username, genre, style } = req.params;
-
-        // Resolve single or multiple genres and styles
-        const resolvedGenres =
-            genre && genre !== ':genre' ? genre.split(',') : null;
-        const resolvedStyles =
-            style && style !== ':style' ? style.split(',') : null;
+        const { username } = req.params;
+        const genresQ = parseStringList(req.query.genre);
+        const stylesQ = parseStringList(req.query.style);
 
         // Fetch the user and their collections
         const user = await db.User.findOne({
@@ -622,9 +653,9 @@ export const getCollection = async (req: Request) => {
                 },
                 {
                     model: db.Genre,
-                    ...(resolvedGenres && {
+                    ...(genresQ?.length && {
                         where: {
-                            Name: { [Op.in]: resolvedGenres }, // Filter by an array of genres
+                            Name: { [Op.in]: genresQ }, // Filter by an array of genres
                         },
                         required: true,
                     }),
@@ -633,9 +664,9 @@ export const getCollection = async (req: Request) => {
                 },
                 {
                     model: db.Style,
-                    ...(resolvedStyles && {
+                    ...(stylesQ?.length && {
                         where: {
-                            Name: { [Op.in]: resolvedStyles }, // Filter by an array of styles
+                            Name: { [Op.in]: stylesQ }, // Filter by an array of styles
                         },
                         required: true,
                     }),

@@ -1,5 +1,5 @@
 // components/Explorer.tsx
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     Paper,
     Tabs,
@@ -17,16 +17,9 @@ import { ExplorerContext } from '../context/explorerContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
 
-const normalize = (s = '') =>
-    s
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-
 const filterList = (list: string[], q: string) => {
-    const n = normalize(q);
-    if (!n) return list;
-    return list.filter(v => normalize(v).includes(n));
+    const n = q.toLowerCase();
+    return list.filter(v => v.toLowerCase().includes(n));
 };
 
 const Explorer: React.FC = () => {
@@ -38,7 +31,6 @@ const Explorer: React.FC = () => {
     const [genreQ, setGenreQ] = useState('');
     const [styleQ, setStyleQ] = useState('');
 
-    // load once per user
     useEffect(() => {
         if (!userState?.username) return;
         getExplorer(userState.username, bearerToken)
@@ -53,14 +45,8 @@ const Explorer: React.FC = () => {
     const genresFilter: string[] = explorerState?.genresFilter ?? [];
     const stylesFilter: string[] = explorerState?.stylesFilter ?? [];
 
-    const filteredGenres = useMemo(
-        () => filterList(genres, genreQ),
-        [genres, genreQ],
-    );
-    const filteredStyles = useMemo(
-        () => filterList(styles, styleQ),
-        [styles, styleQ],
-    );
+    const filteredGenres = filterList(genres, genreQ);
+    const filteredStyles = filterList(styles, styleQ);
 
     const toggleFilter = (kind: 'genres' | 'styles', name: string) => {
         const selected = (

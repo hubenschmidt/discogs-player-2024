@@ -89,12 +89,6 @@ export const getCollection = async (
     } = params;
 
     let uri = `/api/app/collection/${username}`;
-    if (genre) {
-        uri += `/${genre}`;
-    }
-    if (style) {
-        uri += `/${style}`;
-    }
 
     const queryParams = new URLSearchParams();
     if (page !== undefined) queryParams.append('page', page.toString());
@@ -107,6 +101,8 @@ export const getCollection = async (
         queryParams.append('releaseId', releaseId.toString());
     if (labelId !== undefined)
         queryParams.append('labelId', labelId.toString());
+    if (genre !== undefined) queryParams.append('genre', genre.toString());
+    if (style !== undefined) queryParams.append('style', style.toString());
 
     const queryString = queryParams.toString();
     if (queryString) {

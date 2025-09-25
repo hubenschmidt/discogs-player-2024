@@ -11,6 +11,7 @@ import { SearchContext } from '../context/searchContext';
 import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { PlaylistContext } from '../context/playlistContext';
+import { ExplorerContext } from '../context/explorerContext';
 
 const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
@@ -26,6 +27,8 @@ const VinylShelf: FC = () => {
     const { navState, dispatchNav } = useContext(NavContext);
     const { playlistOpen } = navState;
     const { searchSelection, shelfCollectionOverride } = searchState;
+    const { explorerState } = useContext(ExplorerContext);
+    const { genresFilter, stylesFilter } = explorerState;
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // keeps odd # so center is a single record
@@ -88,6 +91,12 @@ const VinylShelf: FC = () => {
             ...(searchSelection?.Release_Id && {
                 releaseId: searchSelection.Release_Id,
             }),
+            ...(genresFilter && {
+                genre: genresFilter,
+            }),
+            ...(stylesFilter && {
+                style: stylesFilter,
+            }),
         };
 
         let aborted = false;
@@ -126,6 +135,8 @@ const VinylShelf: FC = () => {
         bearerToken,
         userState.username,
         dispatchCollection,
+        genresFilter,
+        stylesFilter,
     ]);
 
     // ---------- fetch playlist when playlist is open ----------
