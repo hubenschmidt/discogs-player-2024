@@ -968,35 +968,77 @@ export const addToPlaylist = async (req: Request) => {
     });
 };
 
+type NameRow = { Name: string };
+
 export const getExplorer = async (req: Request) => {
     const { username } = req.params;
-    // Fetch the user and their collections
+
+    // Fetch user + their collection id first
     const user = await db.User.findOne({
         where: { Username: username },
-        include: [{ model: db.Collection }],
+        attributes: ['User_Id'],
+        include: [{ model: db.Collection, attributes: ['Collection_Id'] }],
     });
-    // Fetch releases with pagination and optional genre and style filtering
-    const collection = await db.Release.findAll({
+
+    const collectionId = user?.Collection?.Collection_Id;
+    if (!collectionId) {
+        return { Genres: [], Styles: [] };
+    }
+
+    const whereCollection = { Collection_Id: collectionId };
+
+    // DISTINCT Genres for releases in the user's collection
+    const genres = (await db.Genre.findAll({
+        attributes: ['Name'],
         include: [
             {
-                model: db.Collection,
-                where: {
-                    Collection_Id: user.Collection.Collection_Id,
-                },
+                model: db.Release,
                 attributes: [],
-            },
-            {
-                model: db.Genre,
-                attributes: ['Name'],
-                through: { attributes: [] },
-            },
-            {
-                model: db.Style,
-                attributes: ['Name'],
-                through: { attributes: [] },
+                required: true, // inner join
+                through: { attributes: [] }, // hide join cols
+                include: [
+                    {
+                        model: db.Collection,
+                        attributes: [],
+                        required: true, // inner join
+                        through: { attributes: [] },
+                        where: whereCollection,
+                    },
+                ],
             },
         ],
-        attributes: ['Release_Id'],
-    });
-    return collection;
+        group: ['Genre.Name'], // distinct by name
+        order: [['Name', 'ASC']],
+        raw: true,
+    })) as NameRow[];
+
+    // DISTINCT Styles for releases in the user's collection
+    const styles = (await db.Style.findAll({
+        attributes: ['Name'],
+        include: [
+            {
+                model: db.Release,
+                attributes: [],
+                required: true,
+                through: { attributes: [] },
+                include: [
+                    {
+                        model: db.Collection,
+                        attributes: [],
+                        required: true,
+                        through: { attributes: [] },
+                        where: whereCollection,
+                    },
+                ],
+            },
+        ],
+        group: ['Style.Name'],
+        order: [['Name', 'ASC']],
+        raw: true,
+    })) as NameRow[];
+
+    return {
+        Genres: genres.map(g => g.Name),
+        Styles: styles.map(s => s.Name),
+    };
 };
