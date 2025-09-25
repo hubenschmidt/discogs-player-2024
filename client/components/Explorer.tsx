@@ -25,6 +25,7 @@ const filterList = (list: string[], q: string) => {
 const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
+    const { genresFilter, stylesFilter } = explorerState;
     const bearerToken = useBearerToken();
 
     const [tab, setTab] = useState<'genres' | 'styles'>('genres');
@@ -33,17 +34,26 @@ const Explorer: React.FC = () => {
 
     useEffect(() => {
         if (!userState?.username) return;
-        getExplorer(userState.username, bearerToken)
+
+        const params: any = {
+            username: userState.username,
+            ...(genresFilter && {
+                genre: genresFilter,
+            }),
+            ...(stylesFilter && {
+                style: stylesFilter,
+            }),
+        };
+
+        getExplorer(params, bearerToken)
             .then(res =>
                 dispatchExplorer({ type: 'SET_EXPLORER', payload: res }),
             )
             .catch(console.error);
-    }, [userState?.username, bearerToken, dispatchExplorer]);
+    }, [userState?.username, bearerToken, genresFilter, stylesFilter]);
 
     const genres = explorerState?.Genres ?? [];
     const styles = explorerState?.Styles ?? [];
-    const genresFilter: string[] = explorerState?.genresFilter ?? [];
-    const stylesFilter: string[] = explorerState?.stylesFilter ?? [];
 
     const filteredGenres = filterList(genres, genreQ);
     const filteredStyles = filterList(styles, styleQ);

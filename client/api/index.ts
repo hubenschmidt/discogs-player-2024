@@ -295,8 +295,19 @@ export const getPlaylist = async (
     return response.data;
 };
 
-export const getExplorer = async (username: string, token: BearerToken) => {
-    const uri = `/api/app/${username}/explorer`;
+export const getExplorer = async (params: any, token: BearerToken) => {
+    const { username, genre, style } = params;
+
+    let uri = `/api/app/${username}/explorer`;
+    const queryParams = new URLSearchParams();
+
+    if (genre !== undefined) queryParams.append('genre', genre.toString());
+    if (style !== undefined) queryParams.append('style', style.toString());
+
+    const queryString = queryParams.toString();
+    if (queryString) {
+        uri += `?${queryString}`;
+    }
 
     const response: AxiosResponse<any> = await requestHandler(
         'GET',

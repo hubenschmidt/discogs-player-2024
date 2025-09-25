@@ -1025,12 +1025,7 @@ export const getExplorer = async (req: Request) => {
         raw: true,
     })) as NameRow[];
 
-    // 3) DISTINCT Styles, optionally filtered by:
-    //    - req.query.style (stylesQ): only those styles
-    //    - req.query.genre (genresQ): only styles linked to those genres
-    const styleWhere = stylesQ?.length
-        ? { Name: { [Op.in]: stylesQ } }
-        : undefined;
+    // 3) DISTINCT Styles, optionally filtered by req.query.genre (genresQ): only styles linked to those genres
 
     // Conditionally include Genre under Release only if genresQ present
     const releaseNestedIncludes: any[] = [
@@ -1055,7 +1050,7 @@ export const getExplorer = async (req: Request) => {
 
     const styles = (await db.Style.findAll({
         attributes: ['Name'],
-        where: styleWhere,
+
         include: [
             {
                 model: db.Release,
