@@ -298,3 +298,16 @@ export const getPlaylist = async (
     );
     return response.data;
 };
+
+export const getExplorer = async (username: string, token: BearerToken) => {
+    const uri = `/api/app/${username}/explorer`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        token,
+    );
+
+    return response.data;
+};

@@ -30,6 +30,7 @@ import { NavContext } from '../context/navContext';
 import ReleaseDetail from './ReleaseDetail';
 import CollapsibleWrapper from './CollapsibleWrapper';
 import History from './History';
+import Explorer from './Explorer';
 
 type Props = {
     children?: ReactNode;
@@ -236,6 +237,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     <Grid mb="sm">
                         <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                             <Playlists />
+                        </Grid.Col>
+                    </Grid>
+                )}
+
+                {navKey === 'explorer' && (
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                            <Explorer />
                         </Grid.Col>
                     </Grid>
                 )}
