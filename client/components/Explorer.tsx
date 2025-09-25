@@ -260,21 +260,6 @@ const Explorer: React.FC = () => {
                     </Tabs.List>
 
                     <Tabs.Panel value="genres" pt="sm">
-                        <TextInput
-                            placeholder="Search genres"
-                            value={genreQ}
-                            onChange={e => setGenreQ(e.currentTarget.value)}
-                            leftSection={<SearchIcon size={16} />}
-                            radius="md"
-                            size="md"
-                            styles={{
-                                input: {
-                                    backgroundColor: 'transparent',
-                                    color: 'white',
-                                    borderColor: 'white',
-                                },
-                            }}
-                        />
                         <Box mt="xs">
                             {renderChips(filteredGenres, 'genres')}
                         </Box>

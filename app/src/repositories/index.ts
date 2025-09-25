@@ -972,7 +972,7 @@ export const addToPlaylist = async (req: Request) => {
     });
 };
 
-type NameRow = { Name: string };
+type ExplorerRow = { Name: string; Year?: string };
 
 const parseStringList = (input: any): string[] | null => {
     if (input == null) return null;
@@ -989,6 +989,9 @@ const parseStringList = (input: any): string[] | null => {
     return null;
 };
 
+type NameRow = { Name: string };
+type YearRow = { Year: number | string };
+
 export const getExplorer = async (req: Request) => {
     const { username } = req.params;
     const genresQ = parseStringList(req.query.genre); // e.g. ['Electronic']
@@ -1002,39 +1005,12 @@ export const getExplorer = async (req: Request) => {
 
     const collectionId = user?.Collection?.Collection_Id;
     if (!collectionId) {
-        return { Genres: [], Styles: [] };
+        return { Years: [], Genres: [], Styles: [] };
     }
 
     const whereCollection = { Collection_Id: collectionId };
 
-    // 2) DISTINCT Genres for releases in the user's collection
-    const genres = (await db.Genre.findAll({
-        attributes: ['Name'],
-        include: [
-            {
-                model: db.Release,
-                attributes: [],
-                required: true, // inner join
-                through: { attributes: [] },
-                include: [
-                    {
-                        model: db.Collection,
-                        attributes: [],
-                        required: true, // inner join
-                        through: { attributes: [] },
-                        where: whereCollection,
-                    },
-                ],
-            },
-        ],
-        group: ['Genre.Name'],
-        order: [['Name', 'ASC']],
-        raw: true,
-    })) as NameRow[];
-
-    // 3) DISTINCT Styles, optionally filtered by req.query.genre (genresQ): only styles linked to those genres
-
-    // Conditionally include Genre under Release only if genresQ present
+    // Build the nested includes we'll reuse (optionally constrain by Genre)
     const releaseNestedIncludes: any[] = [
         {
             model: db.Collection,
@@ -1049,22 +1025,57 @@ export const getExplorer = async (req: Request) => {
         releaseNestedIncludes.push({
             model: db.Genre,
             attributes: [],
-            required: true, // ensures we only get releases with these genres
+            required: true, // only releases that have these genres
             through: { attributes: [] },
             where: { Name: { [Op.in]: genresQ } },
         });
     }
 
+    // 2) DISTINCT Years for releases in the user's collection (optionally filtered by genresQ)
+    const years = (await db.Release.findAll({
+        attributes: ['Year'], // 👈 only the grouped column
+        where: { Year: { [Op.not]: null } }, // optional: skip null years
+        include: releaseNestedIncludes,
+        group: ['Release.Year'],
+        order: [['Year', 'ASC']],
+        raw: true,
+    })) as YearRow[];
+
+    // 3) DISTINCT Genres for releases in the user's collection
+    const genres = (await db.Genre.findAll({
+        attributes: ['Name'],
+        include: [
+            {
+                model: db.Release,
+                attributes: [],
+                required: true, // inner join
+                through: { attributes: [] },
+                include: [
+                    {
+                        model: db.Collection,
+                        attributes: [],
+                        required: true,
+                        through: { attributes: [] },
+                        where: whereCollection,
+                    },
+                ],
+            },
+        ],
+        group: ['Genre.Name'],
+        order: [['Name', 'ASC']],
+        raw: true,
+    })) as NameRow[];
+
+    // 4) DISTINCT Styles (optionally filtered by genresQ)
     const styles = (await db.Style.findAll({
         attributes: ['Name'],
-
         include: [
             {
                 model: db.Release,
                 attributes: [],
                 required: true,
                 through: { attributes: [] },
-                include: releaseNestedIncludes,
+                include: releaseNestedIncludes, // 👈 same conditional genre filter
             },
         ],
         group: ['Style.Name'],
@@ -1073,6 +1084,7 @@ export const getExplorer = async (req: Request) => {
     })) as NameRow[];
 
     return {
+        Years: years.map(y => y.Year),
         Genres: genres.map(g => g.Name),
         Styles: styles.map(s => s.Name),
     };
