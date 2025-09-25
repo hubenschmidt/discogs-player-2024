@@ -3,8 +3,48 @@ export const SET_FILTER = 'SET_FILTER';
 export const UNSET_FILTER = 'UNSET_FILTER';
 export const CLEAR_FILTER = 'CLEAR_FILTER';
 
+const FILTER_KEYS = ['genresFilter', 'stylesFilter', 'yearsFilter'];
+
+const isFilterKey = k => FILTER_KEYS.includes(String(k ?? '').trim());
+const valFrom = p => String(p?.value ?? p?.name ?? p?.label ?? '').trim();
+
+const setExplorer = (state, payload) => ({ ...state, ...payload });
+
+const setFilter = (state, payload) => {
+    const key = String(payload?.key ?? '').trim();
+    const value = valFrom(payload);
+    if (!isFilterKey(key) || !value) return state;
+
+    const prev = state[key] ?? [];
+    if (prev.includes(value)) return state;
+    return { ...state, [key]: [...prev, value] };
+};
+
+const unSetFilter = (state, payload) => {
+    const key = String(payload?.key ?? '').trim();
+    const value = valFrom(payload);
+    if (!isFilterKey(key) || !value) return state;
+
+    const prev = state[key] ?? [];
+    return { ...state, [key]: prev.filter(x => x !== value) };
+};
+
+const clearFilter = (state, payload) => {
+    if (!payload) {
+        return {
+            ...state,
+            genresFilter: [],
+            stylesFilter: [],
+            yearsFilter: [],
+        };
+    }
+    const key = String(payload?.key ?? '').trim();
+    if (!isFilterKey(key)) return state;
+    return { ...state, [key]: [] };
+};
+
 export default initialState => {
-    return (state, action) => {
+    return (state = initialState, action) => {
         switch (action.type) {
             case SET_EXPLORER:
                 return setExplorer(state, action.payload);
@@ -18,50 +58,4 @@ export default initialState => {
                 return state;
         }
     };
-};
-
-const normKind = k => {
-    const s = (k ?? '').toLowerCase();
-    return s.startsWith('style') ? 'styles' : 'genres';
-};
-
-const valFrom = p => (p.name ?? p.value ?? '').trim();
-
-const setExplorer = (state, payload) => {
-    return {
-        ...state,
-        ...payload,
-    };
-};
-
-const setFilter = (state, payload) => {
-    const kind = normKind(payload.kind ?? payload.label);
-    const value = valFrom(payload);
-    if (!value) return state;
-
-    const key = kind === 'genres' ? 'genresFilter' : 'stylesFilter';
-    const prev = state[key] ?? [];
-    if (prev.includes(value)) return state;
-
-    return { ...state, [key]: [...prev, value] };
-};
-
-const unSetFilter = (state, payload) => {
-    const kind = normKind(payload.kind ?? payload.label);
-    const value = valFrom(payload);
-    if (!value) return state;
-
-    const key = kind === 'genres' ? 'genresFilter' : 'stylesFilter';
-    const prev = state[key] ?? [];
-    return { ...state, [key]: prev.filter(x => x !== value) };
-};
-
-const clearFilter = (state, payload) => {
-    if (!payload) {
-        return { ...state, genresFilter: [], stylesFilter: [] };
-    }
-    const kind = normKind(payload.kind ?? payload.label);
-    return kind === 'genres'
-        ? { ...state, genresFilter: [] }
-        : { ...state, stylesFilter: [] };
 };

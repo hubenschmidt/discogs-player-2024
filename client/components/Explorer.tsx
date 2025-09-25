@@ -11,14 +11,14 @@ import {
     Box,
     Text,
     ActionIcon,
-    Divider, // 👈 added
+    Divider,
 } from '@mantine/core';
 import { Search as SearchIcon, X } from 'lucide-react';
 import { UserContext } from '../context/userContext';
 import { ExplorerContext } from '../context/explorerContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
-import { NavContext } from '../context/navContext'; // 👈 added
+import { NavContext } from '../context/navContext';
 
 const filterList = (list: string[], q: string) => {
     const n = q.toLowerCase();
@@ -28,7 +28,7 @@ const filterList = (list: string[], q: string) => {
 const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
-    const { dispatchNav } = useContext(NavContext); // 👈 added
+    const { dispatchNav } = useContext(NavContext);
     const { genresFilter, stylesFilter } = explorerState;
     const bearerToken = useBearerToken();
 
@@ -63,18 +63,27 @@ const Explorer: React.FC = () => {
     const filteredGenres = filterList(genres, genreQ);
     const filteredStyles = filterList(styles, styleQ);
 
-    const toggleFilter = (kind: 'genres' | 'styles', name: string) => {
-        const selected = (
-            kind === 'genres' ? genresFilter : stylesFilter
-        ).includes(name);
+    // use explicit keys only
+    type FilterKey = 'genresFilter' | 'stylesFilter' | 'yearsFilter';
+
+    const toggleFilter = (key: FilterKey, name: string) => {
+        const selectedList =
+            key === 'genresFilter'
+                ? genresFilter
+                : key === 'stylesFilter'
+                ? stylesFilter
+                : explorerState.yearsFilter ?? [];
+
+        const selected = selectedList.includes(name);
+
         dispatchExplorer({
-            type: selected ? `UNSET_FILTER` : `SET_FILTER`,
-            payload: { kind, name },
+            type: selected ? 'UNSET_FILTER' : 'SET_FILTER',
+            payload: { key, name },
         });
     };
 
-    const clearKind = (kind: 'genres' | 'styles') => {
-        dispatchExplorer({ type: `CLEAR_FILTER`, payload: { kind } });
+    const clearKind = (key: FilterKey) => {
+        dispatchExplorer({ type: 'CLEAR_FILTER', payload: { key } });
     };
 
     const clearAll = () => {
@@ -97,7 +106,7 @@ const Explorer: React.FC = () => {
                                 variant="outline"
                                 radius="sm"
                                 style={{ cursor: 'pointer' }}
-                                onClick={() => clearKind('genres')}
+                                onClick={() => clearKind('genresFilter')}
                                 title="Clear genres"
                             >
                                 Clear genres
@@ -108,7 +117,7 @@ const Explorer: React.FC = () => {
                                 variant="outline"
                                 radius="sm"
                                 style={{ cursor: 'pointer' }}
-                                onClick={() => clearKind('styles')}
+                                onClick={() => clearKind('stylesFilter')}
                                 title="Clear styles"
                             >
                                 Clear styles
@@ -138,7 +147,7 @@ const Explorer: React.FC = () => {
                                     variant="subtle"
                                     onClick={e => {
                                         e.stopPropagation();
-                                        toggleFilter('genres', g);
+                                        toggleFilter('genresFilter', g);
                                     }}
                                     aria-label={`Remove ${g}`}
                                     title="Remove"
@@ -148,7 +157,7 @@ const Explorer: React.FC = () => {
                                 </ActionIcon>
                             }
                             style={{ cursor: 'pointer' }}
-                            onClick={() => toggleFilter('genres', g)}
+                            onClick={() => toggleFilter('genresFilter', g)}
                             title={g}
                         >
                             {g}
@@ -165,7 +174,7 @@ const Explorer: React.FC = () => {
                                     variant="subtle"
                                     onClick={e => {
                                         e.stopPropagation();
-                                        toggleFilter('styles', s);
+                                        toggleFilter('stylesFilter', s);
                                     }}
                                     aria-label={`Remove ${s}`}
                                     title="Remove"
@@ -175,7 +184,7 @@ const Explorer: React.FC = () => {
                                 </ActionIcon>
                             }
                             style={{ cursor: 'pointer' }}
-                            onClick={() => toggleFilter('styles', s)}
+                            onClick={() => toggleFilter('stylesFilter', s)}
                             title={s}
                         >
                             {s}
@@ -186,9 +195,13 @@ const Explorer: React.FC = () => {
         );
     };
 
-    const renderChips = (items: string[], kind: 'genres' | 'styles') => {
+    const renderChips = (items: string[], key: FilterKey) => {
         const selected = new Set(
-            kind === 'genres' ? genresFilter : stylesFilter,
+            key === 'genresFilter'
+                ? genresFilter
+                : key === 'stylesFilter'
+                ? stylesFilter
+                : explorerState.yearsFilter ?? [],
         );
 
         return (
@@ -204,7 +217,7 @@ const Explorer: React.FC = () => {
                                 radius="sm"
                                 style={{ cursor: 'pointer' }}
                                 title={`${isActive ? 'Remove' : 'Add'} ${name}`}
-                                onClick={() => toggleFilter(kind, name)}
+                                onClick={() => toggleFilter(key, name)}
                             >
                                 {name}
                             </Badge>
@@ -261,7 +274,7 @@ const Explorer: React.FC = () => {
 
                     <Tabs.Panel value="genres" pt="sm">
                         <Box mt="xs">
-                            {renderChips(filteredGenres, 'genres')}
+                            {renderChips(filteredGenres, 'genresFilter')}
                         </Box>
                     </Tabs.Panel>
 
@@ -282,7 +295,7 @@ const Explorer: React.FC = () => {
                             }}
                         />
                         <Box mt="xs">
-                            {renderChips(filteredStyles, 'styles')}
+                            {renderChips(filteredStyles, 'stylesFilter')}
                         </Box>
                     </Tabs.Panel>
                 </Tabs>
