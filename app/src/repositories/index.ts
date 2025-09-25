@@ -617,6 +617,7 @@ export const getCollection = async (req: Request) => {
                     where: {
                         Collection_Id: user.Collection.Collection_Id,
                     },
+                    attributes: [],
                     through: { attributes: [] },
                 },
                 {
@@ -627,6 +628,7 @@ export const getCollection = async (req: Request) => {
                         },
                         required: true,
                     }),
+                    attributes: ['Name'],
                     through: { attributes: [] },
                 },
                 {
@@ -637,6 +639,7 @@ export const getCollection = async (req: Request) => {
                         },
                         required: true,
                     }),
+                    attributes: ['Name'],
                     through: { attributes: [] },
                 },
                 {
@@ -646,6 +649,7 @@ export const getCollection = async (req: Request) => {
                             Artist_Id: { [Op.in]: [req.query.artistId] },
                         },
                     }),
+                    attributes: ['Artist_Id', 'Name'],
                     through: { attributes: [] },
                 },
                 {
@@ -655,6 +659,7 @@ export const getCollection = async (req: Request) => {
                             Label_Id: { [Op.in]: [req.query.labelId] },
                         },
                     }),
+                    attributes: ['Label_Id', 'Name', 'Cat_No'],
                     through: { attributes: [] },
                 },
             ],
