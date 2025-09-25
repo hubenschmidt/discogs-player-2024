@@ -3,6 +3,23 @@ export const SET_FILTER = 'SET_FILTER';
 export const UNSET_FILTER = 'UNSET_FILTER';
 export const CLEAR_FILTER = 'CLEAR_FILTER';
 
+export default initialState => {
+    return (state, action) => {
+        switch (action.type) {
+            case SET_EXPLORER:
+                return setExplorer(state, action.payload);
+            case SET_FILTER:
+                return setFilter(state, action.payload);
+            case UNSET_FILTER:
+                return unSetFilter(state, action.payload);
+            case CLEAR_FILTER:
+                return clearFilter(state, action.payload);
+            default:
+                return state;
+        }
+    };
+};
+
 const valFrom = p => String(p?.value ?? p?.name ?? '').trim();
 
 const setExplorer = (state, payload) => ({ ...state, ...payload });
@@ -35,21 +52,4 @@ const clearFilter = (state, payload) => {
     }
     const key = String(payload?.key ?? '').trim();
     return { ...state, [key]: [] };
-};
-
-export default initialState => {
-    return (state = initialState, action) => {
-        switch (action.type) {
-            case SET_EXPLORER:
-                return setExplorer(state, action.payload);
-            case SET_FILTER:
-                return setFilter(state, action.payload);
-            case UNSET_FILTER:
-                return unSetFilter(state, action.payload);
-            case CLEAR_FILTER:
-                return clearFilter(state, action.payload);
-            default:
-                return state;
-        }
-    };
 };
