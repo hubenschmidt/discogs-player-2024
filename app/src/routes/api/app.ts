@@ -10,6 +10,7 @@ import {
     getPlaylists,
     getPlaylist,
     getHistory,
+    getExplorer,
 } from '../../controllers/appController';
 
 export const router: Router = Router();
@@ -24,5 +25,6 @@ router.post('/:username/playlist/add', addToPlaylist);
 router.get('/:username/playlist/all', getPlaylists);
 router.get('/:username/playlist/:playlistId', getPlaylist);
 router.get('/:username/history', getHistory);
+router.get('/:username/explorer', getExplorer);
 
 export default router;

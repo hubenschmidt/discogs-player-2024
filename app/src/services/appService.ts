@@ -48,8 +48,7 @@ export const getPlaylists = async (req: Request) => {
 };
 
 export const addToPlaylist = async (req: Request) => {
-    const user = await repos.getUser(req);
-    const entry = await repos.addToPlaylist(req, user);
+    const entry = await repos.addToPlaylist(req);
     return entry;
 };
 
@@ -57,4 +56,9 @@ export const getPlaylist = async (req: Request) => {
     const user = await getUser(req);
     const playlist = await repos.getPlaylist(req, user);
     return playlist;
+};
+
+export const getExplorer = async (req: Request) => {
+    const explorer = await repos.getExplorer(req);
+    return explorer;
 };

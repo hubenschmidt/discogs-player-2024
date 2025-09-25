@@ -931,7 +931,7 @@ export const search = async (req: Request) => {
     return [];
 };
 
-export const addToPlaylist = async (req: Request, user: any) => {
+export const addToPlaylist = async (req: Request) => {
     const { playlistId, uri } = req.body;
     const extractedUri = extractYouTubeVideoId(uri);
 
@@ -961,4 +961,37 @@ export const addToPlaylist = async (req: Request, user: any) => {
             video: video.get ? video.get({ plain: true }) : video,
         };
     });
+};
+
+export const getExplorer = async (req: Request) => {
+    const { username } = req.params;
+    // Fetch the user and their collections
+    const user = await db.User.findOne({
+        where: { Username: username },
+        include: [{ model: db.Collection }],
+    });
+    // Fetch releases with pagination and optional genre and style filtering
+    const collection = await db.Release.findAll({
+        include: [
+            {
+                model: db.Collection,
+                where: {
+                    Collection_Id: user.Collection.Collection_Id,
+                },
+                attributes: [],
+            },
+            {
+                model: db.Genre,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Style,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+        ],
+        attributes: ['Release_Id'],
+    });
+    return collection;
 };

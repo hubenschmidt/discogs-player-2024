@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
-import { nextTick } from 'process';
 
 export const search = async (
     req: Request,
@@ -136,6 +135,20 @@ export const getPlaylist = async (
     try {
         const playlist = await appService.getPlaylist(req);
         res.status(200).json(playlist);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const getExplorer = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const explorer = await appService.getExplorer(req);
+        res.status(200).json(explorer);
     } catch (error) {
         console.error(error);
         next(error);
