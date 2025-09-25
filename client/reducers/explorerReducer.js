@@ -3,17 +3,13 @@ export const SET_FILTER = 'SET_FILTER';
 export const UNSET_FILTER = 'UNSET_FILTER';
 export const CLEAR_FILTER = 'CLEAR_FILTER';
 
-const FILTER_KEYS = ['genresFilter', 'stylesFilter', 'yearsFilter'];
-
-const isFilterKey = k => FILTER_KEYS.includes(String(k ?? '').trim());
-const valFrom = p => String(p?.value ?? p?.name ?? p?.label ?? '').trim();
+const valFrom = p => String(p?.value ?? p?.name ?? '').trim();
 
 const setExplorer = (state, payload) => ({ ...state, ...payload });
 
 const setFilter = (state, payload) => {
     const key = String(payload?.key ?? '').trim();
     const value = valFrom(payload);
-    if (!isFilterKey(key) || !value) return state;
 
     const prev = state[key] ?? [];
     if (prev.includes(value)) return state;
@@ -23,7 +19,6 @@ const setFilter = (state, payload) => {
 const unSetFilter = (state, payload) => {
     const key = String(payload?.key ?? '').trim();
     const value = valFrom(payload);
-    if (!isFilterKey(key) || !value) return state;
 
     const prev = state[key] ?? [];
     return { ...state, [key]: prev.filter(x => x !== value) };
@@ -39,7 +34,6 @@ const clearFilter = (state, payload) => {
         };
     }
     const key = String(payload?.key ?? '').trim();
-    if (!isFilterKey(key)) return state;
     return { ...state, [key]: [] };
 };
 
