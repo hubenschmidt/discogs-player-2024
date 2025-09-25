@@ -983,7 +983,6 @@ const parseStringList = (input: any): string[] | null => {
 
 export const getExplorer = async (req: Request) => {
     const { username } = req.params;
-    const stylesQ = parseStringList(req.query.style); // e.g. ['House','Techno']
     const genresQ = parseStringList(req.query.genre); // e.g. ['Electronic']
 
     // 1) Fetch user + their collection id first
