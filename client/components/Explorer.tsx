@@ -2,6 +2,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
     Paper,
+    Stack,
     Tabs,
     TextInput,
     ScrollArea,
@@ -10,12 +11,14 @@ import {
     Box,
     Text,
     ActionIcon,
+    Divider, // 👈 added
 } from '@mantine/core';
 import { Search as SearchIcon, X } from 'lucide-react';
 import { UserContext } from '../context/userContext';
 import { ExplorerContext } from '../context/explorerContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
+import { NavContext } from '../context/navContext'; // 👈 added
 
 const filterList = (list: string[], q: string) => {
     const n = q.toLowerCase();
@@ -25,6 +28,7 @@ const filterList = (list: string[], q: string) => {
 const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
+    const { dispatchNav } = useContext(NavContext); // 👈 added
     const { genresFilter, stylesFilter } = explorerState;
     const bearerToken = useBearerToken();
 
@@ -32,17 +36,18 @@ const Explorer: React.FC = () => {
     const [genreQ, setGenreQ] = useState('');
     const [styleQ, setStyleQ] = useState('');
 
+    const handleClose = () => {
+        // 👈 added
+        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+    };
+
     useEffect(() => {
         if (!userState?.username) return;
 
         const params: any = {
             username: userState.username,
-            ...(genresFilter && {
-                genre: genresFilter,
-            }),
-            ...(stylesFilter && {
-                style: stylesFilter,
-            }),
+            ...(genresFilter && { genre: genresFilter }),
+            ...(stylesFilter && { style: stylesFilter }),
         };
 
         getExplorer(params, bearerToken)
@@ -216,58 +221,88 @@ const Explorer: React.FC = () => {
     };
 
     return (
-        <Paper p="sm" radius="md" style={{ background: '#0e0e0f' }}>
-            {renderSelected()}
+        <Stack>
+            {/* Header with close button — mirrors History */}
+            <Group justify="space-between" align="center">
+                <Text fw={700} fz="lg" c="white">
+                    Explorer
+                </Text>
+                <ActionIcon
+                    variant="light"
+                    radius="md"
+                    size="lg"
+                    aria-label="Close explorer"
+                    onClick={handleClose}
+                    title="Close explorer"
+                >
+                    <X size={18} />
+                </ActionIcon>
+            </Group>
+            <Divider my="xs" color="rgba(255,255,255,0.12)" />
 
-            <Tabs
-                value={tab}
-                onChange={t => setTab((t as 'genres' | 'styles') ?? 'genres')}
-                keepMounted={false}
-            >
-                <Tabs.List grow>
-                    <Tabs.Tab value="genres">Genres ({genres.length})</Tabs.Tab>
-                    <Tabs.Tab value="styles">Styles ({styles.length})</Tabs.Tab>
-                </Tabs.List>
+            <Paper p="sm" radius="md" style={{ background: '#0e0e0f' }}>
+                {renderSelected()}
 
-                <Tabs.Panel value="genres" pt="sm">
-                    <TextInput
-                        placeholder="Search genres"
-                        value={genreQ}
-                        onChange={e => setGenreQ(e.currentTarget.value)}
-                        leftSection={<SearchIcon size={16} />}
-                        radius="md"
-                        size="md"
-                        styles={{
-                            input: {
-                                backgroundColor: 'transparent',
-                                color: 'white',
-                                borderColor: 'white',
-                            },
-                        }}
-                    />
-                    <Box mt="xs">{renderChips(filteredGenres, 'genres')}</Box>
-                </Tabs.Panel>
+                <Tabs
+                    value={tab}
+                    onChange={t =>
+                        setTab((t as 'genres' | 'styles') ?? 'genres')
+                    }
+                    keepMounted={false}
+                >
+                    <Tabs.List grow>
+                        <Tabs.Tab value="genres">
+                            Genres ({genres.length})
+                        </Tabs.Tab>
+                        <Tabs.Tab value="styles">
+                            Styles ({styles.length})
+                        </Tabs.Tab>
+                    </Tabs.List>
 
-                <Tabs.Panel value="styles" pt="sm">
-                    <TextInput
-                        placeholder="Search styles"
-                        value={styleQ}
-                        onChange={e => setStyleQ(e.currentTarget.value)}
-                        leftSection={<SearchIcon size={16} />}
-                        radius="md"
-                        size="md"
-                        styles={{
-                            input: {
-                                backgroundColor: 'transparent',
-                                color: 'white',
-                                borderColor: 'white',
-                            },
-                        }}
-                    />
-                    <Box mt="xs">{renderChips(filteredStyles, 'styles')}</Box>
-                </Tabs.Panel>
-            </Tabs>
-        </Paper>
+                    <Tabs.Panel value="genres" pt="sm">
+                        <TextInput
+                            placeholder="Search genres"
+                            value={genreQ}
+                            onChange={e => setGenreQ(e.currentTarget.value)}
+                            leftSection={<SearchIcon size={16} />}
+                            radius="md"
+                            size="md"
+                            styles={{
+                                input: {
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    borderColor: 'white',
+                                },
+                            }}
+                        />
+                        <Box mt="xs">
+                            {renderChips(filteredGenres, 'genres')}
+                        </Box>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="styles" pt="sm">
+                        <TextInput
+                            placeholder="Search styles"
+                            value={styleQ}
+                            onChange={e => setStyleQ(e.currentTarget.value)}
+                            leftSection={<SearchIcon size={16} />}
+                            radius="md"
+                            size="md"
+                            styles={{
+                                input: {
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    borderColor: 'white',
+                                },
+                            }}
+                        />
+                        <Box mt="xs">
+                            {renderChips(filteredStyles, 'styles')}
+                        </Box>
+                    </Tabs.Panel>
+                </Tabs>
+            </Paper>
+        </Stack>
     );
 };
 
