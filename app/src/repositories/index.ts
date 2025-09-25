@@ -578,14 +578,14 @@ export const getCollection = async (req: Request) => {
         const { page, limit, offset, order, orderBy } = parsePaging(req, {
             defaultLimit: 25,
             maxLimit: 100,
-            defaultOrderBy: 'updatedAt',
+            defaultOrderBy: 'Date_Added',
             allowedOrderBy: {
-                Release_Id: 'Playlist_Id',
+                Release_Id: 'Release_Id',
                 Date_Added: 'Date_Added',
                 Title: 'Title',
                 Year: 'Year',
-                updatedAt: 'updatedAt',
-                createdAt: 'createdAt',
+                // updatedAt: 'updatedAt',
+                // createdAt: 'createdAt',
             },
             defaultOrder: 'DESC',
         });
@@ -607,6 +607,14 @@ export const getCollection = async (req: Request) => {
         const { count, rows } = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
             where: releaseWhere,
+            attributes: [
+                'Release_Id',
+                'Title',
+                'Date_Added',
+                'Year',
+                'Cover_Image',
+                'Thumb',
+            ],
             include: [
                 {
                     model: db.Collection,
