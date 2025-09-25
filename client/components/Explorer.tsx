@@ -1,3 +1,4 @@
+// components/Explorer.tsx
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
     Paper,
@@ -8,8 +9,9 @@ import {
     Badge,
     Box,
     Text,
+    ActionIcon,
 } from '@mantine/core';
-import { Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon, X } from 'lucide-react';
 import { UserContext } from '../context/userContext';
 import { ExplorerContext } from '../context/explorerContext';
 import { useBearerToken } from '../hooks/useBearerToken';
@@ -48,6 +50,8 @@ const Explorer: React.FC = () => {
 
     const genres = explorerState?.Genres ?? [];
     const styles = explorerState?.Styles ?? [];
+    const genresFilter: string[] = explorerState?.genresFilter ?? [];
+    const stylesFilter: string[] = explorerState?.stylesFilter ?? [];
 
     const filteredGenres = useMemo(
         () => filterList(genres, genreQ),
@@ -58,38 +62,167 @@ const Explorer: React.FC = () => {
         [styles, styleQ],
     );
 
-    const renderChips = (items: string[], kind: 'genre' | 'style') => (
-        <ScrollArea.Autosize mah={380} type="auto">
-            <Group gap="xs" p="xs" wrap="wrap">
-                {items.map(name => (
-                    <Badge
-                        key={name}
-                        variant="light"
-                        size="lg"
-                        radius="sm"
-                        style={{ cursor: 'pointer' }}
-                        title={`Select ${name}`}
-                        onClick={() => {
-                            // TODO: wire this to your filtering action
-                            // e.g. dispatchExplorer({ type: 'SET_FILTER', payload: { kind, name } })
-                            // or open a shelf filtered by this tag
-                            console.log('pick', kind, name);
-                        }}
-                    >
-                        {name}
-                    </Badge>
-                ))}
-                {!items.length && (
-                    <Box p="md">
-                        <Text c="dimmed">No matches</Text>
-                    </Box>
-                )}
-            </Group>
-        </ScrollArea.Autosize>
-    );
+    const toggleFilter = (kind: 'genres' | 'styles', name: string) => {
+        const selected = (
+            kind === 'genres' ? genresFilter : stylesFilter
+        ).includes(name);
+        dispatchExplorer({
+            type: selected ? `UNSET_FILTER` : `SET_FILTER`,
+            payload: { kind, name },
+        });
+    };
+
+    const clearKind = (kind: 'genres' | 'styles') => {
+        dispatchExplorer({ type: `CLEAR_FILTER`, payload: { kind } });
+    };
+
+    const clearAll = () => {
+        dispatchExplorer({ type: `CLEAR_FILTER` }); // no payload -> clear both
+    };
+
+    const renderSelected = () => {
+        const any = genresFilter.length || stylesFilter.length;
+        if (!any) return null;
+
+        return (
+            <Box mb="sm">
+                <Group justify="space-between" align="center">
+                    <Text fw={700} c="white">
+                        Selected filters
+                    </Text>
+                    <Group gap="xs">
+                        {!!genresFilter.length && (
+                            <Badge
+                                variant="outline"
+                                radius="sm"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => clearKind('genres')}
+                                title="Clear genres"
+                            >
+                                Clear genres
+                            </Badge>
+                        )}
+                        {!!stylesFilter.length && (
+                            <Badge
+                                variant="outline"
+                                radius="sm"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => clearKind('styles')}
+                                title="Clear styles"
+                            >
+                                Clear styles
+                            </Badge>
+                        )}
+                        <Badge
+                            variant="light"
+                            radius="sm"
+                            style={{ cursor: 'pointer' }}
+                            onClick={clearAll}
+                            title="Clear all"
+                        >
+                            Clear all
+                        </Badge>
+                    </Group>
+                </Group>
+
+                <Group gap="xs" mt={8} wrap="wrap">
+                    {genresFilter.map(g => (
+                        <Badge
+                            key={`G:${g}`}
+                            variant="filled"
+                            radius="sm"
+                            rightSection={
+                                <ActionIcon
+                                    size="xs"
+                                    variant="subtle"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        toggleFilter('genres', g);
+                                    }}
+                                    aria-label={`Remove ${g}`}
+                                    title="Remove"
+                                    style={{ marginLeft: 4 }}
+                                >
+                                    <X size={12} />
+                                </ActionIcon>
+                            }
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => toggleFilter('genres', g)}
+                            title={g}
+                        >
+                            {g}
+                        </Badge>
+                    ))}
+                    {stylesFilter.map(s => (
+                        <Badge
+                            key={`S:${s}`}
+                            variant="filled"
+                            radius="sm"
+                            rightSection={
+                                <ActionIcon
+                                    size="xs"
+                                    variant="subtle"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        toggleFilter('styles', s);
+                                    }}
+                                    aria-label={`Remove ${s}`}
+                                    title="Remove"
+                                    style={{ marginLeft: 4 }}
+                                >
+                                    <X size={12} />
+                                </ActionIcon>
+                            }
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => toggleFilter('styles', s)}
+                            title={s}
+                        >
+                            {s}
+                        </Badge>
+                    ))}
+                </Group>
+            </Box>
+        );
+    };
+
+    const renderChips = (items: string[], kind: 'genres' | 'styles') => {
+        const selected = new Set(
+            kind === 'genres' ? genresFilter : stylesFilter,
+        );
+
+        return (
+            <ScrollArea.Autosize mah={380} type="auto">
+                <Group gap="xs" p="xs" wrap="wrap">
+                    {items.map(name => {
+                        const isActive = selected.has(name);
+                        return (
+                            <Badge
+                                key={name}
+                                variant={isActive ? 'filled' : 'light'}
+                                size="lg"
+                                radius="sm"
+                                style={{ cursor: 'pointer' }}
+                                title={`${isActive ? 'Remove' : 'Add'} ${name}`}
+                                onClick={() => toggleFilter(kind, name)}
+                            >
+                                {name}
+                            </Badge>
+                        );
+                    })}
+                    {!items.length && (
+                        <Box p="md">
+                            <Text c="dimmed">No matches</Text>
+                        </Box>
+                    )}
+                </Group>
+            </ScrollArea.Autosize>
+        );
+    };
 
     return (
         <Paper p="sm" radius="md" style={{ background: '#0e0e0f' }}>
+            {renderSelected()}
+
             <Tabs
                 value={tab}
                 onChange={t => setTab((t as 'genres' | 'styles') ?? 'genres')}
@@ -116,7 +249,7 @@ const Explorer: React.FC = () => {
                             },
                         }}
                     />
-                    <Box mt="xs">{renderChips(filteredGenres, 'genre')}</Box>
+                    <Box mt="xs">{renderChips(filteredGenres, 'genres')}</Box>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="styles" pt="sm">
@@ -135,7 +268,7 @@ const Explorer: React.FC = () => {
                             },
                         }}
                     />
-                    <Box mt="xs">{renderChips(filteredStyles, 'style')}</Box>
+                    <Box mt="xs">{renderChips(filteredStyles, 'styles')}</Box>
                 </Tabs.Panel>
             </Tabs>
         </Paper>

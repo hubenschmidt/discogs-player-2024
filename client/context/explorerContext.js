@@ -1,7 +1,10 @@
 import { createContext, useReducer } from 'react';
 import explorerReducer from '../reducers/explorerReducer';
 
-const initialState = {};
+const initialState = {
+    genresFilter: [],
+    stylesFilter: [],
+};
 
 export const ExplorerContext = createContext(initialState);
 
