@@ -114,7 +114,7 @@ const Explorer: React.FC = () => {
                         Selected filters
                     </Text>
                     <Group gap="xs">
-                        {!!genresFilter.length && (
+                        {genresFilter.length && (
                             <Badge
                                 variant="outline"
                                 radius="sm"
@@ -126,7 +126,7 @@ const Explorer: React.FC = () => {
                                 Clear genres
                             </Badge>
                         )}
-                        {!!stylesFilter.length && (
+                        {stylesFilter.length && (
                             <Badge
                                 variant="outline"
                                 radius="sm"
@@ -138,7 +138,7 @@ const Explorer: React.FC = () => {
                                 Clear styles
                             </Badge>
                         )}
-                        {!!yearsFilter.length && (
+                        {yearsFilter.length && (
                             <Badge
                                 variant="outline"
                                 radius="sm"
@@ -298,11 +298,7 @@ const Explorer: React.FC = () => {
 
     return (
         <Stack>
-            {/* Header with close button — mirrors History */}
-            <Group justify="space-between" align="center">
-                <Text fw={700} fz="lg" c="white">
-                    Explorer
-                </Text>
+            <Group justify="flex-end" align="center">
                 <ActionIcon
                     variant="light"
                     radius="md"

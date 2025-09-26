@@ -262,10 +262,7 @@ const History: React.FC = () => {
     return (
         <>
             <Stack gap="xs">
-                <Group justify="space-between" align="center">
-                    <Text fw={700} fz="lg" c="white">
-                        History
-                    </Text>
+                <Group justify="flex-end" align="center">
                     <ActionIcon
                         variant="light"
                         radius="md"
