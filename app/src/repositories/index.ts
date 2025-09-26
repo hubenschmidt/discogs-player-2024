@@ -584,8 +584,6 @@ export const getCollection = async (req: Request) => {
                 Date_Added: 'Date_Added',
                 Title: 'Title',
                 Year: 'Year',
-                // updatedAt: 'updatedAt',
-                // createdAt: 'createdAt',
             },
             defaultOrder: 'DESC',
         });
@@ -593,6 +591,10 @@ export const getCollection = async (req: Request) => {
         const { username } = req.params;
         const genresQ = parseStringList(req.query.genre);
         const stylesQ = parseStringList(req.query.style);
+        const yearsQ = parseStringList(req.query.year);
+        const yearsFilter = (yearsQ ?? [])
+            .map(y => Number(y))
+            .filter(n => Number.isFinite(n)); // keeps 0, drops NaN
 
         // Fetch the user and their collections
         const user = await db.User.findOne({
@@ -602,6 +604,7 @@ export const getCollection = async (req: Request) => {
 
         const releaseWhere: any = {};
         if (req.query.releaseId) releaseWhere.Release_Id = req.query.releaseId;
+        if (yearsFilter.length) releaseWhere.Year = { [Op.in]: yearsFilter };
 
         // Fetch releases with pagination and optional genre and style filtering
         const { count, rows } = await db.Release.findAndCountAll({
