@@ -29,15 +29,20 @@ const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
     const { dispatchNav } = useContext(NavContext);
-    const { genresFilter, stylesFilter } = explorerState;
     const bearerToken = useBearerToken();
 
-    const [tab, setTab] = useState<'genres' | 'styles'>('genres');
+    const {
+        genresFilter = [],
+        stylesFilter = [],
+        yearsFilter = [],
+    } = explorerState;
+
+    const [tab, setTab] = useState<'genres' | 'styles' | 'years'>('genres');
     const [genreQ, setGenreQ] = useState('');
     const [styleQ, setStyleQ] = useState('');
+    const [yearQ, setYearQ] = useState('');
 
     const handleClose = () => {
-        // 👈 added
         dispatchNav({ type: 'SET_NAV_KEY', payload: null });
     };
 
@@ -46,8 +51,9 @@ const Explorer: React.FC = () => {
 
         const params: any = {
             username: userState.username,
-            ...(genresFilter && { genre: genresFilter }),
-            ...(stylesFilter && { style: stylesFilter }),
+            ...(genresFilter.length ? { genre: genresFilter } : {}),
+            ...(stylesFilter.length ? { style: stylesFilter } : {}),
+            ...(yearsFilter.length ? { year: yearsFilter } : {}),
         };
 
         getExplorer(params, bearerToken)
@@ -55,15 +61,24 @@ const Explorer: React.FC = () => {
                 dispatchExplorer({ type: 'SET_EXPLORER', payload: res }),
             )
             .catch(console.error);
-    }, [userState?.username, bearerToken, genresFilter, stylesFilter]);
+    }, [
+        userState?.username,
+        bearerToken,
+        genresFilter,
+        stylesFilter,
+        yearsFilter,
+        dispatchExplorer,
+    ]);
 
     const genres = explorerState?.Genres ?? [];
     const styles = explorerState?.Styles ?? [];
+    const years = (explorerState?.Years ?? []).map(String); // accept 0, keep as string for chips/search
 
     const filteredGenres = filterList(genres, genreQ);
     const filteredStyles = filterList(styles, styleQ);
+    const filteredYears = filterList(years, yearQ);
 
-    // use explicit keys only
+    // explicit keys only
     type FilterKey = 'genresFilter' | 'stylesFilter' | 'yearsFilter';
 
     const toggleFilter = (key: FilterKey, name: string) => {
@@ -72,13 +87,12 @@ const Explorer: React.FC = () => {
                 ? genresFilter
                 : key === 'stylesFilter'
                 ? stylesFilter
-                : explorerState.yearsFilter ?? [];
+                : yearsFilter;
 
         const selected = selectedList.includes(name);
-
         dispatchExplorer({
             type: selected ? 'UNSET_FILTER' : 'SET_FILTER',
-            payload: { key, name },
+            payload: { key, value: name },
         });
     };
 
@@ -87,11 +101,12 @@ const Explorer: React.FC = () => {
     };
 
     const clearAll = () => {
-        dispatchExplorer({ type: `CLEAR_FILTER` }); // no payload -> clear both
+        dispatchExplorer({ type: 'CLEAR_FILTER' }); // no payload -> clear all
     };
 
     const renderSelected = () => {
-        const any = genresFilter.length || stylesFilter.length;
+        const any =
+            genresFilter.length || stylesFilter.length || yearsFilter.length;
         if (!any) return null;
 
         return (
@@ -121,6 +136,17 @@ const Explorer: React.FC = () => {
                                 title="Clear styles"
                             >
                                 Clear styles
+                            </Badge>
+                        )}
+                        {!!yearsFilter.length && (
+                            <Badge
+                                variant="outline"
+                                radius="sm"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => clearKind('yearsFilter')}
+                                title="Clear years"
+                            >
+                                Clear years
                             </Badge>
                         )}
                         <Badge
@@ -190,6 +216,33 @@ const Explorer: React.FC = () => {
                             {s}
                         </Badge>
                     ))}
+                    {yearsFilter.map(y => (
+                        <Badge
+                            key={`Y:${y}`}
+                            variant="filled"
+                            radius="sm"
+                            rightSection={
+                                <ActionIcon
+                                    size="xs"
+                                    variant="subtle"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        toggleFilter('yearsFilter', y);
+                                    }}
+                                    aria-label={`Remove ${y}`}
+                                    title="Remove"
+                                    style={{ marginLeft: 4 }}
+                                >
+                                    <X size={12} />
+                                </ActionIcon>
+                            }
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => toggleFilter('yearsFilter', y)}
+                            title={y}
+                        >
+                            {y}
+                        </Badge>
+                    ))}
                 </Group>
             </Box>
         );
@@ -201,7 +254,7 @@ const Explorer: React.FC = () => {
                 ? genresFilter
                 : key === 'stylesFilter'
                 ? stylesFilter
-                : explorerState.yearsFilter ?? [],
+                : yearsFilter,
         );
 
         return (
@@ -259,7 +312,7 @@ const Explorer: React.FC = () => {
                 <Tabs
                     value={tab}
                     onChange={t =>
-                        setTab((t as 'genres' | 'styles') ?? 'genres')
+                        setTab((t as 'genres' | 'styles' | 'years') ?? 'genres')
                     }
                     keepMounted={false}
                 >
@@ -269,6 +322,9 @@ const Explorer: React.FC = () => {
                         </Tabs.Tab>
                         <Tabs.Tab value="styles">
                             Styles ({styles.length})
+                        </Tabs.Tab>
+                        <Tabs.Tab value="years">
+                            Years ({years.length})
                         </Tabs.Tab>
                     </Tabs.List>
 
@@ -296,6 +352,27 @@ const Explorer: React.FC = () => {
                         />
                         <Box mt="xs">
                             {renderChips(filteredStyles, 'stylesFilter')}
+                        </Box>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="years" pt="sm">
+                        <TextInput
+                            placeholder="Search years"
+                            value={yearQ}
+                            onChange={e => setYearQ(e.currentTarget.value)}
+                            leftSection={<SearchIcon size={16} />}
+                            radius="md"
+                            size="md"
+                            styles={{
+                                input: {
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    borderColor: 'white',
+                                },
+                            }}
+                        />
+                        <Box mt="xs">
+                            {renderChips(filteredYears, 'yearsFilter')}
                         </Box>
                     </Tabs.Panel>
                 </Tabs>

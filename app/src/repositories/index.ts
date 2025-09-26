@@ -994,9 +994,17 @@ type YearRow = { Year: number | string };
 
 export const getExplorer = async (req: Request) => {
     const { username } = req.params;
-    const genresQ = parseStringList(req.query.genre); // e.g. ['Electronic']
 
-    // 1) Fetch user + their collection id first
+    const genresQ = parseStringList(req.query.genre); // e.g. ['Electronic']
+    const stylesQ = parseStringList(req.query.style); // e.g. ['House','Techno']
+    const yearsQ = parseStringList(req.query.year); // e.g. ['1998','0','2024']
+
+    // Coerce year strings -> numbers (keep 0; drop NaN)
+    const yearsFilter = (yearsQ ?? [])
+        .map(y => Number(y))
+        .filter(n => Number.isFinite(n));
+
+    // 1) User & collection
     const user = await db.User.findOne({
         where: { Username: username },
         attributes: ['User_Id'],
@@ -1010,8 +1018,9 @@ export const getExplorer = async (req: Request) => {
 
     const whereCollection = { Collection_Id: collectionId };
 
-    // Build the nested includes we'll reuse (optionally constrain by Genre)
-    const releaseNestedIncludes: any[] = [
+    // Common nested includes under Release for the Years query.
+    // Optionally constrain by Genre and/or Style.
+    const releaseNestedIncludesForYears: any[] = [
         {
             model: db.Collection,
             attributes: [],
@@ -1022,62 +1031,96 @@ export const getExplorer = async (req: Request) => {
     ];
 
     if (genresQ?.length) {
-        releaseNestedIncludes.push({
+        releaseNestedIncludesForYears.push({
             model: db.Genre,
             attributes: [],
-            required: true, // only releases that have these genres
+            required: true,
             through: { attributes: [] },
             where: { Name: { [Op.in]: genresQ } },
         });
     }
 
-    // 2) DISTINCT Years for releases in the user's collection (optionally filtered by genresQ)
+    if (stylesQ?.length) {
+        releaseNestedIncludesForYears.push({
+            model: db.Style,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: stylesQ } },
+        });
+    }
+
+    // 2) DISTINCT Years (optionally filtered by selected genres and/or styles)
     const years = (await db.Release.findAll({
-        attributes: ['Year'], // 👈 only the grouped column
-        where: { Year: { [Op.not]: null } }, // optional: skip null years
-        include: releaseNestedIncludes,
+        attributes: ['Year'],
+        where: { Year: { [Op.not]: null } }, // keep 0; only skip null
+        include: releaseNestedIncludesForYears,
         group: ['Release.Year'],
         order: [['Year', 'ASC']],
         raw: true,
     })) as YearRow[];
 
-    // 3) DISTINCT Genres for releases in the user's collection
-    const genres = (await db.Genre.findAll({
-        attributes: ['Name'],
+    // Helper: Release include w/ optional Year filter; extraNested lets us add Genre/Style filters.
+    const releaseIncludeWithOptionalYear = (extraNested: any[] = []) => ({
+        model: db.Release,
+        attributes: [],
+        required: true,
+        through: { attributes: [] },
+        ...(yearsFilter.length
+            ? { where: { Year: { [Op.in]: yearsFilter } } }
+            : {}),
         include: [
             {
-                model: db.Release,
+                model: db.Collection,
                 attributes: [],
-                required: true, // inner join
+                required: true,
                 through: { attributes: [] },
-                include: [
-                    {
-                        model: db.Collection,
-                        attributes: [],
-                        required: true,
-                        through: { attributes: [] },
-                        where: whereCollection,
-                    },
-                ],
+                where: whereCollection,
             },
+            ...extraNested,
         ],
+    });
+
+    // Build extra nested includes for Genres list:
+    // - If stylesQ present, constrain by Style
+    const genreListExtraNested: any[] = [];
+    if (stylesQ?.length) {
+        genreListExtraNested.push({
+            model: db.Style,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: stylesQ } },
+        });
+    }
+
+    // 3) DISTINCT Genres, optionally filtered by Year (yearsQ) AND Style (stylesQ)
+    const genres = (await db.Genre.findAll({
+        attributes: ['Name'],
+        include: [releaseIncludeWithOptionalYear(genreListExtraNested)],
         group: ['Genre.Name'],
         order: [['Name', 'ASC']],
         raw: true,
     })) as NameRow[];
 
-    // 4) DISTINCT Styles (optionally filtered by genresQ)
+    // Build extra nested includes for Styles list:
+    // - If genresQ present, constrain by Genre (existing behavior)
+    const stylesListExtraNested: any[] = [];
+    if (genresQ?.length) {
+        stylesListExtraNested.push({
+            model: db.Genre,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: genresQ } },
+        });
+    }
+
+    // 4) DISTINCT Styles, optionally filtered by Year (yearsQ) and Genre (genresQ)
+    // (We do NOT filter the Styles list by stylesQ itself; stylesQ only scopes Years + Genres per your request.)
     const styles = (await db.Style.findAll({
         attributes: ['Name'],
-        include: [
-            {
-                model: db.Release,
-                attributes: [],
-                required: true,
-                through: { attributes: [] },
-                include: releaseNestedIncludes, // 👈 same conditional genre filter
-            },
-        ],
+        include: [releaseIncludeWithOptionalYear(stylesListExtraNested)],
         group: ['Style.Name'],
         order: [['Name', 'ASC']],
         raw: true,
