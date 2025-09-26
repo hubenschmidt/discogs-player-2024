@@ -230,7 +230,7 @@ const ReleaseDetail: React.FC = () => {
                                     </Badge>
                                 ))}
                                 {Styles?.map((s: any, i: number) => (
-                                    <Badge key={`s-${i}`} variant="outline">
+                                    <Badge key={`s-${i}`} variant="light">
                                         {s?.Name || s}
                                     </Badge>
                                 ))}

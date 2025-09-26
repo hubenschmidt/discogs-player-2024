@@ -1,0 +1,19 @@
+.tab {
+    color: var(--mantine-color-white);
+    transition: background-color 120ms ease;
+}
+
+/* Works in Mantine v7 (data attrs) and also with plain :hover as a fallback */
+.tab[data-hovered],
+.tab:hover {
+    background-color: rgba(255, 255, 255, 0.08); /* dark hover */
+}
+
+.tab[data-active] {
+    background-color: rgba(255, 255, 255, 0.14); /* active a bit stronger */
+}
+
+/* optional: thin bottom border on the list, matching your Divider tone */
+.list {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}

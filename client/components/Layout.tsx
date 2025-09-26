@@ -30,6 +30,7 @@ import { NavContext } from '../context/navContext';
 import ReleaseDetail from './ReleaseDetail';
 import CollapsibleWrapper from './CollapsibleWrapper';
 import History from './History';
+import Explorer from './Explorer';
 
 type Props = {
     children?: ReactNode;
@@ -240,6 +241,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 )}
 
+                {navKey === 'explorer' && (
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                            <Explorer />
+                        </Grid.Col>
+                    </Grid>
+                )}
+
                 {playlistOpen && (
                     <Grid mb="sm">
                         <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
@@ -275,7 +284,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Footer */}
                 <Box pt="lg" style={{ textAlign: 'center' }}>
-                    <Text color="red">Copyright PinaColada.co</Text>
+                    <Text c="yellow">Copyright PinaColada.co</Text>
                 </Box>
             </Container>
         </Box>

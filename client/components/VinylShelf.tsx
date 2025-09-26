@@ -4,28 +4,31 @@ import { Release, CollectionResponse } from '../interfaces';
 import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Box, Group, ActionIcon, Text } from '@mantine/core';
+import { Box, Group, ActionIcon, Text, Badge } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
 import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { PlaylistContext } from '../context/playlistContext';
+import { ExplorerContext } from '../context/explorerContext';
 
 const VinylShelf: FC = () => {
     const { userState } = useContext(UserContext);
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
-    const { items, totalPages } = collectionState;
+    const { items, totalPages, count } = collectionState;
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
     const { selectedRelease, previewRelease } = discogsReleaseState;
-    const { searchState, dispatchSearch } = useContext(SearchContext);
+    const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState, dispatchNav } = useContext(NavContext);
     const { playlistOpen } = navState;
     const { searchSelection, shelfCollectionOverride } = searchState;
+    const { explorerState } = useContext(ExplorerContext);
+    const { genresFilter, stylesFilter, yearsFilter } = explorerState;
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // keeps odd # so center is a single record
@@ -88,6 +91,15 @@ const VinylShelf: FC = () => {
             ...(searchSelection?.Release_Id && {
                 releaseId: searchSelection.Release_Id,
             }),
+            ...(genresFilter && {
+                genre: genresFilter,
+            }),
+            ...(stylesFilter && {
+                style: stylesFilter,
+            }),
+            ...(yearsFilter && {
+                year: yearsFilter,
+            }),
         };
 
         let aborted = false;
@@ -126,6 +138,9 @@ const VinylShelf: FC = () => {
         bearerToken,
         userState.username,
         dispatchCollection,
+        genresFilter,
+        stylesFilter,
+        yearsFilter,
     ]);
 
     // ---------- fetch playlist when playlist is open ----------
@@ -292,6 +307,10 @@ const VinylShelf: FC = () => {
                     }}
                 ></Box>
             )}
+
+            <Badge variant="light" size="sm">
+                {count} result{count === 1 ? '' : 's'}
+            </Badge>
 
             <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {

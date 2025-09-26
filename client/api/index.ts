@@ -7,6 +7,7 @@ interface CollectionParams {
     username: string;
     genre?: string;
     style?: string;
+    year?: number;
     page?: number;
     limit?: number;
     order?: string;
@@ -79,6 +80,7 @@ export const getCollection = async (
         username,
         genre,
         style,
+        year,
         page,
         limit,
         order,
@@ -89,12 +91,6 @@ export const getCollection = async (
     } = params;
 
     let uri = `/api/app/collection/${username}`;
-    if (genre) {
-        uri += `/${genre}`;
-    }
-    if (style) {
-        uri += `/${style}`;
-    }
 
     const queryParams = new URLSearchParams();
     if (page !== undefined) queryParams.append('page', page.toString());
@@ -107,6 +103,9 @@ export const getCollection = async (
         queryParams.append('releaseId', releaseId.toString());
     if (labelId !== undefined)
         queryParams.append('labelId', labelId.toString());
+    if (genre !== undefined) queryParams.append('genre', genre.toString());
+    if (style !== undefined) queryParams.append('style', style.toString());
+    if (year !== undefined) queryParams.append('year', year.toString());
 
     const queryString = queryParams.toString();
     if (queryString) {
@@ -296,5 +295,30 @@ export const getPlaylist = async (
         null,
         token,
     );
+    return response.data;
+};
+
+export const getExplorer = async (params: any, token: BearerToken) => {
+    const { username, genre, style, year } = params;
+
+    let uri = `/api/app/${username}/explorer`;
+    const queryParams = new URLSearchParams();
+
+    if (genre !== undefined) queryParams.append('genre', genre.toString());
+    if (style !== undefined) queryParams.append('style', style.toString());
+    if (year !== undefined) queryParams.append('year', year.toString());
+
+    const queryString = queryParams.toString();
+    if (queryString) {
+        uri += `?${queryString}`;
+    }
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'GET',
+        uri,
+        null,
+        token,
+    );
+
     return response.data;
 };

@@ -578,25 +578,23 @@ export const getCollection = async (req: Request) => {
         const { page, limit, offset, order, orderBy } = parsePaging(req, {
             defaultLimit: 25,
             maxLimit: 100,
-            defaultOrderBy: 'updatedAt',
+            defaultOrderBy: 'Date_Added',
             allowedOrderBy: {
-                Release_Id: 'Playlist_Id',
+                Release_Id: 'Release_Id',
                 Date_Added: 'Date_Added',
                 Title: 'Title',
                 Year: 'Year',
-                updatedAt: 'updatedAt',
-                createdAt: 'createdAt',
             },
             defaultOrder: 'DESC',
         });
 
-        const { username, genre, style } = req.params;
-
-        // Resolve single or multiple genres and styles
-        const resolvedGenres =
-            genre && genre !== ':genre' ? genre.split(',') : null;
-        const resolvedStyles =
-            style && style !== ':style' ? style.split(',') : null;
+        const { username } = req.params;
+        const genresQ = parseStringList(req.query.genre);
+        const stylesQ = parseStringList(req.query.style);
+        const yearsQ = parseStringList(req.query.year);
+        const yearsFilter = (yearsQ ?? [])
+            .map(y => Number(y))
+            .filter(n => Number.isFinite(n)); // keeps 0, drops NaN
 
         // Fetch the user and their collections
         const user = await db.User.findOne({
@@ -606,37 +604,49 @@ export const getCollection = async (req: Request) => {
 
         const releaseWhere: any = {};
         if (req.query.releaseId) releaseWhere.Release_Id = req.query.releaseId;
+        if (yearsFilter.length) releaseWhere.Year = { [Op.in]: yearsFilter };
 
         // Fetch releases with pagination and optional genre and style filtering
         const { count, rows } = await db.Release.findAndCountAll({
             distinct: true, // Prevent duplicates
             where: releaseWhere,
+            attributes: [
+                'Release_Id',
+                'Title',
+                'Date_Added',
+                'Year',
+                'Cover_Image',
+                'Thumb',
+            ],
             include: [
                 {
                     model: db.Collection,
                     where: {
                         Collection_Id: user.Collection.Collection_Id,
                     },
+                    attributes: [],
                     through: { attributes: [] },
                 },
                 {
                     model: db.Genre,
-                    ...(resolvedGenres && {
+                    ...(genresQ?.length && {
                         where: {
-                            Name: { [Op.in]: resolvedGenres }, // Filter by an array of genres
+                            Name: { [Op.in]: genresQ }, // Filter by an array of genres
                         },
                         required: true,
                     }),
+                    attributes: ['Name'],
                     through: { attributes: [] },
                 },
                 {
                     model: db.Style,
-                    ...(resolvedStyles && {
+                    ...(stylesQ?.length && {
                         where: {
-                            Name: { [Op.in]: resolvedStyles }, // Filter by an array of styles
+                            Name: { [Op.in]: stylesQ }, // Filter by an array of styles
                         },
                         required: true,
                     }),
+                    attributes: ['Name'],
                     through: { attributes: [] },
                 },
                 {
@@ -646,6 +656,7 @@ export const getCollection = async (req: Request) => {
                             Artist_Id: { [Op.in]: [req.query.artistId] },
                         },
                     }),
+                    attributes: ['Artist_Id', 'Name'],
                     through: { attributes: [] },
                 },
                 {
@@ -655,6 +666,7 @@ export const getCollection = async (req: Request) => {
                             Label_Id: { [Op.in]: [req.query.labelId] },
                         },
                     }),
+                    attributes: ['Label_Id', 'Name', 'Cat_No'],
                     through: { attributes: [] },
                 },
             ],
@@ -931,7 +943,7 @@ export const search = async (req: Request) => {
     return [];
 };
 
-export const addToPlaylist = async (req: Request, user: any) => {
+export const addToPlaylist = async (req: Request) => {
     const { playlistId, uri } = req.body;
     const extractedUri = extractYouTubeVideoId(uri);
 
@@ -961,4 +973,165 @@ export const addToPlaylist = async (req: Request, user: any) => {
             video: video.get ? video.get({ plain: true }) : video,
         };
     });
+};
+
+type ExplorerRow = { Name: string; Year?: string };
+
+const parseStringList = (input: any): string[] | null => {
+    if (input == null) return null;
+
+    if (typeof input === 'string') {
+        const trimmed = input.trim();
+
+        return trimmed
+            .split(',')
+            .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+            .filter(Boolean);
+    }
+
+    return null;
+};
+
+type NameRow = { Name: string };
+type YearRow = { Year: number | string };
+
+export const getExplorer = async (req: Request) => {
+    const { username } = req.params;
+
+    const genresQ = parseStringList(req.query.genre); // e.g. ['Electronic']
+    const stylesQ = parseStringList(req.query.style); // e.g. ['House','Techno']
+    const yearsQ = parseStringList(req.query.year); // e.g. ['1998','0','2024']
+
+    // Coerce year strings -> numbers (keep 0; drop NaN)
+    const yearsFilter = (yearsQ ?? [])
+        .map(y => Number(y))
+        .filter(n => Number.isFinite(n));
+
+    // 1) User & collection
+    const user = await db.User.findOne({
+        where: { Username: username },
+        attributes: ['User_Id'],
+        include: [{ model: db.Collection, attributes: ['Collection_Id'] }],
+    });
+
+    const collectionId = user?.Collection?.Collection_Id;
+    if (!collectionId) {
+        return { Years: [], Genres: [], Styles: [] };
+    }
+
+    const whereCollection = { Collection_Id: collectionId };
+
+    // Common nested includes under Release for the Years query.
+    // Optionally constrain by Genre and/or Style.
+    const releaseNestedIncludesForYears: any[] = [
+        {
+            model: db.Collection,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: whereCollection,
+        },
+    ];
+
+    if (genresQ?.length) {
+        releaseNestedIncludesForYears.push({
+            model: db.Genre,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: genresQ } },
+        });
+    }
+
+    if (stylesQ?.length) {
+        releaseNestedIncludesForYears.push({
+            model: db.Style,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: stylesQ } },
+        });
+    }
+
+    // 2) DISTINCT Years (optionally filtered by selected genres and/or styles)
+    const years = (await db.Release.findAll({
+        attributes: ['Year'],
+        where: { Year: { [Op.not]: null } }, // keep 0; only skip null
+        include: releaseNestedIncludesForYears,
+        group: ['Release.Year'],
+        order: [['Year', 'ASC']],
+        raw: true,
+    })) as YearRow[];
+
+    // Helper: Release include w/ optional Year filter; extraNested lets us add Genre/Style filters.
+    const releaseIncludeWithOptionalYear = (extraNested: any[] = []) => ({
+        model: db.Release,
+        attributes: [],
+        required: true,
+        through: { attributes: [] },
+        ...(yearsFilter.length
+            ? { where: { Year: { [Op.in]: yearsFilter } } }
+            : {}),
+        include: [
+            {
+                model: db.Collection,
+                attributes: [],
+                required: true,
+                through: { attributes: [] },
+                where: whereCollection,
+            },
+            ...extraNested,
+        ],
+    });
+
+    // Build extra nested includes for Genres list:
+    // - If stylesQ present, constrain by Style
+    const genreListExtraNested: any[] = [];
+    if (stylesQ?.length) {
+        genreListExtraNested.push({
+            model: db.Style,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: stylesQ } },
+        });
+    }
+
+    // 3) DISTINCT Genres, optionally filtered by Year (yearsQ) AND Style (stylesQ)
+    const genres = (await db.Genre.findAll({
+        attributes: ['Name'],
+        include: [releaseIncludeWithOptionalYear(genreListExtraNested)],
+        group: ['Genre.Name'],
+        order: [['Name', 'ASC']],
+        raw: true,
+    })) as NameRow[];
+
+    // Build extra nested includes for Styles list:
+    // - If genresQ present, constrain by Genre (existing behavior)
+    const stylesListExtraNested: any[] = [];
+    if (genresQ?.length) {
+        stylesListExtraNested.push({
+            model: db.Genre,
+            attributes: [],
+            required: true,
+            through: { attributes: [] },
+            where: { Name: { [Op.in]: genresQ } },
+        });
+    }
+
+    // 4) DISTINCT Styles, optionally filtered by Year (yearsQ) and Genre (genresQ)
+    // (We do NOT filter the Styles list by stylesQ itself; stylesQ only scopes Years + Genres per your request.)
+    const styles = (await db.Style.findAll({
+        attributes: ['Name'],
+        include: [releaseIncludeWithOptionalYear(stylesListExtraNested)],
+        group: ['Style.Name'],
+        order: [['Name', 'ASC']],
+        raw: true,
+    })) as NameRow[];
+
+    return {
+        Years: years.map(y => y.Year),
+        Genres: genres.map(g => g.Name),
+        Styles: styles.map(s => s.Name),
+    };
 };
