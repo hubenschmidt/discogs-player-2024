@@ -29,7 +29,8 @@ const filterList = (list: string[], q: string) => {
 const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
-    const { dispatchNav } = useContext(NavContext);
+    const { navState, dispatchNav } = useContext(NavContext);
+    const { playlistOpen } = navState;
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { searchSelection } = searchState;
     const bearerToken = useBearerToken();
@@ -49,6 +50,10 @@ const Explorer: React.FC = () => {
     };
 
     useEffect(() => {
+        if (playlistOpen) {
+            dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+        }
+
         if (!userState?.username) return;
 
         const params: any = {
