@@ -2,7 +2,7 @@ import { createContext, useReducer } from 'react';
 import navReducer from '../reducers/navReducer';
 
 const initialState = {
-    navBarKey: null,
+    navKey: null,
     playlistOpen: false,
 };
 

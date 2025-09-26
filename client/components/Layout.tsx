@@ -206,13 +206,13 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     <Grid.Col span={{ base: 12, md: 6, lg: 6 }}></Grid.Col>
                 </Grid>
 
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12 }}>
-                        <CollapsibleWrapper title="Collection" defaultOpen>
+                <CollapsibleWrapper title="Collection" defaultOpen>
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12 }}>
                             <VinylShelf />
-                        </CollapsibleWrapper>
-                    </Grid.Col>
-                </Grid>
+                        </Grid.Col>
+                    </Grid>
+                </CollapsibleWrapper>
 
                 {showPreviewTrackDetail && (
                     <Grid mb="sm">
@@ -226,27 +226,33 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {navKey === 'history' && (
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                            <History />
-                        </Grid.Col>
-                    </Grid>
+                    <CollapsibleWrapper title="History" defaultOpen>
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <History />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
                 )}
 
                 {navKey === 'playlists' && (
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                            <Playlists />
-                        </Grid.Col>
-                    </Grid>
+                    <CollapsibleWrapper title="Playlists" defaultOpen>
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <Playlists />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
                 )}
 
                 {navKey === 'explorer' && (
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                            <Explorer />
-                        </Grid.Col>
-                    </Grid>
+                    <CollapsibleWrapper title="Explorer" defaultOpen>
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <Explorer />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
                 )}
 
                 {playlistOpen && (
@@ -278,7 +284,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 {/* YouTube Player Section */}
                 {selectedVideo && (
                     <CollapsibleWrapper title="Video" defaultOpen={false}>
-                        <CustomYouTubePlayer width="100%" height="430px" />
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12 }}>
+                                <CustomYouTubePlayer
+                                    width="100%"
+                                    height="430px"
+                                />
+                            </Grid.Col>
+                        </Grid>
                     </CollapsibleWrapper>
                 )}
 

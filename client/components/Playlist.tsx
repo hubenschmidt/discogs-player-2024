@@ -114,6 +114,7 @@ const Playlist = () => {
 
         // keep selected video/release aligned with the queue
         const target = items[startIndex];
+
         if (
             !discogsReleaseState.selectedVideo ||
             discogsReleaseState.selectedVideo.uri !== target.uri
@@ -193,7 +194,7 @@ const Playlist = () => {
                 data={videosPage}
                 columns={columns}
                 emptyText="No tracks yet"
-                rowKey={row => row.uri}
+                rowKey={row => row?.uri}
                 selectedRowKey={discogsReleaseState.selectedVideo?.uri}
                 selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
@@ -204,7 +205,7 @@ const Playlist = () => {
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
-                        queue.findIndex(v => v.uri === row.uri),
+                        queue.findIndex(v => v?.uri === row?.uri),
                     );
                     dispatchDiscogsRelease({
                         type: 'SET_PREVIEW_RELEASE',
@@ -225,7 +226,7 @@ const Playlist = () => {
                     });
                     dispatchDiscogsRelease({
                         type: 'SET_SELECTED_RELEASE',
-                        payload: row.release,
+                        payload: row?.release,
                     });
                     dispatchDiscogsRelease({
                         type: 'SET_IS_PLAYING',

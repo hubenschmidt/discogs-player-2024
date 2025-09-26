@@ -6,7 +6,7 @@ import {
     ScrollArea,
     Box,
     Tooltip,
-    ActionIcon, 
+    ActionIcon,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { Search as SearchIcon, Sparkles, RotateCcw } from 'lucide-react';
@@ -14,12 +14,14 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { searchCollection } from '../api';
 import { SearchContext } from '../context/searchContext';
+import { ExplorerContext } from '../context/explorerContext';
 
 const Search = () => {
     const { userState } = useContext(UserContext);
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
+    const { dispatchExplorer } = useContext(ExplorerContext);
     const bearerToken = useBearerToken();
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +38,7 @@ const Search = () => {
             type: 'SET_SHELF_COLLECTION_OVERRIDE',
             payload: true,
         });
+        dispatchExplorer({ type: 'CLEAR_FILTER' });
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -215,6 +218,9 @@ const Search = () => {
                                           dispatchSearch({
                                               type: 'SET_SHELF_COLLECTION_OVERRIDE',
                                               payload: false,
+                                          });
+                                          dispatchExplorer({
+                                              type: 'CLEAR_FILTER',
                                           });
                                       }}
                                   >

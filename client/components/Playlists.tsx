@@ -98,9 +98,6 @@ const Playlists = () => {
         <>
             <Stack gap="xs">
                 <Group justify="space-between" align="center">
-                    <Text fw={700} size="lg">
-                        Playlists
-                    </Text>
                     <Button
                         mb="-10"
                         variant="light"
