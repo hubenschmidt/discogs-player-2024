@@ -121,6 +121,7 @@ const Explorer: React.FC = () => {
                             <Badge
                                 variant="outline"
                                 radius="sm"
+                                color="green"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => clearKind('genresFilter')}
                                 title="Clear genres"
@@ -132,6 +133,7 @@ const Explorer: React.FC = () => {
                             <Badge
                                 variant="outline"
                                 radius="sm"
+                                color="green"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => clearKind('stylesFilter')}
                                 title="Clear styles"
@@ -143,6 +145,7 @@ const Explorer: React.FC = () => {
                             <Badge
                                 variant="outline"
                                 radius="sm"
+                                color="green"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => clearKind('yearsFilter')}
                                 title="Clear years"
@@ -168,10 +171,12 @@ const Explorer: React.FC = () => {
                             key={`G:${g}`}
                             variant="filled"
                             radius="sm"
+                            color="green"
                             rightSection={
                                 <ActionIcon
                                     size="xs"
                                     variant="subtle"
+                                    color="white"
                                     onClick={e => {
                                         e.stopPropagation();
                                         toggleFilter('genresFilter', g);
@@ -195,10 +200,12 @@ const Explorer: React.FC = () => {
                             key={`S:${s}`}
                             variant="filled"
                             radius="sm"
+                            color="green"
                             rightSection={
                                 <ActionIcon
                                     size="xs"
                                     variant="subtle"
+                                    color="white"
                                     onClick={e => {
                                         e.stopPropagation();
                                         toggleFilter('stylesFilter', s);
@@ -222,10 +229,12 @@ const Explorer: React.FC = () => {
                             key={`Y:${y}`}
                             variant="filled"
                             radius="sm"
+                            color="green"
                             rightSection={
                                 <ActionIcon
                                     size="xs"
                                     variant="subtle"
+                                    color="white"
                                     onClick={e => {
                                         e.stopPropagation();
                                         toggleFilter('yearsFilter', y);
@@ -266,9 +275,12 @@ const Explorer: React.FC = () => {
                         return (
                             <Badge
                                 key={name}
-                                variant={isActive ? 'filled' : 'light'}
+                                variant={
+                                    isActive ? 'filled' : 'light-transparent'
+                                }
                                 size="lg"
                                 radius="sm"
+                                color="green"
                                 style={{ cursor: 'pointer' }}
                                 title={`${isActive ? 'Remove' : 'Add'} ${name}`}
                                 onClick={() => toggleFilter(key, name)}
@@ -316,6 +328,7 @@ const Explorer: React.FC = () => {
                         setTab((t as 'genres' | 'styles' | 'years') ?? 'genres')
                     }
                     keepMounted={false}
+                    color="green"
                     classNames={{ tab: classes.tab, list: classes.list }}
                 >
                     <Tabs.List grow>
