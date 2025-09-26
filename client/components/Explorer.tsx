@@ -1,4 +1,3 @@
-// components/Explorer.tsx
 import React, { useContext, useEffect, useState } from 'react';
 import {
     Paper,
@@ -39,7 +38,6 @@ const Explorer: React.FC = () => {
     } = explorerState;
 
     const [tab, setTab] = useState<'genres' | 'styles' | 'years'>('genres');
-    const [genreQ, setGenreQ] = useState('');
     const [styleQ, setStyleQ] = useState('');
     const [yearQ, setYearQ] = useState('');
 
@@ -75,7 +73,6 @@ const Explorer: React.FC = () => {
     const styles = explorerState?.Styles ?? [];
     const years = (explorerState?.Years ?? []).map(String); // accept 0, keep as string for chips/search
 
-    const filteredGenres = filterList(genres, genreQ);
     const filteredStyles = filterList(styles, styleQ);
     const filteredYears = filterList(years, yearQ);
 
@@ -344,9 +341,7 @@ const Explorer: React.FC = () => {
                     </Tabs.List>
 
                     <Tabs.Panel value="genres" pt="sm">
-                        <Box mt="xs">
-                            {renderChips(filteredGenres, 'genresFilter')}
-                        </Box>
+                        <Box mt="xs">{renderChips(genres, 'genresFilter')}</Box>
                     </Tabs.Panel>
 
                     <Tabs.Panel value="styles" pt="sm">
