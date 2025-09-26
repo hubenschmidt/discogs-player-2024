@@ -169,10 +169,14 @@ const VinylShelf: FC = () => {
                     payload: res.playlist.Playlist_Id,
                 });
                 dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
-                dispatchCollection({
-                    type: 'SET_COLLECTION',
-                    payload: res.releases,
-                });
+
+                if (res.releases.items.length > 0) {
+                    // prevent an empty vinyl shelf from loading
+                    dispatchCollection({
+                        type: 'SET_COLLECTION',
+                        payload: res.releases,
+                    });
+                }
             })
             .catch(console.error)
             .finally(() => {
@@ -225,7 +229,7 @@ const VinylShelf: FC = () => {
 
     // ---------- click handlers ----------
     const handleRecordClick = (release: Release, index: number) => {
-        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
+        // dispatchNav({ type: 'SET_NAV_KEY', payload: null });
 
         const isFirstSelection = !selectedRelease;
 
@@ -242,13 +246,13 @@ const VinylShelf: FC = () => {
                 payload: release,
             });
             // blur will auto-stop via the loadingCenter effect
-        } else {
-            // preview only — no blur & no reorder
-            dispatchDiscogsRelease({
-                type: 'SET_PREVIEW_RELEASE',
-                payload: release,
-            });
+            return;
         }
+        // preview only — no blur & no reorder
+        dispatchDiscogsRelease({
+            type: 'SET_PREVIEW_RELEASE',
+            payload: release,
+        });
     };
 
     const handleShelfPrev = () => {

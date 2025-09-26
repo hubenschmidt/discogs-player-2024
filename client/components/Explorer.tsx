@@ -15,6 +15,7 @@ import {
 import { Search as SearchIcon, X } from 'lucide-react';
 import { UserContext } from '../context/userContext';
 import { ExplorerContext } from '../context/explorerContext';
+import { SearchContext } from '../context/searchContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
 import { NavContext } from '../context/navContext';
@@ -29,6 +30,8 @@ const Explorer: React.FC = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
     const { dispatchNav } = useContext(NavContext);
+    const { searchState, dispatchSearch } = useContext(SearchContext);
+    const { searchSelection } = searchState;
     const bearerToken = useBearerToken();
 
     const {
@@ -80,6 +83,14 @@ const Explorer: React.FC = () => {
     type FilterKey = 'genresFilter' | 'stylesFilter' | 'yearsFilter';
 
     const toggleFilter = (key: FilterKey, name: string) => {
+        if (searchSelection) {
+            // Reset search + force shelf to show full collection
+            dispatchSearch({ type: 'SET_RESULTS', payload: [] });
+            dispatchSearch({ type: 'SET_OPEN', payload: false });
+            dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
+            dispatchSearch({ type: 'SET_QUERY', payload: '' });
+        }
+
         const selectedList =
             key === 'genresFilter'
                 ? genresFilter
