@@ -28,7 +28,7 @@ const VinylShelf: FC = () => {
     const { playlistOpen } = navState;
     const { searchSelection, shelfCollectionOverride } = searchState;
     const { explorerState } = useContext(ExplorerContext);
-    const { genresFilter, stylesFilter } = explorerState;
+    const { genresFilter, stylesFilter, yearsFilter } = explorerState;
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const offset = 1; // keeps odd # so center is a single record
@@ -97,6 +97,9 @@ const VinylShelf: FC = () => {
             ...(stylesFilter && {
                 style: stylesFilter,
             }),
+            ...(yearsFilter && {
+                year: yearsFilter,
+            }),
         };
 
         let aborted = false;
@@ -137,6 +140,7 @@ const VinylShelf: FC = () => {
         dispatchCollection,
         genresFilter,
         stylesFilter,
+        yearsFilter,
     ]);
 
     // ---------- fetch playlist when playlist is open ----------

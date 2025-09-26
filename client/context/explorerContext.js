@@ -4,6 +4,7 @@ import explorerReducer from '../reducers/explorerReducer';
 const initialState = {
     genresFilter: [],
     stylesFilter: [],
+    yearsFilter: [],
 };
 
 export const ExplorerContext = createContext(initialState);

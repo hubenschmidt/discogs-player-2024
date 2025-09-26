@@ -7,6 +7,7 @@ interface CollectionParams {
     username: string;
     genre?: string;
     style?: string;
+    year?: number;
     page?: number;
     limit?: number;
     order?: string;
@@ -79,6 +80,7 @@ export const getCollection = async (
         username,
         genre,
         style,
+        year,
         page,
         limit,
         order,
@@ -103,6 +105,7 @@ export const getCollection = async (
         queryParams.append('labelId', labelId.toString());
     if (genre !== undefined) queryParams.append('genre', genre.toString());
     if (style !== undefined) queryParams.append('style', style.toString());
+    if (year !== undefined) queryParams.append('year', year.toString());
 
     const queryString = queryParams.toString();
     if (queryString) {
