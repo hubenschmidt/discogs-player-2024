@@ -19,6 +19,7 @@ import { ExplorerContext } from '../context/explorerContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
 import { NavContext } from '../context/navContext';
+import classes from '../styles/Explorer.module.css';
 
 const filterList = (list: string[], q: string) => {
     const n = q.toLowerCase();
@@ -315,6 +316,7 @@ const Explorer: React.FC = () => {
                         setTab((t as 'genres' | 'styles' | 'years') ?? 'genres')
                     }
                     keepMounted={false}
+                    classNames={{ tab: classes.tab, list: classes.list }}
                 >
                     <Tabs.List grow>
                         <Tabs.Tab value="genres">
