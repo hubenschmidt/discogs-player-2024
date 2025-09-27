@@ -320,6 +320,7 @@ const VinylShelf: FC = () => {
 
             <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {
+                    console.log(release);
                     const n = items?.length;
                     let angle = 0;
                     if (n > 1) angle = -90 + 180 * (i / (n - 1));
@@ -351,8 +352,12 @@ const VinylShelf: FC = () => {
                                     backgroundImage: `url(${release.Thumb})`,
                                 }}
                             />
-                            <Text className="record-title">
+
+                            <Text className="record-title" fw="400">
                                 {release.Title}
+                            </Text>
+                            <Text className="record-title" fw="200">
+                                {release.Artists[0].Name}
                             </Text>
                         </Box>
                     );

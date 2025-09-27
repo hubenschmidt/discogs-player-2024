@@ -54,12 +54,6 @@ const ReleaseDetail: React.FC = () => {
 
     return (
         <Stack>
-            <Group justify="space-between" align="center" mb="10px">
-                <Text fw={700} c="white">
-                    Release Details
-                </Text>
-            </Group>
-
             <Card radius="md" p="md" style={{ background: '#0e0e0f' }}>
                 {/* Header */}
                 <Group justify="space-between" align="center" mb="xs">
@@ -67,7 +61,6 @@ const ReleaseDetail: React.FC = () => {
                         <Text fw={700} fz="lg" c="white">
                             {Title || 'Untitled'}
                         </Text>
-                        {Year ? <Badge variant="light">{Year}</Badge> : null}
                         {isPreview ? (
                             <Badge color="yellow" variant="light">
                                 Previewing
@@ -75,16 +68,16 @@ const ReleaseDetail: React.FC = () => {
                         ) : null}
                     </Group>
 
-                    {discogsUrl && (
+                    {/* {discogsUrl && (
                         <Anchor
                             href={discogsUrl}
                             target="_blank"
                             rel="noreferrer"
-                            c="cyan"
+                            c="blue"
                         >
                             View on Discogs
                         </Anchor>
-                    )}
+                    )} */}
                 </Group>
 
                 <Divider my="sm" color="rgba(255,255,255,0.12)" />
@@ -222,6 +215,15 @@ const ReleaseDetail: React.FC = () => {
                                 </Text>
                             </Box>
 
+                            {Year ? (
+                                <Box>
+                                    <Text fw={700} c="white" mb={4}>
+                                        Year
+                                    </Text>
+                                    <Text c="dimmed">{Year}</Text>
+                                </Box>
+                            ) : null}
+
                             {/* Genres & Styles */}
                             <Group gap="xs" mt="xs" wrap="wrap">
                                 {Genres?.map((g: any, i: number) => (
@@ -241,7 +243,7 @@ const ReleaseDetail: React.FC = () => {
 
                             {/* Meta */}
                             <Divider my="sm" color="rgba(255,255,255,0.12)" />
-                            <Group gap="xl" wrap="wrap">
+                            <Group>
                                 <Box>
                                     <Text fw={700} c="white" mb={2}>
                                         Added
@@ -249,12 +251,6 @@ const ReleaseDetail: React.FC = () => {
                                     <Text c="dimmed">
                                         {formatDate(Date_Added)}
                                     </Text>
-                                </Box>
-                                <Box>
-                                    <Text fw={700} c="white" mb={2}>
-                                        Release ID
-                                    </Text>
-                                    <Text c="dimmed">{Release_Id ?? '—'}</Text>
                                 </Box>
                             </Group>
                         </Stack>

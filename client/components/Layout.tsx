@@ -265,7 +265,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 {/* Video Playlist Section */}
                 {selectedRelease && (
                     <CollapsibleWrapper
-                        title="Tracks"
+                        title="Release"
                         defaultOpen
                         isOpen={tracksOpen}
                         onOpenChange={setTracksOpen}

@@ -222,6 +222,7 @@ const ReleaseVideos = () => {
                                     justifyContent: 'flex-start',
                                     width: '100%',
                                     textAlign: 'left',
+                                    fontWeight: 200,
                                 },
                             }}
                         >

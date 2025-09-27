@@ -3,37 +3,6 @@
     --foreground: white;
 }
 
-/* 1) Set a base weight for the whole app */
-:root {
-    --fw-base: 200;
-}
-
-/* 3) Reset common elements to inherit the base (helps defeat UA defaults) */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-span,
-div,
-li,
-a,
-button,
-input,
-label,
-th,
-td {
-    font-weight: inherit;
-}
-
-/* 4) Keep semantic bolds actually bold (optional) */
-strong,
-b {
-    font-weight: 600; /* or 700 */
-}
-
 :root {
     --surface-base: #58554b;
     --surface-grad-radial: radial-gradient(
@@ -48,12 +17,6 @@ b {
         #2b2a27 70%,
         #0e0e0f 100%
     );
-}
-
-/* optional utility */
-.surface-etched {
-    background: var(--surface-base);
-    background-image: var(--surface-grad-radial), var(--surface-grad-linear);
 }
 
 .pg-control {
@@ -153,6 +116,7 @@ b {
 .track-detail-text {
     font-size: 0.875rem;
     line-height: 1;
+    font-weight: 400;
 }
 
 .track-detail-muted {
