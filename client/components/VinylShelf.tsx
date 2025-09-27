@@ -312,9 +312,11 @@ const VinylShelf: FC = () => {
                 ></Box>
             )}
 
-            <Badge variant="light" size="sm">
-                {count} result{count === 1 ? '' : 's'}
-            </Badge>
+            <Group justify="flex-end" mb="xs">
+                <Badge variant="light" size="sm">
+                    {count} release{count === 1 ? '' : 's'}
+                </Badge>
+            </Group>
 
             <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {

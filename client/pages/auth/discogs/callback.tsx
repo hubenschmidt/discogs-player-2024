@@ -60,7 +60,7 @@ const DiscogsCallbackPage = () => {
 
     return (
         <Center style={{ height: '100vh' }}>
-            <Loader size="lg" />
+            <Loader size="lg" color="white" />
             <Text ml="md">Finishing authentication…</Text>
         </Center>
     );

@@ -42,7 +42,7 @@ const DiscogsAuthPrompt = () => {
         return (
             <Center style={{ height: '100vh' }}>
                 <Stack align="center">
-                    <Loader size="xl" variant="bars" />
+                    <Loader size="xl" variant="bars" color="white" />
                     <Text>Redirecting to Discogs…</Text>
                 </Stack>
             </Center>

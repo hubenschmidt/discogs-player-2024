@@ -139,7 +139,8 @@ b {
 }
 
 .track-detail-box.preview {
-    background-color: rgb(102, 98, 37);
+    background-color: transparent;
+    background-image: none !important;
 }
 
 .track-detail-content {

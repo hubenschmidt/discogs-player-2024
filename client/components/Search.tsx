@@ -120,7 +120,7 @@ const Search = () => {
                         </Box>
                     </Tooltip>
                 }
-                // ⬇️ NEW: mobile-friendly “open search” button
+                // mobile-friendly “open search” button
                 rightSection={
                     <Tooltip label="Show full collection" position="right">
                         <ActionIcon
@@ -129,6 +129,7 @@ const Search = () => {
                             onClick={triggerOpenSearch}
                             // prevent the input from losing focus on mobile tap
                             onMouseDown={e => e.preventDefault()}
+                            color="white"
                         >
                             <RotateCcw size={16} />
                         </ActionIcon>

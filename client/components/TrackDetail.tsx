@@ -30,7 +30,6 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
             <Paper
                 radius="md" // lg/xl if you want more roundness
                 p="xs"
-                className={preview ? 'preview' : undefined}
                 style={{ background: '#0e0e0f' }}
             >
                 <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>

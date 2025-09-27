@@ -56,7 +56,7 @@ const IndexPage = () => {
     if (isLoading || redirecting) {
         return (
             <Flex style={{ height: '100vh' }} justify="center" align="center">
-                <Loader />
+                <Loader color="white" />
             </Flex>
         );
     }

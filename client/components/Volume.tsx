@@ -28,7 +28,11 @@ const Volume = () => {
             max={100}
             onChangeEnd={handleVolumeChange}
             mb="8"
-            classNames={classes}
+            classNames={{
+                track: classes.track,
+                bar: classes['bar-volume'], // <-- note bracket access (hyphenated class)
+                thumb: classes.thumb,
+            }}
         />
     ) : null;
 };

@@ -8,6 +8,10 @@
 }
 
 .bar {
+    background-color: red;
+}
+
+.bar-volume {
     background-color: whitesmoke;
 }
 

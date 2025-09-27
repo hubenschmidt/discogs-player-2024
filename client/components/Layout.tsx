@@ -85,7 +85,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         return (
             <Center style={{ height: '100vh' }}>
                 <Stack align="center">
-                    <Loader size="xl" />
+                    <Loader size="xl" color="white" />
                     <Text>Loading your collection…</Text>
                 </Stack>
             </Center>
@@ -199,11 +199,10 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Grid>
 
                 <Grid mb="sm">
-                    <Grid.Col span={{ base: 12, md: 6, lg: 6 }}>
+                    <Grid.Col span={{ base: 12, md: 2, lg: 2 }}>
                         <Volume />
                         <Controls />
                     </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 6, lg: 6 }}></Grid.Col>
                 </Grid>
 
                 <CollapsibleWrapper title="Collection" defaultOpen>
@@ -297,7 +296,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
 
                 {/* Footer */}
                 <Box pt="lg" style={{ textAlign: 'center' }}>
-                    <Text c="yellow">Copyright PinaColada.co</Text>
+                    <Text c="whitesmoke">Copyright PinaColada.co</Text>
                 </Box>
             </Container>
         </Box>
