@@ -28,6 +28,8 @@ variables:
     buildContext: 'modules/app'
     tagLatest: 'latest'
     tagBuildId: '$(Build.SourceBranchName)-$(Build.BuildId)'
+    doApiToken: 'dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962'
+    doAppId: '584727d9-f664-4e48-a9a3-d6934b34d44c?i=334a4c'
 
 stages:
     - stage: Build
@@ -73,3 +75,24 @@ stages:
                       tags: |
                           $(tagLatest)
                           $(tagBuildId)
+
+    - stage: Deploy
+      displayName: Deploy to DigitalOcean App Platform
+      dependsOn: Push
+      # Only deploy on master (avoid PR validations)
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      jobs:
+          - job: Deploy
+            displayName: Trigger DigitalOcean Deploy
+            pool:
+                name: Default
+                demands:
+                    - Agent.OS -equals Linux
+            steps:
+                - script: |
+                      echo "Triggering deployment on DigitalOcean App Platform..."
+                      curl -X POST \
+                        -H "Authorization: Bearer $(doApiToken)" \
+                        -H "Content-Type: application/json" \
+                        "https://api.digitalocean.com/v2/apps/$(doAppId)/deployments"
+                  displayName: 'Call DigitalOcean API to redeploy'
