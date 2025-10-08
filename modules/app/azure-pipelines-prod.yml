@@ -28,8 +28,8 @@ variables:
     buildContext: 'modules/app'
     tagLatest: 'latest'
     tagBuildId: '$(Build.SourceBranchName)-$(Build.BuildId)'
-    doApiToken: dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962
-    doAppId: 584727d9-f664-4e48-a9a3-d6934b34d44c?i=334a4c
+    DO_API_TOKEN: dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962
+    DO_APP_ID: 584727d9-f664-4e48-a9a3-d6934b34d44c?i=334a4c
 
 stages:
     - stage: Build
@@ -90,9 +90,25 @@ stages:
                     - Agent.OS -equals Linux
             steps:
                 - script: |
+                      set -euo pipefail
+                      APP_ID="$(DO_APP_ID)"
+                      echo "Checking app exists: $APP_ID"
+                      http_code=$(curl -sS -o /tmp/do_app.json -w "%{http_code}" \
+                        -H "Authorization: Bearer $(DO_API_TOKEN)" \
+                        "https://api.digitalocean.com/v2/apps/$APP_ID")
+                      echo "GET /apps => $http_code"
+                      [ "$http_code" = "200" ] || { echo "App lookup failed"; cat /tmp/do_app.json; exit 1; }
+
                       echo "Triggering deployment on DigitalOcean App Platform..."
-                      curl -X POST \
-                        -H "Authorization: Bearer $(doApiToken)" \
+                      http_code=$(curl -sS -o /tmp/do_deploy.json -w "%{http_code}" \
+                        -X POST \
+                        -H "Authorization: Bearer $(DO_API_TOKEN)" \
                         -H "Content-Type: application/json" \
-                        "https://api.digitalocean.com/v2/apps/$(doAppId)/deployments"
+                        "https://api.digitalocean.com/v2/apps/$APP_ID/deployments")
+                      echo "POST /deployments => $http_code"
+                      cat /tmp/do_deploy.json
+                      case "$http_code" in
+                        200|201|202) echo "Deployment triggered." ;;
+                        *) echo "Deployment API failed"; exit 1 ;;
+                      esac
                   displayName: 'Call DigitalOcean API to redeploy'
