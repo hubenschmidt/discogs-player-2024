@@ -18,6 +18,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlencoded
 
+// 🔹 Sanity check route BEFORE auth
+app.get('/is-alive', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // validate bearerToken is from a trusted source
 const jwtCheck = auth({
     audience: 'http://localhost:5000/',
