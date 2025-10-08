@@ -58,7 +58,9 @@ stages:
           - job: Push
             displayName: Build & push image
             pool:
-                vmImage: $(vmImageName) # or use your self-hosted pool if you prefer
+                name: Default # your self-hosted Linux agent pool
+                demands:
+                    - Agent.OS -equals Linux
             steps:
                 # Optional: speed up builds
                 - script: |
