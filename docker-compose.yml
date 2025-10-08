@@ -12,10 +12,10 @@ services:
 
     app:
         build:
-            context: ./app
+            context: ./modules/app
             dockerfile: Dockerfile
         volumes:
-            - ./app:/app # maps the 'app' directory to '/app' in the container
+            - ./modules/app:/app # maps the 'app' directory to '/app' in the container
             - /app/node_modules # create a separate volume for node_modules
         ports:
             - '5000:5000'
@@ -24,12 +24,12 @@ services:
 
     client:
         build:
-            context: ./client
+            context: ./modules/client
             dockerfile: Dockerfile
         ports:
             - '3001:3001'
         volumes:
-            - ./client:/app
+            - ./modules/client:/app
             - /app/node_modules
         command: ['npm', 'run', 'dev'] # overrides Dockerfile start command in dev env
         restart: always
