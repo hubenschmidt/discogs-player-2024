@@ -28,8 +28,8 @@ variables:
     buildContext: 'modules/app'
     tagLatest: 'latest'
     tagBuildId: '$(Build.SourceBranchName)-$(Build.BuildId)'
-    doApiToken: 'dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962'
-    doAppId: '584727d9-f664-4e48-a9a3-d6934b34d44c?i=334a4c'
+    doApiToken: dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962
+    doAppId: 584727d9-f664-4e48-a9a3-d6934b34d44c?i=334a4c
 
 stages:
     - stage: Build
