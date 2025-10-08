@@ -1,15 +1,17 @@
 # azure-pipelines.yml
 trigger:
-- master
+- master  # or 'main' if that’s your default branch
 
 pool:
-  name: Default
+  name: Default   # your self-hosted agent pool
   demands:
   - Agent.OS -equals Linux
-  - docker
 
 steps:
-- checkout: self
+- checkout: none  # no need to pull repo for this test
 
-- bash: |
-    echo 'it works'
+- script: |
+    echo "✅ It works! Running on $(uname -a)"
+    whoami
+    docker --version || echo "Docker not available"
+  displayName: "Smoke test: confirm self-hosted agent"
