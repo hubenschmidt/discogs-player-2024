@@ -20,7 +20,6 @@ resources:
 
 # ---------------- Variables ----------------
 variables:
-    vmImageName: 'ubuntu-latest'
     dockerRegistryServiceConnection: 'ghcr-conn'
     owner: 'hubenschmidt'
     imageName: 'discogs-player-app' # lowercase
