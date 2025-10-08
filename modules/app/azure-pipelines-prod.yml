@@ -90,15 +90,6 @@ stages:
                     - Agent.OS -equals Linux
             steps:
                 - script: |
-                      set -euo pipefail
-                      APP_ID="$(DO_APP_ID)"
-                      echo "Checking app exists: $APP_ID"
-                      http_code=$(curl -sS -o /tmp/do_app.json -w "%{http_code}" \
-                        -H "Authorization: Bearer $(DO_API_TOKEN)" \
-                        "https://api.digitalocean.com/v2/apps/$APP_ID")
-                      echo "GET /apps => $http_code"
-                      [ "$http_code" = "200" ] || { echo "App lookup failed"; cat /tmp/do_app.json; exit 1; }
-
                       echo "Triggering deployment on DigitalOcean App Platform..."
                       http_code=$(curl -sS -o /tmp/do_deploy.json -w "%{http_code}" \
                         -X POST \
