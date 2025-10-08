@@ -1,0 +1,44 @@
+trigger:
+    branches:
+        include:
+            - master
+    paths:
+        include:
+            - '**/app/*'
+        exclude:
+            - '*'
+
+pr:
+    autoCancel: true
+    branches:
+        include:
+            - master
+    paths:
+        include:
+            - '**/app/*'
+        exclude:
+            - '*'
+
+resources:
+    - repo: self
+
+pool:
+    name: Default # self-hosted agent pool
+    demands:
+        - Agent.OS -equals Linux
+
+stages:
+    - stage: Build
+      jobs:
+          - job: Build
+            steps:
+                - task: NodeTool@0
+                  inputs:
+                      versionSpec: '18'
+                  displayName: 'Install Node.js'
+
+                - task: Npm@1
+                  displayName: 'npm install'
+                  inputs:
+                      command: 'install'
+                      workingDir: '$(Build.SourcesDirectory)/modules/app'
