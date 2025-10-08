@@ -1,29 +1,17 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
+# azure-pipelines.yml
 trigger:
-- master
+- master  # or 'main' if that’s your default branch
 
-resources:
-- repo: self
+pool:
+  name: Default   # your self-hosted agent pool
+  demands:
+  - Agent.OS -equals Linux
 
-variables:
-  tag: '$(Build.BuildId)'
+steps:
+- checkout: none  # no need to pull repo for this test
 
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/app/Dockerfile'
-        tags: |
-          $(tag)
+- script: |
+    echo "✅ It works! Running on $(uname -a)"
+    whoami
+    docker --version || echo "Docker not available"
+  displayName: "Smoke test: confirm self-hosted agent"
