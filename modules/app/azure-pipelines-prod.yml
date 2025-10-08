@@ -22,7 +22,7 @@ resources:
 variables:
     vmImageName: 'ubuntu-latest'
     dockerRegistryServiceConnection: 'ghcr-conn'
-    owner: 'your-github-owner' # change me
+    owner: 'hubenschmidt'
     imageName: 'discogs-player-app' # lowercase
     imageRepository: '$(owner)/$(imageName)'
     dockerfilePath: 'modules/app/Dockerfile'
@@ -41,17 +41,15 @@ stages:
                 demands:
                     - Agent.OS -equals Linux
             steps:
-                # If your Dockerfile already runs npm ci, you can skip NodeTool + Npm tasks
                 - task: NodeTool@0
                   inputs:
                       versionSpec: '18'
                   displayName: 'Install Node.js'
                 - task: Npm@1
-                  displayName: 'npm ci (modules/app)'
+                  displayName: 'npm install (modules/app)'
                   inputs:
-                      command: 'custom'
+                      command: 'install'
                       workingDir: '$(Build.SourcesDirectory)/modules/app'
-                      customCommand: 'ci'
 
     - stage: Push
       displayName: Push Docker Image to GHCR
