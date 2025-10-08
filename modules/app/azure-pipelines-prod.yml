@@ -4,9 +4,7 @@ trigger:
             - master
     paths:
         include:
-            - '**/app/*'
-        exclude:
-            - '*'
+            - '**/app/**'
 
 pr:
     autoCancel: true
@@ -15,30 +13,70 @@ pr:
             - master
     paths:
         include:
-            - '**/app/*'
-        exclude:
-            - '*'
+            - '**/app/**'
 
 resources:
     - repo: self
 
-pool:
-    name: Default # self-hosted agent pool
-    demands:
-        - Agent.OS -equals Linux
+# ---------------- Variables ----------------
+variables:
+    vmImageName: 'ubuntu-latest'
+    dockerRegistryServiceConnection: 'ghcr-conn'
+    owner: 'your-github-owner' # change me
+    imageName: 'discogs-player-app' # lowercase
+    imageRepository: '$(owner)/$(imageName)'
+    dockerfilePath: 'modules/app/Dockerfile'
+    buildContext: 'modules/app'
+    tagLatest: 'latest'
+    tagBuildId: '$(Build.SourceBranchName)-$(Build.BuildId)'
 
 stages:
     - stage: Build
+      displayName: Build app
       jobs:
           - job: Build
+            displayName: Node build (optional)
+            pool:
+                name: Default # your self-hosted Linux agent pool
+                demands:
+                    - Agent.OS -equals Linux
             steps:
+                # If your Dockerfile already runs npm ci, you can skip NodeTool + Npm tasks
                 - task: NodeTool@0
                   inputs:
                       versionSpec: '18'
                   displayName: 'Install Node.js'
-
                 - task: Npm@1
-                  displayName: 'npm install'
+                  displayName: 'npm ci (modules/app)'
                   inputs:
-                      command: 'install'
+                      command: 'custom'
                       workingDir: '$(Build.SourcesDirectory)/modules/app'
+                      customCommand: 'ci'
+
+    - stage: Push
+      displayName: Push Docker Image to GHCR
+      dependsOn: Build
+      jobs:
+          - job: Push
+            displayName: Build & push image
+            pool:
+                vmImage: $(vmImageName) # or use your self-hosted pool if you prefer
+            steps:
+                # Optional: speed up builds
+                - script: |
+                      echo "Enabling BuildKit"
+                      echo "##vso[task.setvariable variable=DOCKER_BUILDKIT]1"
+                  displayName: 'Enable BuildKit'
+
+                - task: Docker@2
+                  displayName: 'Build and push to GHCR'
+                  inputs:
+                      command: 'buildAndPush'
+                      containerRegistry: '$(dockerRegistryServiceConnection)'
+                      repository: '$(imageRepository)' # owner/name ONLY
+                      dockerfile: '$(dockerfilePath)'
+                      buildContext: '$(buildContext)'
+                      addPipelineData: false
+                      tags: |
+                          $(tagLatest)
+                          $(tagBuildId)
