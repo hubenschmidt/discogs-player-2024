@@ -6,15 +6,6 @@ trigger:
         include:
             - '**/app/**'
 
-pr:
-    autoCancel: true
-    branches:
-        include:
-            - master
-    paths:
-        include:
-            - '**/app/**'
-
 resources:
     - repo: self
 
