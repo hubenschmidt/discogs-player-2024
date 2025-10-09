@@ -23,7 +23,6 @@ RUN npm run build
 # ---------- prod (runtime) ----------
 FROM node:18-alpine AS prod
 WORKDIR /app
-RUN apk add --no-cache ca-certificates && update-ca-certificates
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
