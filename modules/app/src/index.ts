@@ -35,10 +35,10 @@ try {
     const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 
     const jwtCheck = auth({
-        issuer, // full URL with trailing slash
+        issuerBaseUrl: issuer, // full URL with trailing slash
         audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
-        jwksUri: `${issuer}.well-known/jwks.json`,
-        tokenSigningAlg: 'RS256',
+        // jwksUri: `${issuer}.well-known/jwks.json`,
+        // tokenSigningAlg: 'RS256',
     });
 
     app.use(jwtCheck);
