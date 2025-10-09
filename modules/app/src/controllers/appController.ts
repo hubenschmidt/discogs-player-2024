@@ -1,6 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
 
+export const checkDbHealth = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const dbHealth = 'not checked';
+        res.status(200).json(dbHealth);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const search = async (
     req: Request,
     res: Response,
