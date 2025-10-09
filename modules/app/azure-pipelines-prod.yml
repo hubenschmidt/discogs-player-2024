@@ -55,7 +55,7 @@ stages:
     - stage: Push
       displayName: Push Docker Image to GHCR
       dependsOn: Build
-     # Only deploy on master (avoid PR validations)
+      # Only deploy on master (avoid PR validations)
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       jobs:
           - job: Push
