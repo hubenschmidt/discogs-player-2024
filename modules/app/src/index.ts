@@ -24,14 +24,13 @@ app.get('/is-alive', (req, res) => {
 });
 
 // validate bearerToken is from a trusted source
-// const jwtCheck = auth({
-//     audience: process.env.AUTH0_AUDIENCE,
-//     issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}/`, // whubenschmidt@gmail.com Auth0 Tenant
-//     // issuerBaseURL: 'https://dev-i6pidxzic85x5kuy.us.auth0.com/', // locked-out Github-Auth0 Tenant
-//     tokenSigningAlg: 'RS256',
-//     jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`, // <- skip OIDC discovery
-// });
-// app.use(jwtCheck);
+const jwtCheck = auth({
+    audience: process.env.AUTH0_AUDIENCE,
+    issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}/`, // whubenschmidt@gmail.com Auth0 Tenant
+    // issuerBaseURL: 'https://dev-i6pidxzic85x5kuy.us.auth0.com/', // locked-out Github-Auth0 Tenant
+    tokenSigningAlg: 'RS256',
+});
+app.use(jwtCheck);
 
 // Custom middleware for logging requests
 app.use(morgan('combined'));
