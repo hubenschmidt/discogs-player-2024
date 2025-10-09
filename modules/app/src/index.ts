@@ -23,24 +23,24 @@ app.get('/is-alive', (req, res) => {
     res.status(200).send('OK!');
 });
 
-// app.use((req, res, next) => {
-//     if (req.path.startsWith('/api')) {
-//         console.log('Auth header:', req.headers);
-//     }
-//     next();
-// });
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+        console.log('Auth header:', req.headers);
+    }
+    next();
+});
 
-// // ✅ use issuer + jwksUri together; do NOT use issuerBaseURL here
-// const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
+// ✅ use issuer + jwksUri together; do NOT use issuerBaseURL here
+const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 
-// const jwtCheck = auth({
-//     issuer, // full URL with trailing slash
-//     audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
-//     jwksUri: `${issuer}.well-known/jwks.json`,
-//     tokenSigningAlg: 'RS256',
-// });
+const jwtCheck = auth({
+    issuer, // full URL with trailing slash
+    audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
+    jwksUri: `${issuer}.well-known/jwks.json`,
+    tokenSigningAlg: 'RS256',
+});
 
-// app.use(jwtCheck);
+app.use(jwtCheck);
 
 // Custom middleware for logging requests
 app.use(morgan('combined'));
