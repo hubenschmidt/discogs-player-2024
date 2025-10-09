@@ -22,7 +22,7 @@ const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 const jwtCheck = auth({
     issuerBaseURL: issuer, // full URL with trailing slash
     audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
-    // jwksUri: `${issuer}.well-known/jwks.json`,
+    jwksUri: `${issuer}.well-known/jwks.json`,
     // tokenSigningAlg: 'RS256',
 });
 
