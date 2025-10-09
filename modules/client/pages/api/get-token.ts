@@ -13,6 +13,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
             audience: process.env.AUTH0_AUDIENCE,
             grant_type: 'client_credentials',
         };
+        console.log('payload', payload);
 
         const auth0Res = await fetch(
             `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
