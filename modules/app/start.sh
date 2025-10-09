@@ -16,7 +16,7 @@ echo "Starting... 🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐︎🌐�
 
 if [ "$NODE_ENV" = "production" ]; then
     # Run production command
-    node server.js
+    node dist/index.js
 else
     # Run development command
     npm run dev

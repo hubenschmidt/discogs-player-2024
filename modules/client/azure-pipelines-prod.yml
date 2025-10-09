@@ -4,7 +4,7 @@ trigger:
             - master
     paths:
         include:
-            - '**/app/**'
+            - '**/client/**'
 
 pr:
     autoCancel: true
@@ -13,7 +13,7 @@ pr:
             - master
     paths:
         include:
-            - '**/app/**'
+            - '**/client/**'
 
 resources:
     - repo: self
@@ -22,10 +22,10 @@ resources:
 variables:
     dockerRegistryServiceConnection: 'ghcr-conn'
     owner: 'hubenschmidt'
-    imageName: 'discogs-player-app' # lowercase
+    imageName: 'discogs-player-client'
     imageRepository: '$(owner)/$(imageName)'
-    dockerfilePath: 'modules/app/Dockerfile'
-    buildContext: 'modules/app'
+    dockerfilePath: 'modules/client/Dockerfile'
+    buildContext: 'modules/client'
     tagLatest: 'latest'
     tagBuildId: '$(Build.SourceBranchName)-$(Build.BuildId)'
     DO_API_TOKEN: dop_v1_712eaf28237d9d0220284024e059789d134d1919cf79af5625600036051bc962
@@ -33,7 +33,7 @@ variables:
 
 stages:
     - stage: Build
-      displayName: Build app
+      displayName: Build client
       jobs:
           - job: Build
             displayName: Node build
@@ -44,13 +44,13 @@ stages:
             steps:
                 - task: NodeTool@0
                   inputs:
-                      versionSpec: '18'
+                      versionSpec: '24'
                   displayName: 'Install Node.js'
                 - task: Npm@1
-                  displayName: 'npm install (modules/app)'
+                  displayName: 'npm install (modules/client)'
                   inputs:
                       command: 'install'
-                      workingDir: '$(Build.SourcesDirectory)/modules/app'
+                      workingDir: '$(Build.SourcesDirectory)/modules/client'
 
     - stage: Push
       displayName: Push Docker Image to GHCR
@@ -73,8 +73,6 @@ stages:
                       repository: '$(imageRepository)' # owner/name ONLY
                       dockerfile: '$(dockerfilePath)'
                       buildContext: '$(buildContext)'
-                      arguments: >
-                        --target prod
                       addPipelineData: false
                       tags: |
                           $(tagLatest)
