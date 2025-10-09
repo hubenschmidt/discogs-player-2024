@@ -36,9 +36,9 @@ stages:
       displayName: Build app
       jobs:
           - job: Build
-            displayName: Node build (optional)
+            displayName: Node build
             pool:
-                name: Default # your self-hosted Linux agent pool
+                name: Default # self-hosted Linux agent pool
                 demands:
                     - Agent.OS -equals Linux
             steps:
@@ -55,11 +55,13 @@ stages:
     - stage: Push
       displayName: Push Docker Image to GHCR
       dependsOn: Build
+     # Only deploy on master (avoid PR validations)
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       jobs:
           - job: Push
             displayName: Build & push image
             pool:
-                name: Default # your self-hosted Linux agent pool
+                name: Default # self-hosted Linux agent pool
                 demands:
                     - Agent.OS -equals Linux
             steps:
