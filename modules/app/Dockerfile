@@ -29,7 +29,7 @@ RUN chmod +x ./start.sh
 ENTRYPOINT ["sh", "/app/start.sh"]
 
 # Expose the application's default port (adjust as necessary)
-EXPOSE 6001
+EXPOSE 5000
 
 # Use the start.sh script to start the application
 CMD ["./start.sh"]
