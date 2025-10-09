@@ -10,7 +10,7 @@ export const checkDbHealth = async (
         const dbHealth = 'not checked';
         res.status(200).json(dbHealth);
     } catch (error) {
-        console.error(error);
+        console.trace(error);
         next(error);
     }
 };

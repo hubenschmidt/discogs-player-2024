@@ -30,17 +30,21 @@ app.use((req, res, next) => {
     next();
 });
 
-// ✅ use issuer + jwksUri together; do NOT use issuerBaseURL here
-const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
+try {
+    // ✅ use issuer + jwksUri together; do NOT use issuerBaseURL here
+    const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 
-const jwtCheck = auth({
-    issuer, // full URL with trailing slash
-    audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
-    jwksUri: `${issuer}.well-known/jwks.json`,
-    tokenSigningAlg: 'RS256',
-});
+    const jwtCheck = auth({
+        issuer, // full URL with trailing slash
+        audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
+        jwksUri: `${issuer}.well-known/jwks.json`,
+        tokenSigningAlg: 'RS256',
+    });
 
-app.use(jwtCheck);
+    app.use(jwtCheck);
+} catch (error) {
+    console.trace(error);
+}
 
 // Custom middleware for logging requests
 app.use(morgan('combined'));
