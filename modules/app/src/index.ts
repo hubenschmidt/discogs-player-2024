@@ -25,7 +25,7 @@ app.get('/is-alive', (req, res) => {
 
 app.use((req, _res, next) => {
     if (req.path.startsWith('/api')) {
-        console.trace('Auth header:', req.headers.authorization);
+        console.log('Auth header:', req.headers.authorization);
     }
     next();
 });
@@ -34,8 +34,8 @@ app.use((req, _res, next) => {
 const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 
 const jwtCheck = auth({
-    audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
     issuer, // full URL with trailing slash
+    audience: process.env.AUTH0_AUDIENCE, // must exactly match your API Identifier
     jwksUri: `${issuer}.well-known/jwks.json`,
     tokenSigningAlg: 'RS256',
 });
