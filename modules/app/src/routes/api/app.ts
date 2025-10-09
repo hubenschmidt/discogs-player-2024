@@ -11,7 +11,7 @@ import {
     getPlaylist,
     getHistory,
     getExplorer,
-    checkDbHealth,
+    deleteFromPlaylist,
 } from '../../controllers/appController';
 
 export const router: Router = Router();
@@ -23,10 +23,10 @@ router.get('/user/:email', getUser);
 router.post('/:username/release/:release_id/video', updatePlayHistory);
 router.post('/:username/playlist/create', createPlaylist);
 router.post('/:username/playlist/add', addToPlaylist);
+router.post('/:username/playlist/delete', deleteFromPlaylist);
 router.get('/:username/playlist/all', getPlaylists);
 router.get('/:username/playlist/:playlistId', getPlaylist);
 router.get('/:username/history', getHistory);
 router.get('/:username/explorer', getExplorer);
-router.get('/user/:email/db-health', checkDbHealth);
 
 export default router;

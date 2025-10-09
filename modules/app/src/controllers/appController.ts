@@ -1,20 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as appService from '../services/appService';
 
-export const checkDbHealth = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    try {
-        const dbHealth = 'not checked';
-        res.status(200).json(dbHealth);
-    } catch (error) {
-        console.trace(error);
-        next(error);
-    }
-};
-
 export const search = async (
     req: Request,
     res: Response,
@@ -121,6 +107,20 @@ export const getPlaylists = async (
     try {
         const playlists = await appService.getPlaylists(req);
         res.status(200).json(playlists);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const deleteFromPlaylist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const entry = await appService.deleteFromPlaylist(req);
+        res.status(200).json(entry);
     } catch (error) {
         console.error(error);
         next(error);

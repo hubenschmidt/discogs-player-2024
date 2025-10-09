@@ -47,6 +47,11 @@ export const getPlaylists = async (req: Request) => {
     return playlists;
 };
 
+export const deleteFromPlaylist = async (req: Request) => {
+    const entry = await repos.deleteFromPlaylist(req);
+    return entry;
+};
+
 export const addToPlaylist = async (req: Request) => {
     const entry = await repos.addToPlaylist(req);
     return entry;

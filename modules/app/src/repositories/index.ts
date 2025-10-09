@@ -943,6 +943,67 @@ export const search = async (req: Request) => {
     return [];
 };
 
+export const deleteFromPlaylist = async (req: Request) => {
+    const { playlistId, uri } = req.body;
+
+    return db.sequelize.transaction(async (t: Transaction) => {
+        // 1) find the video by canonical URI
+        const video = await db.Video.findOne({
+            where: { URI: uri },
+            transaction: t,
+        });
+        if (!video) {
+            return {
+                removed: false,
+                reason: 'video_not_found',
+                playlistId,
+                uri: uri,
+            };
+        }
+
+        // 2) find the playlist-video join row
+        const playlistVideo = await db.PlaylistVideo.findOne({
+            where: {
+                Playlist_Id: playlistId,
+                Video_Id: video.Video_Id,
+            },
+            transaction: t,
+        });
+
+        if (!playlistVideo) {
+            return {
+                removed: false,
+                reason: 'not_in_playlist',
+                playlistId,
+                videoId: video.Video_Id,
+            };
+        }
+
+        // 3) delete the join row
+        await playlistVideo.destroy({ transaction: t });
+
+        // 4) keep a stored count in Playlists table in sync
+        // If Tracks_Count is a persisted column (not a view), decrement it safely:
+        if (db.Playlist?.rawAttributes?.Tracks_Count) {
+            await db.Playlist.increment(
+                { Tracks_Count: -1 },
+                { where: { Playlist_Id: playlistId }, transaction: t },
+            );
+        }
+
+        // 5) shape a familiar response
+        const videoPlain = video.get ? video.get({ plain: true }) : video;
+        return {
+            removed: true,
+            playlistId,
+            playlistVideo: playlistVideo.get
+                ? playlistVideo.get({ plain: true })
+                : { Playlist_Id: playlistId, Video_Id: video.Video_Id },
+            video: videoPlain,
+        };
+    });
+};
+
 export const addToPlaylist = async (req: Request) => {
     const { playlistId, uri } = req.body;
     const extractedUri = extractYouTubeVideoId(uri);
@@ -974,8 +1035,6 @@ export const addToPlaylist = async (req: Request) => {
         };
     });
 };
-
-type ExplorerRow = { Name: string; Year?: string };
 
 const parseStringList = (input: any): string[] | null => {
     if (input == null) return null;

@@ -5,9 +5,12 @@ import { PlaylistContext } from '../context/playlistContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { DataTable, type Column, type PageData } from './DataTable';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { updateVideoPlayCount } from '../api';
+import {
+    updateVideoPlayCount,
+    deleteFromPlaylist as apiDeleteFromPlaylist,
+} from '../api';
 import { ActionIcon } from '@mantine/core';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { NavContext } from '../context/navContext';
 import { SearchContext } from '../context/searchContext';
 
@@ -28,7 +31,7 @@ const Playlist = () => {
     const columns: Column<any>[] = [
         {
             header: null,
-            width: '5%', // or '15%'
+            width: '6%', // or '15%'
             render: v =>
                 v.Thumb ? (
                     <Box
@@ -61,6 +64,7 @@ const Playlist = () => {
                         </Text>
                     </Box>
                 ),
+            visibleFrom: 'sm',
         },
         {
             header: <Text fw={700}>Title</Text>,
@@ -69,24 +73,126 @@ const Playlist = () => {
                     {v.Title ?? v.title ?? 'Untitled'}
                 </Text>
             ),
-            width: '45%',
+            width: '54%',
         },
         {
             header: <Text fw={700}>Duration</Text>,
             render: v => v.durationFormatted,
             visibleFrom: 'md',
-            width: 100,
+            width: '15%',
         },
         {
             header: <Text fw={700}>Added</Text>,
             render: v => v.updatedAtFormatted,
             visibleFrom: 'sm',
-            width: 180,
+            width: '15%',
+        },
+        {
+            header: null,
+            width: '10%',
+            render: (row: any) => (
+                <ActionIcon
+                    variant="subtle"
+                    aria-label="Remove from playlist"
+                    title="Remove from playlist"
+                    onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(row);
+                    }}
+                >
+                    <Trash2 size={16} color="white" />
+                </ActionIcon>
+            ),
         },
     ];
 
     const handleClose = () => {
         dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+    };
+
+    const handleDelete = async (row: any) => {
+        try {
+            await apiDeleteFromPlaylist(
+                userState.username,
+                bearerToken,
+                pl?.playlist,
+                row.URI,
+            );
+        } catch (e) {
+            console.error('deleteFromPlaylist failed', e);
+            return;
+        }
+
+        // Optimistic UI update
+        const oldItems = videosPage?.items ?? [];
+        const newItems = oldItems.filter((v: any) => v?.uri !== row.uri);
+
+        const newDetail = {
+            ...pl,
+            playlist: {
+                ...pl?.playlist,
+                Tracks_Count: Math.max(
+                    0,
+                    (pl?.playlist?.Tracks_Count ?? newItems.length + 1) - 1,
+                ),
+            },
+            videos: { ...pl?.videos, items: newItems },
+        };
+        dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: newDetail });
+
+        // Playback handling (no "source" logic):
+        if (discogsReleaseState.playbackMode !== 'playlist') return;
+
+        const currentUri = discogsReleaseState.selectedVideo?.uri;
+        const deletedWasCurrent = currentUri && currentUri === row.uri;
+
+        if (!deletedWasCurrent) {
+            // Keep playing the same track (reseed with same index if present)
+            const idx = currentUri
+                ? newItems.findIndex((v: any) => v?.uri === currentUri)
+                : 0;
+            const startIndex = idx >= 0 ? idx : 0;
+
+            dispatchDiscogsRelease({
+                type: 'SET_PLAYBACK_QUEUE',
+                payload: { items: newItems, startIndex, mode: 'playlist' },
+            });
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
+            return;
+        }
+
+        // Deleted the currently playing track — pick a neighbor
+        const oldIndex = oldItems.findIndex((v: any) => v?.uri === row.uri);
+        const next = newItems[oldIndex] ?? newItems[oldIndex - 1] ?? null;
+
+        if (!next) {
+            // Playlist became empty
+            dispatchDiscogsRelease({
+                type: 'SET_PLAYBACK_QUEUE',
+                payload: { items: [], startIndex: 0, mode: 'playlist' },
+            });
+            dispatchDiscogsRelease({
+                type: 'SET_SELECTED_VIDEO',
+                payload: null,
+            });
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
+            return;
+        }
+
+        const nextIndex = Math.max(
+            0,
+            newItems.findIndex((v: any) => v?.uri === next.uri),
+        );
+        dispatchDiscogsRelease({
+            type: 'SET_PLAYBACK_QUEUE',
+            payload: {
+                items: newItems,
+                startIndex: nextIndex,
+                mode: 'playlist',
+            },
+        });
+        dispatchDiscogsRelease({ type: 'SET_SELECTED_VIDEO', payload: next });
+        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
     };
 
     // Auto-start first entry when videosPage loads (if nothing playing from this page)
