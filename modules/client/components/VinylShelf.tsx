@@ -196,6 +196,7 @@ const VinylShelf: FC = () => {
         playlistState.activePlaylistId,
         playlistState.playlistVideosPage,
         playlistState.playlistVideosLimit,
+        playlistState.version,
         userState.username,
         dispatchPlaylist,
         dispatchCollection,
@@ -320,7 +321,6 @@ const VinylShelf: FC = () => {
 
             <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
                 {items?.map((release, i) => {
-                    console.log(release);
                     const n = items?.length;
                     let angle = 0;
                     if (n > 1) angle = -90 + 180 * (i / (n - 1));

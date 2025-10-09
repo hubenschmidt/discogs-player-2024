@@ -36,9 +36,7 @@ const IndexPage = () => {
     }, [user]);
 
     useEffect(() => {
-        console.log('bearerToken before effect', bearerToken);
         if (user?.name && bearerToken) {
-            console.log('bearerToken after effect', bearerToken);
             getUser(user.name, bearerToken)
                 .then(res => {
                     dispatchUser({

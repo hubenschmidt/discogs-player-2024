@@ -37,18 +37,16 @@ const AddToPlaylistModal = () => {
 
         // keep track of last-picked in context
         dispatchPlaylist({ type: 'SET_SELECTED_PLAYLIST', payload: pl });
-
         setLoadingId(pl.Playlist_Id);
 
         addToPlaylist(userState.username, bearerToken, pl, selectedVideo)
             .then(res => {
-                // clear selection, close modal, refresh listing if you want newest first
+                dispatchPlaylist({ type: 'SET_PLAYLIST_VERSION' });
                 dispatchPlaylist({
                     type: 'SET_SELECTED_PLAYLIST',
                     payload: null,
                 });
                 handleClose();
-                console.log(res);
             })
             .catch(err => {
                 console.error(err);
@@ -66,6 +64,8 @@ const AddToPlaylistModal = () => {
                 description?.trim(),
                 selectedVideo,
             );
+
+            dispatchPlaylist({ type: 'SET_PLAYLIST_VERSION' });
 
             // close + reset form
             setOpen(false);

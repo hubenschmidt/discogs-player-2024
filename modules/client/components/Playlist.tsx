@@ -28,7 +28,7 @@ const Playlist = () => {
     const columns: Column<any>[] = [
         {
             header: null,
-            width: 64, // or '15%'
+            width: '5%', // or '15%'
             render: v =>
                 v.Thumb ? (
                     <Box
@@ -70,12 +70,6 @@ const Playlist = () => {
                 </Text>
             ),
             width: '45%',
-        },
-        {
-            header: <Text fw={700}>URI</Text>,
-            accessor: v => v.URI ?? v.uri ?? '—',
-            visibleFrom: 'sm',
-            width: '25%',
         },
         {
             header: <Text fw={700}>Duration</Text>,

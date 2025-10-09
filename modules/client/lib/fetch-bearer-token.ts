@@ -5,7 +5,6 @@ export const fetchBearerToken = (): Promise<BearerToken> =>
     axios
         .get<{ accessToken: string }>('/api/get-token')
         .then(res => {
-            console.log(res, 'res from fetchBearerToken');
             return {
                 headers: {
                     Authorization: `Bearer ${res.data.accessToken}`,

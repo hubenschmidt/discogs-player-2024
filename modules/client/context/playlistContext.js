@@ -15,6 +15,7 @@ const initialState = {
     playlistVideosOrderBy: 'updatedAt',
     playlistVideosOrder: 'DESC',
     activePlaylistId: null,
+    version: 0,
 };
 
 export const PlaylistContext = createContext(initialState);
