@@ -14,6 +14,7 @@ services:
         build:
             context: ./modules/app
             dockerfile: Dockerfile
+            target: dev # default to dev target
         volumes:
             - ./modules/app:/app # maps the 'app' directory to '/app' in the container
             - /app/node_modules # create a separate volume for node_modules

@@ -73,6 +73,8 @@ stages:
                       repository: '$(imageRepository)' # owner/name ONLY
                       dockerfile: '$(dockerfilePath)'
                       buildContext: '$(buildContext)'
+                      arguments: >
+                        --target prod
                       addPipelineData: false
                       tags: |
                           $(tagLatest)

@@ -1,35 +1,37 @@
-# Use a lightweight Node.js image as the base
-FROM node:18-alpine
-
-# Include bash with -alpine image
-RUN apk add --no-cache bash
-
-# Set the working directory inside the container
+# ---------- base ----------
+FROM node:18-alpine AS base
 WORKDIR /app
-
-# Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
-# Set the working directory inside the container
-WORKDIR /app
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application files
-COPY . .
-
-# Copy start.sh to the Docker container
+# ---------- dev ----------
+FROM base AS dev
+ENV NODE_ENV=development
+RUN apk add --no-cache bash
+RUN npm ci
+RUN npm i -g sequelize-cli
 COPY start.sh ./start.sh
-
-# Give execution permissions to the start.sh script
 RUN chmod +x ./start.sh
+# don’t copy source here — mount it in compose
+EXPOSE 5000
+CMD ["./start.sh"]
 
-# Set the entrypoint command
-ENTRYPOINT ["sh", "/app/start.sh"]
+# ---------- build ----------
+FROM base AS build
+ENV NODE_ENV=production
+RUN npm ci
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
 
-# Expose the application's default port (adjust as necessary)
-EXPOSE 6001
-
-# Use the start.sh script to start the application
+# ---------- prod ----------
+FROM node:18-alpine AS prod
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+RUN npm i -g sequelize-cli
+COPY --from=build /app/dist ./dist
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+EXPOSE 5000
 CMD ["./start.sh"]
