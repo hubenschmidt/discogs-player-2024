@@ -26,6 +26,8 @@ module.exports = {
         : {
               ...base,
               port: Number(process.env.DB_PORT || 25060),
+              dialect: 'postgres',
+              logging: false,
               dialectOptions: sslDialectOptions,
           },
 };
