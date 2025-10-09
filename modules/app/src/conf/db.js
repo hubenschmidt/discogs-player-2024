@@ -18,7 +18,7 @@ module.exports = {
     },
     production: process.env.DATABASE_URL
         ? {
-              use_env_variable: 'DATABASE_URL', // Sequelize/CLI reads from env
+              use_env_variable: 'DATABASE_URL', // Sequelize/CLI reads from .env
               dialect: 'postgres',
               logging: false,
               dialectOptions: sslDialectOptions,
