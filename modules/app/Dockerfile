@@ -11,7 +11,6 @@ RUN npm ci
 RUN npm i -g sequelize-cli
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh
-# don’t copy source here — mount it in compose
 EXPOSE 5000
 CMD ["./start.sh"]
 
