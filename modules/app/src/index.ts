@@ -23,6 +23,13 @@ app.get('/is-alive', (req, res) => {
     res.status(200).send('OK!');
 });
 
+app.use((req, _res, next) => {
+    if (req.path.startsWith('/api')) {
+        console.trace('Auth header:', req.headers.authorization);
+    }
+    next();
+});
+
 // ✅ use issuer + jwksUri together; do NOT use issuerBaseURL here
 const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 
