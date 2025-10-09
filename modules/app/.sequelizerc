@@ -4,4 +4,26 @@ module.exports = {
     'models-path': path.resolve('dist/models'),
     'migrations-path': path.resolve('dist/migrations'),
     'seeders-path': path.resolve('dist/seeders'),
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    dialect: 'postgres',
+    logging: false,
+};
+
+module.exports = {
+    development: {
+        ...base,
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        dialectOptions: {},
+    },
+    production: {
+        ...base,
+        port: parseInt(process.env.DB_PORT || '25060', 10), // DO default
+        dialectOptions: {
+            ssl: {
+                require: true,
+                // If you didn't load the CA cert, set false; if you did, set true
+                rejectUnauthorized: false,
+            },
+        },
+    },
 };
