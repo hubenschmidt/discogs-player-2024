@@ -68,6 +68,7 @@ app.get('/diag/jwks', async (_req, res) => {
 
 const issuer = `https://${process.env.AUTH0_DOMAIN}/`;
 console.log('AUTH0_AUDIENCE:', process.env.AUTH0_AUDIENCE);
+console.log('AUTH0_DOMAIN:', process.env.AUTH0_DOMAIN);
 console.log('issuerBaseURL: ', issuer);
 const jwtCheck = auth({
     issuerBaseURL: issuer, // full URL with trailing slash
@@ -88,7 +89,8 @@ const authErrorHandler: ErrorRequestHandler = (err, _req, res, next) => {
         res.status(401).json({
             message: (err as any).message,
             code: (err as any).code,
-            ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
+            stack: (err as any).stack,
+            err: err as any,
         });
         return; // ensure void
     }
