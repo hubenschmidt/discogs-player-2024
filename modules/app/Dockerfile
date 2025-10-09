@@ -5,32 +5,33 @@ COPY package*.json ./
 
 # ---------- dev ----------
 FROM base AS dev
-ENV NODE_ENV=development
 RUN apk add --no-cache bash
-RUN npm ci
-RUN npm i -g sequelize-cli
+# install all deps (includes dev deps)
+RUN npm install
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh
+# Set the entrypoint command
+ENTRYPOINT ["sh", "/app/start.sh"]
 EXPOSE 5000
 CMD ["./start.sh"]
 
-# ---------- build ----------
+# ---------- build (compile TS) ----------
 FROM base AS build
-ENV NODE_ENV=production
-RUN npm ci
+RUN npm install
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build
+RUN npm run build    # must emit dist/** (dist/index.js, dist/conf/db.js, etc.)
 
-# ---------- prod ----------
+# ---------- prod (runtime) ----------
 FROM node:18-alpine AS prod
 WORKDIR /app
-ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev
-RUN npm i -g sequelize-cli
+# runtime deps only for smaller image
+RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 COPY start.sh ./start.sh
 RUN chmod +x ./start.sh
+# Set the entrypoint command
+ENTRYPOINT ["sh", "/app/start.sh"]
 EXPOSE 5000
 CMD ["./start.sh"]
