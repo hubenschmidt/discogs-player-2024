@@ -41,6 +41,11 @@ app.use(router);
 // Error handling middleware
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
+const port = Number(process.env.PORT || 8080); // matches your DO env + http_port
+app.get('/', (req, res) => {
+    res.status(200).send('ok');
+}); // fast health response
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`listening on 0.0.0.0:${port}`);
 });
