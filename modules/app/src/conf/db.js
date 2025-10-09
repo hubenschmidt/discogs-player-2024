@@ -1,14 +1,31 @@
 require('dotenv').config();
 
-module.exports = {
+const base = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT || 5432),
     dialect: 'postgres',
     logging: false,
-    migrationStorageTableName: 'SequelizeMeta_core',
-    seederStorage: 'sequelize',
-    seederStorageTableName: 'SequelizeMeta_core',
+};
+
+const sslDialectOptions = { ssl: { require: true, rejectUnauthorized: false } };
+
+module.exports = {
+    development: {
+        ...base, // local compose on 5432, usually no SSL
+    },
+    production: process.env.DATABASE_URL
+        ? {
+              use_env_variable: 'DATABASE_URL', // Sequelize/CLI reads from env
+              dialect: 'postgres',
+              logging: false,
+              dialectOptions: sslDialectOptions,
+          }
+        : {
+              ...base,
+              port: Number(process.env.DB_PORT || 25060),
+              dialectOptions: sslDialectOptions,
+          },
 };
