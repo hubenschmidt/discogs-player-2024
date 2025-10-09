@@ -22,7 +22,7 @@ resources:
 variables:
     dockerRegistryServiceConnection: 'ghcr-conn'
     owner: 'hubenschmidt'
-    imageName: 'discogs-player-app' # lowercase
+    imageName: 'discogs-player-app'
     imageRepository: '$(owner)/$(imageName)'
     dockerfilePath: 'modules/app/Dockerfile'
     buildContext: 'modules/app'
