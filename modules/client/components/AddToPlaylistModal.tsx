@@ -99,7 +99,7 @@ const AddToPlaylistModal = () => {
             <Modal.Overlay backgroundOpacity={0.5} />
             <Modal.Content
                 style={{
-                    border: '1px solid #fff', // ← white border
+                    border: '1px solid #fff',
                     borderRadius: 12, // optional, match your design
                 }}
             >
