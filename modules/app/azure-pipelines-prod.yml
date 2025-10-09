@@ -36,9 +36,9 @@ stages:
       displayName: Build app
       jobs:
           - job: Build
-            displayName: Node build (optional)
+            displayName: Node build
             pool:
-                name: Default # your self-hosted Linux agent pool
+                name: Default # self-hosted Linux agent pool
                 demands:
                     - Agent.OS -equals Linux
             steps:
@@ -61,7 +61,7 @@ stages:
           - job: Push
             displayName: Build & push image
             pool:
-                name: Default # your self-hosted Linux agent pool
+                name: Default # self-hosted Linux agent pool
                 demands:
                     - Agent.OS -equals Linux
             steps:
