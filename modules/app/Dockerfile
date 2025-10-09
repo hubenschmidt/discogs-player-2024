@@ -20,7 +20,8 @@ FROM base AS build
 RUN npm install
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build    # must emit dist/** (dist/index.js, dist/conf/db.js, etc.)
+# must emit dist/** (dist/index.js, dist/conf/db.js, etc.)
+RUN npm run build   
 
 # ---------- prod (runtime) ----------
 FROM node:18-alpine AS prod
