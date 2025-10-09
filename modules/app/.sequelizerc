@@ -1,29 +1,13 @@
+// .sequelizerc
 const path = require('path');
-module.exports = {
-    config: path.resolve('dist/conf/db.js'),
-    'models-path': path.resolve('dist/models'),
-    'migrations-path': path.resolve('dist/migrations'),
-    'seeders-path': path.resolve('dist/seeders'),
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    dialect: 'postgres',
-    logging: false,
-};
+
+const isProd = process.env.NODE_ENV === 'production';
+const ROOT = isProd ? 'dist' : 'src';
 
 module.exports = {
-    development: {
-        ...base,
-        port: parseInt(process.env.DB_PORT || '5432', 10),
-        dialectOptions: {},
-    },
-    production: {
-        ...base,
-        port: parseInt(process.env.DB_PORT || '25060', 10), // DO default
-        dialectOptions: {
-            ssl: {
-                require: true,
-                // If you didn't load the CA cert, set false; if you did, set true
-                rejectUnauthorized: false,
-            },
-        },
-    },
+    // Point Sequelize CLI to the right config file depending on env
+    config: path.resolve(ROOT, 'conf', 'db.js'),
+    'models-path': path.resolve('models'),
+    'seeders-path': path.resolve('seeders'),
+    'migrations-path': path.resolve('migrations'),
 };
