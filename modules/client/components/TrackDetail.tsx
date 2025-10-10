@@ -4,7 +4,6 @@ import { PlayerContext } from '../context/playerContext';
 
 interface TrackDetailProps {
     selectedDiscogsRelease: any;
-    preview?: boolean;
 }
 
 const scrubTitle = (s?: string) =>
@@ -18,7 +17,6 @@ const scrubTitle = (s?: string) =>
 
 const TrackDetail: React.FC<TrackDetailProps> = ({
     selectedDiscogsRelease,
-    preview,
 }) => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
@@ -32,15 +30,13 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                 p="xs"
                 style={{ background: '#0e0e0f' }}
             >
-                <Box className={`track-detail-box ${preview ? 'preview' : ''}`}>
+                <Box className={'track-detail-box'}>
                     <Box className="track-detail-content">
-                        {!preview && (
-                            <Text className="track-detail-text" lh={1}>
-                                ♪{' '}
-                                {scrubTitle(controls?.videoTitle) ||
-                                    'No title available'}
-                            </Text>
-                        )}
+                        <Text className="track-detail-text" lh={1}>
+                            ♪{' '}
+                            {scrubTitle(controls?.videoTitle) ||
+                                'No title available'}
+                        </Text>
 
                         {/* Artist */}
                         <Group>

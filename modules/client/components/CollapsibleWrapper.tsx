@@ -41,13 +41,9 @@ const CollapsibleWrapper: React.FC<Props> = ({
             }}
         >
             <Group justify="space-between" align="center">
-                {title ? (
-                    <Text fw={700} c="white" mb="5">
-                        {title}
-                    </Text>
-                ) : (
-                    <span />
-                )}
+                <Text fw={700} c="white" mb="5">
+                    {title}
+                </Text>
 
                 <Group gap="xs">
                     {rightExtras}

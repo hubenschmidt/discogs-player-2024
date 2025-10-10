@@ -326,7 +326,6 @@ const Explorer: React.FC = () => {
                     <X size={18} />
                 </ActionIcon>
             </Group>
-            <Divider my="xs" color="rgba(255,255,255,0.12)" />
 
             <Paper p="sm" radius="md" style={{ background: '#0e0e0f' }}>
                 {renderSelected()}

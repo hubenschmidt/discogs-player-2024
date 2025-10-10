@@ -45,7 +45,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const {
-        previewDiscogsRelease,
         previewRelease,
         selectedDiscogsRelease,
         selectedRelease,
@@ -54,10 +53,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [tracksOpen, setTracksOpen] = React.useState(true);
-
-    const showPreviewTrackDetail =
-        previewDiscogsRelease &&
-        previewDiscogsRelease.id !== selectedDiscogsRelease?.id;
 
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
@@ -192,37 +187,15 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </Grid>
                 </Box>
 
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                        <TrackProgress />
-                    </Grid.Col>
-                </Grid>
-
-                <Grid mb="sm">
-                    <Grid.Col span={{ base: 12, md: 2, lg: 2 }}>
+                <Grid align="center" mb="sm" gutter="sm">
+                    <Grid.Col span={{ base: 12, sm: 4, md: 3, lg: 3 }}>
                         <Volume />
                         <Controls />
                     </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 8, md: 9, lg: 9 }}>
+                        <TrackProgress />
+                    </Grid.Col>
                 </Grid>
-
-                <CollapsibleWrapper title="Collection" defaultOpen>
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12 }}>
-                            <VinylShelf />
-                        </Grid.Col>
-                    </Grid>
-                </CollapsibleWrapper>
-
-                {showPreviewTrackDetail && (
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                            <TrackDetail
-                                selectedDiscogsRelease={previewDiscogsRelease}
-                                preview={true}
-                            />
-                        </Grid.Col>
-                    </Grid>
-                )}
 
                 {navKey === 'history' && (
                     <CollapsibleWrapper title="History" defaultOpen>
@@ -253,6 +226,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Grid>
                     </CollapsibleWrapper>
                 )}
+
+                <CollapsibleWrapper title="Collection" defaultOpen>
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12 }}>
+                            <VinylShelf />
+                        </Grid.Col>
+                    </Grid>
+                </CollapsibleWrapper>
 
                 {playlistOpen && (
                     <Grid mb="sm">
