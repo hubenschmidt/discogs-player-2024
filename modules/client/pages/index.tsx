@@ -7,6 +7,8 @@ import { fetchBearerToken } from '../lib/fetch-bearer-token';
 import { getUser } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { MantineProvider } from '@mantine/core';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
+import Image from 'next/image';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
@@ -119,7 +121,17 @@ const IndexPage = () => {
                                 Crook
                             </Text>
                         </Box>
-                        <p>Put your hero/marketing content here.</p>
+                        <Box mt="xs">
+                            <Image
+                                src="/tunecrook.png" // place file in /public/tunecrook.png
+                                alt="Vinyl record + tonearm logo"
+                                width={220}
+                                height={220}
+                                priority
+                                style={{ display: 'block' }}
+                            />
+                        </Box>
+                        <p>Rediscover your Discogs collection.</p>
                         <Flex gap="md">
                             {/* Solid yellow */}
                             <Button
@@ -129,20 +141,30 @@ const IndexPage = () => {
                                 variant="filled"
                                 c="black"
                                 size="lg"
+                                leftSection={
+                                    <span className="arrow">
+                                        <ChevronLeft size={18} />
+                                    </span>
+                                }
                             >
                                 Log in
                             </Button>
-
                             {/* Outline yellow with black bg */}
                             <Button
                                 component="a"
                                 href="/auth/login?screen_hint=signup"
-                                variant="light" // outline base, but we fully control the look
+                                variant="light"
                                 size="lg"
+                                aria-label="Sign up"
+                                rightSection={
+                                    <span className="arrow">
+                                        <ChevronRight size={18} />
+                                    </span>
+                                }
                                 styles={{
                                     root: {
                                         color: 'rgb(255,255,0)',
-                                        border: '2px solid rgba(255,255,0,0.55)', // dimmer base border
+                                        border: '2px solid rgba(255,255,0,0.55)',
                                     },
                                 }}
                             >
@@ -150,6 +172,10 @@ const IndexPage = () => {
                             </Button>
                         </Flex>
                     </Flex>
+                    {/* Footer */}
+                    <Box pt="lg" style={{ textAlign: 'center' }}>
+                        <Text c="whitesmoke">Copyright PinaColada.co</Text>
+                    </Box>
                 </>
             </MantineProvider>
         );
