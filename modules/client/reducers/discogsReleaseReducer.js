@@ -83,6 +83,9 @@ const setSelectedVideo = (state, payload) => {
     return {
         ...state,
         selectedVideo: payload,
+        ...(state.playbackMode === 'playlist' && payload?.release
+            ? { selectedRelease: payload.release }
+            : {}),
     };
 };
 
@@ -105,7 +108,6 @@ const setPrevVideo = state => {
 
 const setPlaybackQueue = (state, payload) => {
     const { items, startIndex = 0, mode } = payload;
-
     const safeIndex = Math.max(
         0,
         Math.min(startIndex, (items?.length ?? 1) - 1),
@@ -117,29 +119,45 @@ const setPlaybackQueue = (state, payload) => {
         playbackMode: mode,
         queue: items ?? [],
         queueIndex: safeIndex,
-        selectedVideo: nextVideo, // align selection to queue
+        selectedVideo: nextVideo,
+        ...(mode === 'playlist' && nextVideo?.release
+            ? { selectedRelease: nextVideo.release }
+            : {}),
     };
 };
 
 const setNextInQueue = state => {
     const { queue, queueIndex } = state;
     if (!queue?.length) return state;
+
     const nextIndex = (queueIndex + 1) % queue.length;
+    const next = queue[nextIndex];
+
     return {
         ...state,
         queueIndex: nextIndex,
-        selectedVideo: queue[nextIndex],
+        selectedVideo: next,
+        // keep shelf in sync in playlist mode
+        ...(state.playbackMode === 'playlist' && next?.release
+            ? { selectedRelease: next.release }
+            : {}),
     };
 };
 
 const setPrevInQueue = state => {
     const { queue, queueIndex } = state;
     if (!queue?.length) return state;
+
     const prevIndex = (queueIndex - 1 + queue.length) % queue.length;
+    const prev = queue[prevIndex];
+
     return {
         ...state,
         queueIndex: prevIndex,
-        selectedVideo: queue[prevIndex],
+        selectedVideo: prev,
+        ...(state.playbackMode === 'playlist' && prev?.release
+            ? { selectedRelease: prev.release }
+            : {}),
     };
 };
 
