@@ -143,9 +143,10 @@ const VinylShelf: FC = () => {
         yearsFilter,
     ]);
 
-    // ---------- fetch playlist when playlist is open ----------
+    // ---------- fetch playlist whenever the playlist panel is open ----------
+    // (still a single source of truth for getPlaylist)
     useEffect(() => {
-        if (!shelfShowsPlaylist) return; // <- only when we actually want the playlist showing on shelf
+        if (!playlistOpen) return; // fetch whenever panel is open
 
         let aborted = false;
         let t: ReturnType<typeof setTimeout> | null = null;
@@ -163,14 +164,22 @@ const VinylShelf: FC = () => {
             },
         )
             .then(res => {
+                if (aborted) return;
+
+                // Always update the playlist detail so Playlist.tsx re-renders
                 dispatchPlaylist({
                     type: 'SET_ACTIVE_PLAYLIST_ID',
                     payload: res.playlist.Playlist_Id,
                 });
                 dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
 
-                if (res.releases.items.length > 0) {
-                    // prevent an empty vinyl shelf from loading
+                // Only push releases to the vinyl shelf when the shelf is meant to show the playlist
+                const shouldShowOnShelf =
+                    playlistOpen &&
+                    !showSearchShelf &&
+                    !shelfCollectionOverride;
+
+                if (shouldShowOnShelf && res.releases.items.length > 0) {
                     dispatchCollection({
                         type: 'SET_COLLECTION',
                         payload: res.releases,
@@ -190,13 +199,17 @@ const VinylShelf: FC = () => {
             if (t) clearTimeout(t);
         };
     }, [
-        shelfShowsPlaylist, // <- key change
+        // show/hide & params that affect the fetch
+        playlistOpen,
         bearerToken,
+        userState.username,
         playlistState.activePlaylistId,
         playlistState.playlistVideosPage,
         playlistState.playlistVideosLimit,
-        playlistState.version,
-        userState.username,
+        playlistState.version, // bump this after add/remove to trigger refresh
+        // we read these to decide whether to reflect playlist onto shelf
+        showSearchShelf,
+        shelfCollectionOverride,
         dispatchPlaylist,
         dispatchCollection,
     ]);
@@ -223,6 +236,47 @@ const VinylShelf: FC = () => {
         items,
         selectedRelease?.Release_Id,
         previewRelease,
+        dispatchCollection,
+        collectionState,
+    ]);
+
+    // If we're searching and the playing release isn't in current shelf items,
+    // inject it (from playlistDetail.releases) and center it.
+    useEffect(() => {
+        const rid = selectedRelease?.Release_Id;
+        if (!rid) return;
+
+        // Only do this while the user is viewing search results (not the playlist shelf)
+        if (!showSearchShelf) return;
+
+        // If current items already include the selected release, let the normal center effect handle it
+        const alreadyPresent = items?.some(r => r.Release_Id === rid);
+        if (alreadyPresent || !items?.length) return;
+
+        // Try to find the full release object from the current playlist detail
+        const playlistReleases =
+            playlistState?.playlistDetail?.releases?.items ?? [];
+        const fromPlaylist = playlistReleases.find(
+            (r: any) => r?.Release_Id === rid,
+        );
+        if (!fromPlaylist) return; // nothing to inject
+
+        // Merge: put the active release first, keep the rest (deduped), then center index 0
+        const merged = [
+            fromPlaylist,
+            ...items.filter(r => r.Release_Id !== rid),
+        ];
+        const centered = reorderReleases(merged, 0);
+
+        dispatchCollection({
+            type: 'SET_COLLECTION',
+            payload: { ...collectionState, items: centered },
+        });
+    }, [
+        selectedRelease?.Release_Id,
+        showSearchShelf,
+        items,
+        playlistState?.playlistDetail?.releases?.items,
         dispatchCollection,
         collectionState,
     ]);
