@@ -6,6 +6,7 @@ import { UserContext } from '../context/userContext';
 import { fetchBearerToken } from '../lib/fetch-bearer-token';
 import { getUser } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { MantineProvider } from '@mantine/core';
 
 const IndexPage = () => {
     const { user, isLoading, error } = useUser();
@@ -67,67 +68,89 @@ const IndexPage = () => {
     // Unauthenticated: show your custom splash with Login/Signup (no redirect)
     if (!user) {
         return (
-            <>
-                <head>
-                    <link
-                        rel="preconnect"
-                        href="https://fonts.googleapis.com"
-                    />
-                    <link
-                        rel="preconnect"
-                        href="https://fonts.gstatic.com"
-                        crossOrigin=""
-                    />
-                    <link
-                        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
-                        rel="stylesheet"
-                    />
-                </head>
-                <Flex direction="column" align="center" gap="md" p="xl">
-                    {/* Fixed-width inner box so first letters align */}
-                    <Box
-                        style={{
-                            width: '5.5ch',
-                            textAlign: 'left',
-                            marginRight: '12px',
-                        }}
-                    >
-                        <Text
+            <MantineProvider>
+                <>
+                    <head>
+                        <link
+                            rel="preconnect"
+                            href="https://fonts.googleapis.com"
+                        />
+                        <link
+                            rel="preconnect"
+                            href="https://fonts.gstatic.com"
+                            crossOrigin=""
+                        />
+                        <link
+                            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+                            rel="stylesheet"
+                        />
+                    </head>
+                    <Flex direction="column" align="center" gap="md" p="xl">
+                        {/* Fixed-width inner box so first letters align */}
+                        <Box
                             style={{
-                                fontFamily: '"Orbitron", sans-serif',
-                                fontSize: '1.2rem',
-                                letterSpacing: '1px',
-                                color: 'yellow',
-                                lineHeight: 1.2,
-                                fontWeight: 'bold',
+                                width: '5.5ch',
+                                textAlign: 'left',
+                                marginRight: '12px',
                             }}
                         >
-                            tune
-                        </Text>
-                        <Text
-                            style={{
-                                fontFamily: '"Orbitron", sans-serif',
-                                fontSize: '1.2rem',
-                                letterSpacing: '1px',
-                                color: 'yellow',
-                                lineHeight: 1.2,
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            Crook
-                        </Text>
-                    </Box>
-                    <p>Put your hero/marketing content here.</p>
-                    <Flex gap="md">
-                        <a href="/auth/login?screen_hint=signup">
-                            <Button>Sign up</Button>
-                        </a>
-                        <a href="/auth/login">
-                            <Button variant="outline">Log in</Button>
-                        </a>
+                            <Text
+                                style={{
+                                    fontFamily: '"Orbitron", sans-serif',
+                                    fontSize: '1.2rem',
+                                    letterSpacing: '1px',
+                                    color: 'yellow',
+                                    lineHeight: 1.2,
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                tune
+                            </Text>
+                            <Text
+                                style={{
+                                    fontFamily: '"Orbitron", sans-serif',
+                                    fontSize: '1.2rem',
+                                    letterSpacing: '1px',
+                                    color: 'yellow',
+                                    lineHeight: 1.2,
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                Crook
+                            </Text>
+                        </Box>
+                        <p>Put your hero/marketing content here.</p>
+                        <Flex gap="md">
+                            {/* Solid yellow */}
+                            <Button
+                                component="a"
+                                href="/auth/login"
+                                color="rgb(255,255,0)"
+                                variant="filled"
+                                c="black"
+                                size="lg"
+                            >
+                                Log in
+                            </Button>
+
+                            {/* Outline yellow with black bg */}
+                            <Button
+                                component="a"
+                                href="/auth/login?screen_hint=signup"
+                                variant="light"
+                                size="lg"
+                                styles={{
+                                    root: {
+                                        border: '2px solid rgb(255,255,0)',
+                                    },
+                                }}
+                            >
+                                Sign up
+                            </Button>
+                        </Flex>
                     </Flex>
-                </Flex>
-            </>
+                </>
+            </MantineProvider>
         );
     }
 
