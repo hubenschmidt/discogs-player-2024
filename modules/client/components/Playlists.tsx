@@ -94,7 +94,7 @@ const Playlists = () => {
     return (
         <>
             <Stack gap="xs">
-                <Group justify="space-between" align="center">
+                <Group justify="center" align="center">
                     <Button
                         mb="-10"
                         variant="light"
@@ -103,7 +103,6 @@ const Playlists = () => {
                         Create
                     </Button>
                 </Group>
-                <Divider my="xs" color="rgba(255,255,255,0.12)" />
             </Stack>
 
             {playlists?.items?.length > 0 ? (

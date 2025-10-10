@@ -170,12 +170,7 @@ export const DataTable = <T,>({
     return (
         <Box>
             {/* Top summary + pager */}
-            <Group justify="space-between" mb="xs">
-                <Text c="dimmed" size="sm">
-                    {items.length
-                        ? `Showing ${items.length} item(s)`
-                        : emptyText}
-                </Text>
+            <Group justify="flex-end" mb="xs">
                 <Group gap="xs" align="center">
                     {onPageSizeChange && (
                         <Group gap={6} align="center">

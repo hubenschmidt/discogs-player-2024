@@ -245,10 +245,6 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                         type: 'SET_NAV_KEY',
                                         payload: null,
                                     });
-                                    dispatchNav({
-                                        type: 'SET_PLAYLIST_OPEN',
-                                        payload: false,
-                                    });
                                 }}
                                 title="Close playlists"
                             >
@@ -294,20 +290,34 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </CollapsibleWrapper>
                 )}
 
-                <CollapsibleWrapper title="Collection" defaultOpen>
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12 }}>
-                            <VinylShelf />
-                        </Grid.Col>
-                    </Grid>
-                </CollapsibleWrapper>
-
                 {playlistOpen && (
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                            <Playlist />
-                        </Grid.Col>
-                    </Grid>
+                    <CollapsibleWrapper
+                        title="Playlist"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="light"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close playlist"
+                                onClick={() =>
+                                    dispatchNav({
+                                        type: 'SET_PLAYLIST_OPEN',
+                                        payload: false,
+                                    })
+                                }
+                                title="Close explorer"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <Playlist />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
                 )}
 
                 {/* Video Playlist Section */}
@@ -328,6 +338,15 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Grid>
                     </CollapsibleWrapper>
                 )}
+
+                <CollapsibleWrapper title="Collection" defaultOpen>
+                    <Grid mb="sm">
+                        <Grid.Col span={{ base: 12 }}>
+                            <VinylShelf />
+                        </Grid.Col>
+                    </Grid>
+                </CollapsibleWrapper>
+
                 {/* YouTube Player Section */}
                 {selectedVideo && (
                     <CollapsibleWrapper title="Video" defaultOpen={false}>

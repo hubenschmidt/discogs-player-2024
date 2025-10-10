@@ -24,7 +24,7 @@ const VinylShelf: FC = () => {
     const { selectedRelease, previewRelease } = discogsReleaseState;
     const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { navState, dispatchNav } = useContext(NavContext);
+    const { navState } = useContext(NavContext);
     const { playlistOpen } = navState;
     const { searchSelection, shelfCollectionOverride } = searchState;
     const { explorerState } = useContext(ExplorerContext);
@@ -163,7 +163,6 @@ const VinylShelf: FC = () => {
             },
         )
             .then(res => {
-                if (aborted) return;
                 dispatchPlaylist({
                     type: 'SET_ACTIVE_PLAYLIST_ID',
                     payload: res.playlist.Playlist_Id,

@@ -27,7 +27,6 @@ const ReleaseVideos = () => {
     const bearerToken = useBearerToken();
 
     const handleAdd = async () => {
-        console.log('handleAdd called');
         getPlaylists(userState?.username, bearerToken, {
             orderBy: 'updatedAt',
             order: 'DESC',

@@ -263,7 +263,7 @@ const Playlist = () => {
 
     return (
         <Stack gap="xs">
-            <Group justify="space-between" align="center">
+            <Group justify="center" align="center">
                 <Group align="center" gap="sm">
                     <Text fw={700} fz="lg" c="white">
                         {pl?.playlist?.Name}
@@ -273,17 +273,6 @@ const Playlist = () => {
                         {pl?.videos?.length === 1 ? '' : 's'}
                     </Badge>
                 </Group>
-
-                <ActionIcon
-                    variant="light"
-                    radius="md"
-                    size="lg"
-                    aria-label="Close playlist"
-                    onClick={handleClose}
-                    title="Close playlist"
-                >
-                    <X size={18} />
-                </ActionIcon>
             </Group>
 
             {pl?.playlist?.Description && (
