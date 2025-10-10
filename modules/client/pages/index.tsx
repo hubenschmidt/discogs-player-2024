@@ -137,11 +137,12 @@ const IndexPage = () => {
                             <Button
                                 component="a"
                                 href="/auth/login?screen_hint=signup"
-                                variant="light"
+                                variant="light" // outline base, but we fully control the look
                                 size="lg"
                                 styles={{
                                     root: {
-                                        border: '2px solid rgb(255,255,0)',
+                                        color: 'rgb(255,255,0)',
+                                        border: '2px solid rgba(255,255,0,0.55)', // dimmer base border
                                     },
                                 }}
                             >
