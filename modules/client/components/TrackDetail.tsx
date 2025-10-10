@@ -43,14 +43,14 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                         )}
 
                         {/* Artist */}
-                        <Group gap={2}>
+                        <Group>
                             <Text className="track-detail-text" lh={1}>
                                 a: {selectedDiscogsRelease?.artists_sort}
                             </Text>
                         </Group>
 
                         {/* Release */}
-                        <Group gap={2}>
+                        <Group>
                             <Text className="track-detail-text" lh={1}>
                                 r: {selectedDiscogsRelease?.title} (
                                 {selectedDiscogsRelease?.year})
@@ -58,7 +58,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                         </Group>
 
                         {/* Label + Catalog number */}
-                        <Group gap={2}>
+                        <Group>
                             <Text
                                 className="track-detail-text"
                                 lh={1}

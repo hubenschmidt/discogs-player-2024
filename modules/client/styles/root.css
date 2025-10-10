@@ -94,9 +94,7 @@
 .track-detail-box {
     border-radius: 4px;
     color: white;
-    padding: 8px 2px 8px 4px;
-    margin-left: -2px;
-    margin-right: -2px;
+    padding: 8px 12px 8px 14px;
     background: var(--surface-base);
     background-image: var(--surface-grad-radial), var(--surface-grad-linear);
 }
@@ -110,7 +108,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 14px;
 }
 
 .track-detail-text {
