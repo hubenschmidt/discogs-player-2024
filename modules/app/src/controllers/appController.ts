@@ -85,6 +85,20 @@ export const getHistory = async (
     }
 };
 
+export const deletePlaylist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const deletedPlaylist = await appService.deletePlaylist(req);
+        res.status(200).json(deletedPlaylist);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const createPlaylist = async (
     req: Request,
     res: Response,

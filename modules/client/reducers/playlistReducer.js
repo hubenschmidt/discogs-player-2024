@@ -10,6 +10,7 @@ export const SET_PLAYLIST_VIDEOS_PAGE = 'SET_PLAYLIST_VIDEOS_PAGE';
 export const SET_PLAYLIST_VIDEOS_LIMIT = 'SET_PLAYLIST_VIDEOS_LIMIT';
 export const SET_ACTIVE_PLAYLIST_ID = 'SET_ACTIVE_PLAYLIST_ID';
 export const SET_PLAYLIST_VERSION = 'SET_PLAYLIST_VERSION';
+export const SET_PLAYLISTS_VERSION = 'SET_PLAYLISTS_VERSION';
 
 export default initialState => {
     return (state, action) => {
@@ -27,7 +28,7 @@ export default initialState => {
             case SET_PLAYLIST_DETAIL:
                 return setPlaylistDetail(state, action.payload);
             case SET_PLAYLISTS_SORT:
-                return setPlaylistSort(statec, action.payload);
+                return setPlaylistSort(state, action.payload);
             case SET_PLAYLIST_VIDEOS_PAGE:
                 return setPlaylistVideosPage(state, action.payload);
             case SET_PLAYLIST_VIDEOS_LIMIT:
@@ -36,6 +37,8 @@ export default initialState => {
                 return setActivePlaylistId(state, action.payload);
             case SET_PLAYLIST_VERSION:
                 return setPlaylistVersion(state, action.payload);
+            case SET_PLAYLISTS_VERSION:
+                return setPlaylistsVersion(state, action.payload);
             default:
                 return state;
         }
@@ -121,3 +124,8 @@ const setPlaylistVersion = (state, payload) => {
         version: state.version + 1,
     };
 };
+
+const setPlaylistsVersion = (state, payload) => ({
+    ...state,
+    playlistsVersion: state.playlistsVersion + 1,
+});

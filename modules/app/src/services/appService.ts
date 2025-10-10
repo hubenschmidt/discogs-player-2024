@@ -31,6 +31,11 @@ export const getHistory = async (req: Request) => {
     return await repos.getHistory(req, user);
 };
 
+export const deletePlaylist = async (req: Request) => {
+    const user = await repos.getUser(req);
+    return await repos.deletePlaylist(req, user);
+};
+
 export const createPlaylist = async (req: Request) => {
     const user = await repos.getUser(req);
 

@@ -205,6 +205,20 @@ export const getHistory = async (req: Request, user: any) => {
     );
 };
 
+export const deletePlaylist = async (req: Request, user: any) => {
+    const { playlistId } = req.body;
+
+    const deleted = await db.Playlist.destroy({
+        where: { Playlist_Id: playlistId },
+        User_Id: user?.User_Id,
+    });
+
+    return {
+        deleted: deleted > 0,
+        playlistId: Number(playlistId),
+    };
+};
+
 export const createPlaylist = async (req: Request, user: any, video?: any) => {
     const playlist = await db.Playlist.create({
         User_Id: user.User_Id,
@@ -952,14 +966,6 @@ export const deleteFromPlaylist = async (req: Request) => {
             where: { URI: uri },
             transaction: t,
         });
-        if (!video) {
-            return {
-                removed: false,
-                reason: 'video_not_found',
-                playlistId,
-                uri: uri,
-            };
-        }
 
         // 2) find the playlist-video join row
         const playlistVideo = await db.PlaylistVideo.findOne({
@@ -969,15 +975,6 @@ export const deleteFromPlaylist = async (req: Request) => {
             },
             transaction: t,
         });
-
-        if (!playlistVideo) {
-            return {
-                removed: false,
-                reason: 'not_in_playlist',
-                playlistId,
-                videoId: video.Video_Id,
-            };
-        }
 
         // 3) delete the join row
         await playlistVideo.destroy({ transaction: t });

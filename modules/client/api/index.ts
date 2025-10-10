@@ -234,6 +234,23 @@ export const getPlaylists = async (
     return response.data;
 };
 
+export const deletePlaylist = async (
+    username: string,
+    token: BearerToken,
+    playlistId: any,
+) => {
+    const uri = `/api/app/${username}/playlist/delete`;
+
+    const response: AxiosResponse<any> = await requestHandler(
+        'POST',
+        uri,
+        { playlistId: playlistId },
+        token,
+    );
+
+    return response.data;
+};
+
 export const createPlaylist = async (
     username: string,
     token: BearerToken,
@@ -259,7 +276,7 @@ export const deleteFromPlaylist = async (
     selectedPlaylist: any,
     videoUri: any,
 ) => {
-    const uri = `/api/app/${username}/playlist/delete`;
+    const uri = `/api/app/${username}/playlist/delete-from`;
 
     const response: AxiosResponse<any> = await requestHandler(
         'POST',

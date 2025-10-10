@@ -1,9 +1,13 @@
 import React, { useContext } from 'react';
-import { Text } from '@mantine/core';
+import { Text, ActionIcon } from '@mantine/core';
+import { Trash2 } from 'lucide-react';
 import { PlaylistContext } from '../context/playlistContext';
 import { NavContext } from '../context/navContext';
 import { DataTable, type Column } from './DataTable';
 import { SearchContext } from '../context/searchContext';
+import { UserContext } from '../context/userContext';
+import { useBearerToken } from '../hooks/useBearerToken';
+import { deletePlaylist as apiDeletePlaylist, getPlaylists } from '../api';
 
 type Playlist = {
     Playlist_Id: number;
@@ -17,9 +21,62 @@ type Playlist = {
 };
 
 const PlaylistsTable = () => {
+    const { userState } = useContext(UserContext);
+    const bearerToken = useBearerToken();
+
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { dispatchNav } = useContext(NavContext);
     const { dispatchSearch } = useContext(SearchContext);
+
+    const handleDelete = async (row: Playlist) => {
+        const playlistId = row?.Playlist_Id;
+
+        // optimistic update
+        const current = playlistState.playlists;
+        const oldItems = current?.items ?? [];
+        const newItems = oldItems.filter(
+            (p: any) => p?.Playlist_Id !== playlistId,
+        );
+        const optimistic = {
+            ...current,
+            items: newItems,
+            count: Math.max(0, (current?.count ?? oldItems.length) - 1),
+        };
+        dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: optimistic });
+
+        // if the deleted playlist is active, clear it
+        if (playlistState.activePlaylistId === playlistId) {
+            dispatchPlaylist({ type: 'SET_ACTIVE_PLAYLIST_ID', payload: null });
+            dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: null });
+            dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: false });
+            dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+        }
+
+        try {
+            await apiDeletePlaylist(
+                userState.username,
+                bearerToken,
+                playlistId,
+            );
+            dispatchPlaylist({ type: 'SET_PLAYLISTS_VERSION' }); // trigger refetch
+        } catch (e) {
+            // revert by refetching current page
+            const page = playlistState.page ?? 1;
+            const limit = playlistState.limit ?? 10;
+            const orderBy = playlistState.orderBy ?? 'updatedAt';
+            const order = playlistState.order ?? 'DESC';
+            getPlaylists(userState.username, bearerToken, {
+                page,
+                limit,
+                orderBy,
+                order,
+            })
+                .then(res =>
+                    dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res }),
+                )
+                .catch(console.error);
+        }
+    };
 
     const columns: Column<Playlist>[] = [
         {
@@ -51,6 +108,23 @@ const PlaylistsTable = () => {
             sortable: true,
             sortKey: 'updatedAt',
         },
+        {
+            header: null,
+            width: 44,
+            render: (row: Playlist) => (
+                <ActionIcon
+                    variant="subtle"
+                    aria-label="Delete playlist"
+                    title="Delete playlist"
+                    onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(row);
+                    }}
+                >
+                    <Trash2 size={16} />
+                </ActionIcon>
+            ),
+        },
     ];
 
     const handleRowClick = async (row: Playlist) => {
@@ -65,7 +139,7 @@ const PlaylistsTable = () => {
             type: 'SET_SHELF_COLLECTION_OVERRIDE',
             payload: false,
         });
-        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null }); // <-- add this
+        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
     };
 
     return (
@@ -81,7 +155,6 @@ const PlaylistsTable = () => {
             }
             pageSizeValue={playlistState.playlists?.pageSize}
             onPageSizeChange={limit => {
-                // reset to page 1 when page size changes
                 dispatchPlaylist({
                     type: 'SET_PLAYLISTS_LIMIT',
                     payload: { limit: limit, page: 1 },
@@ -97,7 +170,7 @@ const PlaylistsTable = () => {
                         orderBy: sortBy,
                         order: direction.toUpperCase(),
                         page: 1,
-                    }, // reset to 1 on sort change
+                    },
                 })
             }
             onRowClick={handleRowClick}

@@ -17,8 +17,7 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import { X } from 'lucide-react';
 import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
-import { createPlaylist } from '../api';
-import { getPlaylists } from '../api';
+import { createPlaylist, getPlaylists } from '../api';
 import { NavContext } from '../context/navContext';
 
 const Playlists = () => {
@@ -57,6 +56,7 @@ const Playlists = () => {
         playlistState.limit,
         playlistState.orderBy,
         playlistState.order,
+        playlistState.playlistsVersion,
         userState.username,
         bearerToken,
         open,
@@ -78,11 +78,14 @@ const Playlists = () => {
             setName('');
             setDescription('');
 
-            // keep current page size, jump to page 1
+            // keep current page size, jump to page 1 (optional)
             dispatchPlaylist({
                 type: 'SET_PLAYLISTS_LIMIT',
                 payload: { limit: playlistState.limit, page: 1 },
             });
+
+            // trigger refetch via playlistsVersion
+            dispatchPlaylist({ type: 'SET_PLAYLISTS_VERSION' });
         } catch (error: any) {
             console.log(error);
         } finally {

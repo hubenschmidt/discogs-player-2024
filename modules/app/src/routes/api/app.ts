@@ -6,6 +6,7 @@ import {
     getUser,
     updatePlayHistory,
     createPlaylist,
+    deletePlaylist,
     addToPlaylist,
     getPlaylists,
     getPlaylist,
@@ -22,8 +23,9 @@ router.get('/search/:username', search);
 router.get('/user/:email', getUser);
 router.post('/:username/release/:release_id/video', updatePlayHistory);
 router.post('/:username/playlist/create', createPlaylist);
+router.post('/:username/playlist/delete', deletePlaylist);
 router.post('/:username/playlist/add', addToPlaylist);
-router.post('/:username/playlist/delete', deleteFromPlaylist);
+router.post('/:username/playlist/delete-from', deleteFromPlaylist);
 router.get('/:username/playlist/all', getPlaylists);
 router.get('/:username/playlist/:playlistId', getPlaylist);
 router.get('/:username/history', getHistory);
