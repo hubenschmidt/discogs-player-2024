@@ -121,7 +121,7 @@ const PlaylistsTable = () => {
                         handleDelete(row);
                     }}
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={16} color="white" />
                 </ActionIcon>
             ),
         },

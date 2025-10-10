@@ -10,7 +10,6 @@ import {
     Box,
     Text,
     ActionIcon,
-    Divider,
 } from '@mantine/core';
 import { Search as SearchIcon, X } from 'lucide-react';
 import { UserContext } from '../context/userContext';
@@ -44,10 +43,6 @@ const Explorer: React.FC = () => {
     const [tab, setTab] = useState<'genres' | 'styles' | 'years'>('genres');
     const [styleQ, setStyleQ] = useState('');
     const [yearQ, setYearQ] = useState('');
-
-    const handleClose = () => {
-        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-    };
 
     useEffect(() => {
         if (playlistOpen) {
@@ -314,19 +309,6 @@ const Explorer: React.FC = () => {
 
     return (
         <Stack>
-            <Group justify="flex-end" align="center">
-                <ActionIcon
-                    variant="light"
-                    radius="md"
-                    size="lg"
-                    aria-label="Close explorer"
-                    onClick={handleClose}
-                    title="Close explorer"
-                >
-                    <X size={18} />
-                </ActionIcon>
-            </Group>
-
             <Paper p="sm" radius="md" style={{ background: '#0e0e0f' }}>
                 {renderSelected()}
 

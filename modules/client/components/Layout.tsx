@@ -15,7 +15,9 @@ import {
     Center,
     Loader,
     Stack,
+    ActionIcon,
 } from '@mantine/core';
+import { X } from 'lucide-react';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
@@ -39,7 +41,7 @@ type Props = {
 
 const Layout = ({ title = 'TuneCrook' }: Props) => {
     const { userState } = useContext(UserContext);
-    const { navState } = useContext(NavContext);
+    const { navState, dispatchNav } = useContext(NavContext);
     const { navKey, playlistOpen } = navState;
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
@@ -198,7 +200,27 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </Grid>
 
                 {navKey === 'history' && (
-                    <CollapsibleWrapper title="History" defaultOpen>
+                    <CollapsibleWrapper
+                        title="History"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="light"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close history"
+                                onClick={() =>
+                                    dispatchNav({
+                                        type: 'SET_NAV_KEY',
+                                        payload: null,
+                                    })
+                                }
+                                title="Close history"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
                         <Grid mb="sm">
                             <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                 <History />
@@ -208,7 +230,32 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {navKey === 'playlists' && (
-                    <CollapsibleWrapper title="Playlists" defaultOpen>
+                    <CollapsibleWrapper
+                        title="Playlists"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="light"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close playlists"
+                                onClick={() => {
+                                    // close the panel; add any other cleanup you need here
+                                    dispatchNav({
+                                        type: 'SET_NAV_KEY',
+                                        payload: null,
+                                    });
+                                    dispatchNav({
+                                        type: 'SET_PLAYLIST_OPEN',
+                                        payload: false,
+                                    });
+                                }}
+                                title="Close playlists"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
                         <Grid mb="sm">
                             <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                 <Playlists />
@@ -218,7 +265,27 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 )}
 
                 {navKey === 'explorer' && (
-                    <CollapsibleWrapper title="Explorer" defaultOpen>
+                    <CollapsibleWrapper
+                        title="Explorer"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="light"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close explorer"
+                                onClick={() =>
+                                    dispatchNav({
+                                        type: 'SET_NAV_KEY',
+                                        payload: null,
+                                    })
+                                }
+                                title="Close explorer"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
                         <Grid mb="sm">
                             <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                 <Explorer />

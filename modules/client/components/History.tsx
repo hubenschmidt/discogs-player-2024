@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
-import { Text, Group, Stack, ActionIcon, Divider } from '@mantine/core';
-import { X } from 'lucide-react';
+import { Text } from '@mantine/core';
 import { getHistory } from '../api';
 import { UserContext } from '../context/userContext';
 import { useBearerToken } from '../hooks/useBearerToken';
@@ -261,23 +260,6 @@ const History: React.FC = () => {
 
     return (
         <>
-            <Stack gap="xs">
-                <Group justify="flex-end" align="center">
-                    <ActionIcon
-                        variant="light"
-                        radius="md"
-                        size="lg"
-                        aria-label="Close history"
-                        onClick={handleClose}
-                        title="Close history"
-                    >
-                        <X size={18} />
-                    </ActionIcon>
-                </Group>
-
-                <Divider my="xs" color="rgba(255,255,255,0.12)" />
-            </Stack>
-
             <DataTable<HistoryRow>
                 data={data}
                 columns={columns}

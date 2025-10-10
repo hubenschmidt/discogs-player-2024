@@ -8,13 +8,11 @@ import {
     Stack,
     Text,
     Divider,
-    ActionIcon,
 } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { PlaylistContext } from '../context/playlistContext';
 import { useBearerToken } from '../hooks/useBearerToken';
-import { X } from 'lucide-react';
 import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist, getPlaylists } from '../api';
@@ -93,10 +91,6 @@ const Playlists = () => {
         }
     };
 
-    const handleClose = payload => {
-        dispatchNav({ type: 'SET_NAV_KEY', payload: payload });
-    };
-
     return (
         <>
             <Stack gap="xs">
@@ -108,17 +102,6 @@ const Playlists = () => {
                     >
                         Create
                     </Button>
-
-                    <ActionIcon
-                        ml="auto" // <- pushes this item to the far right
-                        variant="light"
-                        radius="md"
-                        size="lg"
-                        aria-label="Close playlists"
-                        onClick={() => handleClose(null)}
-                    >
-                        <X size={18} />
-                    </ActionIcon>
                 </Group>
                 <Divider my="xs" color="rgba(255,255,255,0.12)" />
             </Stack>

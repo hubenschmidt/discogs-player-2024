@@ -313,7 +313,7 @@ const VinylShelf: FC = () => {
                 ></Box>
             )}
 
-            <Group justify="flex-end" mb="xs">
+            <Group mb="xs">
                 <Badge variant="light" size="sm">
                     {count} release{count === 1 ? '' : 's'}
                 </Badge>
