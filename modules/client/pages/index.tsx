@@ -1,7 +1,7 @@
 import Layout from '../components/Layout';
 import { useUser } from '@auth0/nextjs-auth0'; // v4 import path
 import { useEffect, useContext } from 'react';
-import { Flex, Loader, Box, Button } from '@mantine/core';
+import { Flex, Loader, Box, Button, Text } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { fetchBearerToken } from '../lib/fetch-bearer-token';
 import { getUser } from '../api';
@@ -67,33 +67,72 @@ const IndexPage = () => {
     // Unauthenticated: show your custom splash with Login/Signup (no redirect)
     if (!user) {
         return (
-            <Flex direction="column" align="center" gap="md" p="xl">
-                <h1>TuneCrook</h1>
-                <p>Put your hero/marketing content here.</p>
-                <Flex gap="md">
-                    <a href="/auth/login?screen_hint=signup">
-                        <Button>Sign up</Button>
-                    </a>
-                    <a href="/auth/login">
-                        <Button variant="outline">Log in</Button>
-                    </a>
+            <>
+                <head>
+                    <link
+                        rel="preconnect"
+                        href="https://fonts.googleapis.com"
+                    />
+                    <link
+                        rel="preconnect"
+                        href="https://fonts.gstatic.com"
+                        crossOrigin=""
+                    />
+                    <link
+                        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+                        rel="stylesheet"
+                    />
+                </head>
+                <Flex direction="column" align="center" gap="md" p="xl">
+                    {/* Fixed-width inner box so first letters align */}
+                    <Box
+                        style={{
+                            width: '5.5ch',
+                            textAlign: 'left',
+                            marginRight: '12px',
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: '"Orbitron", sans-serif',
+                                fontSize: '1.2rem',
+                                letterSpacing: '1px',
+                                color: 'yellow',
+                                lineHeight: 1.2,
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            tune
+                        </Text>
+                        <Text
+                            style={{
+                                fontFamily: '"Orbitron", sans-serif',
+                                fontSize: '1.2rem',
+                                letterSpacing: '1px',
+                                color: 'yellow',
+                                lineHeight: 1.2,
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            Crook
+                        </Text>
+                    </Box>
+                    <p>Put your hero/marketing content here.</p>
+                    <Flex gap="md">
+                        <a href="/auth/login?screen_hint=signup">
+                            <Button>Sign up</Button>
+                        </a>
+                        <a href="/auth/login">
+                            <Button variant="outline">Log in</Button>
+                        </a>
+                    </Flex>
                 </Flex>
-            </Flex>
+            </>
         );
     }
 
     // Authenticated: render your app shell
-    return (
-        <Layout title="TuneCrook">
-            <h1>TuneCrook</h1>
-            {/* Your app home content goes here */}
-            <Box mt="md">
-                <a href="/auth/logout">
-                    <Button variant="subtle">Log out</Button>
-                </a>
-            </Box>
-        </Layout>
-    );
+    return <Layout title="TuneCrook" />;
 };
 
 export default IndexPage;
