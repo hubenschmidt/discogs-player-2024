@@ -177,9 +177,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     });
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
 
-                    const isiOS = isIOS();
-
-                    if (!isiOS) {
+                    if (!isIOS()) {
                         // Desktop: go ahead and autoplay
                         e.target.playVideo();
                         return;

@@ -10,7 +10,6 @@ const Volume = () => {
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { controls, volume } = playerState;
     const { selectedVideo } = discogsReleaseState;
-    const isiOS = isIOS();
 
     useEffect(() => {
         if (controls) {
@@ -23,7 +22,7 @@ const Volume = () => {
         controls?.setVolume(value);
     };
 
-    return selectedVideo && !isiOS ? (
+    return selectedVideo && !isIOS() ? (
         <Slider
             value={volume}
             min={0}

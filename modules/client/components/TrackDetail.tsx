@@ -24,8 +24,6 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 
     if (!selectedDiscogsRelease) return null;
 
-    const isiOS = isIOS();
-
     return (
         <Box>
             <Paper radius="md" p="xs" style={{ background: '#0e0e0f' }}>
@@ -39,7 +37,7 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
                         </Text>
 
                         {/* Hide the rest on iOS */}
-                        {!isiOS && (
+                        {!isIOS() && (
                             <>
                                 <Group>
                                     <Text className="track-detail-text" lh={1}>
