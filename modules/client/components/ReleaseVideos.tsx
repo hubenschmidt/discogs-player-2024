@@ -74,7 +74,11 @@ const ReleaseVideos = () => {
     // fetch effects unchanged...
     useEffect(() => {
         if (!selectedRelease?.Release_Id) return;
-        getDiscogsRelease(selectedRelease.Release_Id, bearerToken)
+        getDiscogsRelease(
+            selectedRelease.Release_Id,
+            userState?.username,
+            bearerToken,
+        )
             .then(full => {
                 dispatchDiscogsRelease({
                     type: 'SET_SELECTED_DISCOGS_RELEASE',
@@ -91,7 +95,11 @@ const ReleaseVideos = () => {
 
     useEffect(() => {
         if (!previewRelease?.Release_Id) return;
-        getDiscogsRelease(previewRelease.Release_Id, bearerToken)
+        getDiscogsRelease(
+            previewRelease.Release_Id,
+            userState?.username,
+            bearerToken,
+        )
             .then(full => {
                 dispatchDiscogsRelease({
                     type: 'SET_PREVIEW_DISCOGS_RELEASE',

@@ -40,16 +40,11 @@ const ReleaseDetail: React.FC = () => {
         Genres,
         Styles,
         Date_Added,
-        Release_Id,
     } = rel;
 
     const [opened, { open, close }] = useDisclosure(false);
 
     const imgSrc = Cover_Image || Thumb || '';
-    const discogsUrl = Release_Id
-        ? `https://www.discogs.com/release/${Release_Id}`
-        : undefined;
-
     if (!rel) return null;
 
     return (
@@ -67,17 +62,6 @@ const ReleaseDetail: React.FC = () => {
                             </Badge>
                         ) : null}
                     </Group>
-
-                    {/* {discogsUrl && (
-                        <Anchor
-                            href={discogsUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            c="blue"
-                        >
-                            View on Discogs
-                        </Anchor>
-                    )} */}
                 </Group>
 
                 <Divider my="sm" color="rgba(255,255,255,0.12)" />

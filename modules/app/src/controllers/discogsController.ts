@@ -7,6 +7,7 @@ export const fetchRequestToken = async (
     next: NextFunction,
 ) => {
     try {
+        console.log(req);
         const data = await discogsService.fetchRequestToken();
         res.status(200).json(data);
     } catch (error) {
@@ -63,8 +64,8 @@ export const fetchRelease = async (
     next: NextFunction,
 ) => {
     try {
-        const { data } = await discogsService.fetchRelease(req);
-        res.status(200).json(data);
+        const release = await discogsService.fetchRelease(req);
+        res.status(200).json(release);
     } catch (error) {
         console.error(error);
         next(error);

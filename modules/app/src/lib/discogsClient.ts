@@ -1,6 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import 'dotenv/config';
+import { response } from 'express';
 
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -60,26 +61,28 @@ const discogsClient = async (
     const CONSUMER_KEY = process.env.DISCOGS_CONSUMER_KEY!;
     const CONSUMER_SECRET = process.env.DISCOGS_CONSUMER_SECRET!;
 
-    // Build the OAuth 1.0a PLAINTEXT header
-    const oauthHeader = buildOAuthHeader(
-        CONSUMER_KEY,
-        CONSUMER_SECRET,
-        auth.accessToken,
-        auth.accessTokenSecret,
-    );
+    const headers: Record<string, string> = {
+        'User-Agent': process.env.DISCOGS_USER_AGENT || 'YourApp/1.0',
+        Accept: 'application/json',
+    };
 
-    const response = await axios.request({
-        method: requestMethod,
-        url: `${BASE_URL}/${endpoint}`,
-        headers: {
-            Authorization: oauthHeader,
-            'User-Agent': process.env.DISCOGS_USER_AGENT,
-            'Content-Type': 'application/json',
-        },
-        data: body,
-    });
+    if (auth) {
+        headers.Authorization = buildOAuthHeader(
+            CONSUMER_KEY,
+            CONSUMER_SECRET,
+            auth.accessToken,
+            auth.accessTokenSecret,
+        );
+    }
 
-    return response.data;
+    return axios
+        .request({
+            method: requestMethod,
+            url: `${BASE_URL}/${endpoint}`,
+            headers,
+            data: body,
+        })
+        .then(r => r.data);
 };
 
 export default discogsClient;

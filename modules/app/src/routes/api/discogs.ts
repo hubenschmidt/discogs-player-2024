@@ -9,7 +9,7 @@ import {
 
 export const router: Router = Router();
 
-router.get('/release/:release_id', fetchRelease);
+router.get('/:username/release/:release_id', fetchRelease);
 router.get('/collection/:username', fetchCollection);
 router.get('/sync-collection/:username', syncCollection);
 router.get('/fetch-request-token', fetchRequestToken);

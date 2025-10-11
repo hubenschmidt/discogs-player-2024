@@ -1,5 +1,4 @@
 import { Request } from 'express';
-import discogsClient_DEPRECATED from '../lib/discogsClient_DEPRECATED';
 import discogsClient from '../lib/discogsClient';
 import {
     getDiscogsAccessToken,
@@ -60,9 +59,9 @@ export const fetchAccessToken = async (req: Request) => {
 };
 
 export const syncCollection = async (req: Request) => {
-    const discogsCol = await fetchCollection(req);
     const user = await getUser(req);
-    // fetch user instead
+    const discogsCol = await fetchCollection(req, user);
+
     const [collection, collectionCreated] = await createCollection(
         user.User_Id,
     );
@@ -222,30 +221,40 @@ export const syncCollection = async (req: Request) => {
     };
 };
 
-export const fetchCollection = async (req: Request) => {
+export const fetchCollection = async (req: Request, user?: any) => {
+    if (!user) user = await getUser(req);
+
     const folderId = 0; // Use default folder
     const perPage = 150;
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
 
     // Fetch the first page to get total pages and initial data
-    const firstResponse = await discogsClient_DEPRECATED(
+    const firstResponse = await discogsClient(
         `${endpoint}?page=1&per_page=${perPage}`,
-        'get',
+        'GET',
         null,
+        {
+            accessToken: user.OAuth_Access_Token,
+            accessTokenSecret: user.OAuth_Access_Token_Secret,
+        },
     );
-    const { pages: totalPages } = firstResponse.data.pagination;
+    const { pages: totalPages } = firstResponse.pagination;
 
     // Start with the first page's releases
-    let collection = firstResponse.data.releases;
+    let collection = firstResponse.releases;
 
     // Generate promises for the remaining pages
     const pagePromises = [];
     for (let page = 2; page <= totalPages; page++) {
         pagePromises.push(
-            discogsClient_DEPRECATED(
+            discogsClient(
                 `${endpoint}?page=${page}&per_page=${perPage}`,
-                'get',
+                'GET',
                 null,
+                {
+                    accessToken: user.OAuth_Access_Token,
+                    accessTokenSecret: user.OAuth_Access_Token_Secret,
+                },
             ),
         );
     }
@@ -254,8 +263,8 @@ export const fetchCollection = async (req: Request) => {
     const responses = await Promise.all(pagePromises);
 
     // Concatenate all releases from the responses
-    responses.forEach(({ data }) => {
-        collection = collection.concat(data.releases);
+    responses.forEach(({ releases }) => {
+        collection = collection.concat(releases);
     });
 
     return collection;
@@ -274,9 +283,13 @@ export const scrubTitle = (input?: string) => {
 };
 
 export const fetchRelease = async (req: Request) => {
+    const user = await getUser(req);
     const endpoint = `releases/${req.params.release_id}`;
-    const response = await discogsClient_DEPRECATED(endpoint, 'get', null);
-    const release = response?.data;
+    const response = await discogsClient(endpoint, 'GET', null, {
+        accessToken: user.OAuth_Access_Token,
+        accessTokenSecret: user.OAuth_Access_Token_Secret,
+    });
+    const release = response;
 
     if (Array.isArray(release?.videos)) {
         release.videos = release.videos.map((video: any) => ({

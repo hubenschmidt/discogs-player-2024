@@ -135,9 +135,10 @@ export const getCollection = async (
 
 export const getDiscogsRelease = async (
     releaseId: number,
+    username: string,
     token: BearerToken,
 ): Promise<any> => {
-    const uri = `/api/discogs/release/${releaseId}`;
+    const uri = `/api/discogs/${username}/release/${releaseId}`;
 
     const response: AxiosResponse<any> = await requestHandler(
         'GET',

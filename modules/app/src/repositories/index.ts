@@ -1,6 +1,6 @@
 const db = require('../models');
 import { Request } from 'express';
-import { Model, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import { Transaction } from 'sequelize';
 import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 import { parsePaging, toPagedResponse } from '../lib/pagination';
