@@ -21,7 +21,8 @@ const VinylShelf: FC = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedRelease, previewRelease } = discogsReleaseState;
+    const { selectedRelease, previewRelease, selectedVideo } =
+        discogsReleaseState;
     const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState } = useContext(NavContext);
@@ -243,34 +244,6 @@ const VinylShelf: FC = () => {
         dispatchCollection,
     ]);
 
-    // ---------- always center selected (skip when previewing; avoid churn) ----------
-    useEffect(() => {
-        if (showSearchShelf) return; // bail out while search results are showing
-        const rid = selectedRelease?.Release_Id;
-        if (!rid || !items?.length) return;
-
-        const idx = items.findIndex(r => r.Release_Id === rid);
-        if (idx === -1) return;
-
-        const n = items.length;
-        const mid = Math.floor((n - 1) / 2);
-        if (items[mid]?.Release_Id === rid) return; // already centered
-
-        setLoadingCenter(true);
-        const centered = reorderReleases(items, idx);
-        dispatchCollection({
-            type: 'SET_COLLECTION',
-            payload: { ...collectionState, items: centered },
-        });
-    }, [
-        items,
-        selectedRelease?.Release_Id,
-        previewRelease,
-        showSearchShelf,
-        dispatchCollection,
-        collectionState,
-    ]);
-
     // If we're searching and the playing release isn't in current shelf items,
     // inject it (from playlistDetail.releases) and center it.
     useEffect(() => {
@@ -295,7 +268,6 @@ const VinylShelf: FC = () => {
     }, [
         items,
         selectedRelease?.Release_Id,
-        previewRelease,
         showSearchShelf,
         dispatchCollection,
         collectionState,
@@ -306,6 +278,9 @@ const VinylShelf: FC = () => {
         // dispatchNav({ type: 'SET_NAV_KEY', payload: null });
 
         const isFirstSelection = !selectedRelease;
+
+        // If you click the already-selected one, do nothing
+        if (selectedRelease?.Release_Id === release.Release_Id) return;
 
         if (isFirstSelection) {
             setLoadingCenter(true); // blur ON

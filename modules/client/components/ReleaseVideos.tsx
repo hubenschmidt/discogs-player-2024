@@ -16,15 +16,20 @@ const ReleaseVideos = () => {
     const { dispatchPlaylist } = useContext(PlaylistContext);
     const {
         selectedDiscogsRelease,
-        previewRelease,
-        selectedRelease,
-        selectedVideo,
         previewDiscogsRelease,
+        selectedRelease,
+        previewRelease,
+        selectedVideo,
         playbackMode,
     } = discogsReleaseState;
     const { userState } = useContext(UserContext);
-    const { username } = userState;
     const bearerToken = useBearerToken();
+
+    // --- UI vs Playback sources ---------------------------------------------
+    const displayRelease = previewDiscogsRelease ?? selectedDiscogsRelease; // UI renders preview if present
+    const displayVideos = displayRelease?.videos || []; // UI list
+
+    const selectedVideos = selectedDiscogsRelease?.videos || []; // playback source ONLY
 
     const handleAdd = async () => {
         getPlaylists(userState?.username, bearerToken, {
@@ -35,18 +40,15 @@ const ReleaseVideos = () => {
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res });
                 dispatchPlaylist({ type: 'SET_ADD_MODAL', payload: true });
             })
-            .catch(err => console.log(err));
+            .catch(console.log);
     };
-
-    const activeDiscogs = previewDiscogsRelease ?? selectedDiscogsRelease;
-    const videos = activeDiscogs?.videos || [];
 
     const playVideo = (
         video: any,
         idx: number,
         opts?: { openAdd?: boolean },
     ) => {
-        const items = videos;
+        const items = displayVideos; // list the user is seeing/clicking
         if (!items.length) return;
 
         const startIndex = Math.max(0, Math.min(idx, items.length - 1));
@@ -54,9 +56,10 @@ const ReleaseVideos = () => {
         dispatchDiscogsRelease({
             type: 'MERGE_STATE',
             payload: {
+                // Promote preview -> selected only when user explicitly clicks a video
                 ...(previewRelease && {
                     selectedRelease: previewRelease,
-                    selectedDiscogsRelease: activeDiscogs,
+                    selectedDiscogsRelease: displayRelease,
                     previewRelease: null,
                     previewDiscogsRelease: null,
                 }),
@@ -71,7 +74,7 @@ const ReleaseVideos = () => {
         if (opts?.openAdd) handleAdd();
     };
 
-    // fetch effects unchanged...
+    // --- Fetch full objects for selected & preview ---------------------------
     useEffect(() => {
         if (!selectedRelease?.Release_Id) return;
         getDiscogsRelease(
@@ -79,12 +82,12 @@ const ReleaseVideos = () => {
             userState?.username,
             bearerToken,
         )
-            .then(full => {
+            .then(full =>
                 dispatchDiscogsRelease({
                     type: 'SET_SELECTED_DISCOGS_RELEASE',
                     payload: full,
-                });
-            })
+                }),
+            )
             .catch(err =>
                 console.error(
                     'fetch selected discogs failed',
@@ -100,12 +103,12 @@ const ReleaseVideos = () => {
             userState?.username,
             bearerToken,
         )
-            .then(full => {
+            .then(full =>
                 dispatchDiscogsRelease({
                     type: 'SET_PREVIEW_DISCOGS_RELEASE',
                     payload: full,
-                });
-            })
+                }),
+            )
             .catch(err =>
                 console.error(
                     'fetch preview discogs failed',
@@ -114,77 +117,84 @@ const ReleaseVideos = () => {
             );
     }, [previewRelease?.Release_Id]);
 
+    // --- Autoplay / initial queue: ONLY off the selected release -------------
     useEffect(() => {
         if (playbackMode === 'playlist') return;
-        if (previewDiscogsRelease) return;
-
-        if (!videos.length) return;
+        if (!selectedVideos.length) return; // <- use selectedVideos, not displayVideos
 
         const hasCurrent =
             selectedVideo &&
-            videos.some((v: any) => v.uri === selectedVideo.uri);
+            selectedVideos.some((v: any) => v.uri === selectedVideo.uri);
+
         const startIndex = hasCurrent
-            ? videos.findIndex((v: any) => v.uri === selectedVideo?.uri)
+            ? selectedVideos.findIndex((v: any) => v.uri === selectedVideo?.uri)
             : 0;
 
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
-            payload: { items: videos, startIndex, mode: 'release' },
+            payload: { items: selectedVideos, startIndex, mode: 'release' },
         });
 
         if (!hasCurrent) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_VIDEO',
-                payload: videos[0],
+                payload: selectedVideos[0],
             });
         }
 
         dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
-    }, [selectedDiscogsRelease, previewDiscogsRelease]); // intentionally not watching selectedVideo
+    }, [
+        // trigger when the actually-selected release changes (not preview)
+        selectedDiscogsRelease?.id,
+        playbackMode,
+        // deliberately NOT depending on previewDiscogsRelease or displayVideos
+    ]);
 
-    useEffect(() => {
-        const releaseId = selectedRelease?.Release_Id;
-        const videoUri = selectedVideo?.uri;
-        if (!releaseId || !videoUri) return;
-
-        updateVideoPlayCount(
-            releaseId,
-            selectedVideo,
-            username,
-            bearerToken,
-        ).catch(console.error);
-    }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
-
+    // --- Keep queue aligned with selected release; ignore preview -------------
     useEffect(() => {
         if (playbackMode === 'playlist') return;
-        if (!videos.length) return;
+        if (!selectedVideos.length) return; // only when selected has videos
 
         const curUri = selectedVideo?.uri;
-        const currentIsInThisRelease =
-            !!curUri && videos.some((v: any) => v.uri === curUri);
-        if (currentIsInThisRelease) return;
+        const currentIsInSelected =
+            !!curUri && selectedVideos.some((v: any) => v.uri === curUri);
+        if (currentIsInSelected) return;
 
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
-            payload: { items: videos, startIndex: 0, mode: 'release' },
+            payload: { items: selectedVideos, startIndex: 0, mode: 'release' },
         });
     }, [
         selectedDiscogsRelease?.id,
         playbackMode,
         selectedVideo?.uri,
-        videos.length,
+        selectedVideos.length,
     ]);
 
+    // --- Analytics ------------------------------------------------------------
+    useEffect(() => {
+        const releaseId = selectedRelease?.Release_Id;
+        const videoUri = selectedVideo?.uri;
+        if (!releaseId || !videoUri) return;
+        updateVideoPlayCount(
+            releaseId,
+            selectedVideo,
+            userState?.username,
+            bearerToken,
+        ).catch(console.error);
+    }, [selectedRelease?.Release_Id, selectedVideo?.uri]);
+
+    // --- UI -------------------------------------------------------------------
     return (
         <Box mt="21">
-            {Array.isArray(videos) && videos.length === 0 ? (
+            {Array.isArray(displayVideos) && displayVideos.length === 0 ? (
                 <Text c="dimmed" fs="italic">
                     No videos available for this release. Add videos on the
                     Discogs release page!
                 </Text>
             ) : (
                 <Stack>
-                    {videos.map((video: any, idx: number) => {
+                    {displayVideos.map((video: any, idx: number) => {
                         const isSelected = selectedVideo?.uri === video.uri;
                         return (
                             <Button
