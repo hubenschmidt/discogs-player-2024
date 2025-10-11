@@ -43,61 +43,67 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
     } = discogsReleaseState;
 
     const handleNextRelease = () => {
-        if (
-            !selectedRelease ||
-            !Array.isArray(shelfItems) ||
-            !shelfItems.length
-        )
-            return;
+        // guards
+        if (!selectedRelease) return;
+        if (!Array.isArray(shelfItems) || !shelfItems.length) return;
 
         const curId = selectedRelease.Release_Id;
         let i = shelfItems.findIndex(r => r?.Release_Id === curId);
-        if (i === -1) i = 0; // fallback if current isn't found in this page
+        if (i === -1) i = 0; // fallback if current isn't on this page
 
         const next = shelfItems[(i + 1) % shelfItems.length];
 
-        // clear any preview and select the next release
-        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        // one shot: clear previews, select next release, and on iOS stop autoplay
         dispatchDiscogsRelease({
-            type: 'SET_PREVIEW_DISCOGS_RELEASE',
-            payload: null,
+            type: 'MERGE_STATE',
+            payload: {
+                previewRelease: null,
+                previewDiscogsRelease: null,
+                selectedRelease: next,
+                ...(isIOS() ? { isPlaying: false } : {}),
+            },
         });
-        dispatchDiscogsRelease({ type: 'SET_SELECTED_RELEASE', payload: next });
+    };
 
-        // iOS cannot autoplay the next release's first track
-        if (isIOS()) {
-            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
-        }
+    const pauseIOS = () => {
+        if (!isIOS()) return;
+        dispatchDiscogsRelease({
+            type: 'MERGE_STATE',
+            payload: { isPlaying: false },
+        });
     };
 
     const handleVideoEnd = () => {
         if (!queue?.length || queueIndex < 0) return;
+
         const atEnd = queueIndex >= queue.length - 1;
         const inPlaylist = playbackMode === 'playlist';
 
+        // playlist: wrap to start
         if (inPlaylist && atEnd) {
             dispatchDiscogsRelease({
                 type: 'SET_PLAYBACK_QUEUE',
                 payload: { items: queue, startIndex: 0, mode: 'playlist' },
             });
-            if (isIOS())
-                dispatchDiscogsRelease({
-                    type: 'SET_IS_PLAYING',
-                    payload: false,
-                });
+            pauseIOS();
             return;
         }
+
+        // playlist: advance within queue
         if (inPlaylist) {
             dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
             return;
         }
+
+        // release mode: hit end and not looping → go to next release on shelf
         if (atEnd && !continuousPlay) {
-            handleNextRelease();
+            handleNextRelease(); // this already clears preview + does iOS pause logic
             return;
         }
+
+        // release mode: advance within release queue
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
-        if (isIOS())
-            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false }); // reset playing if iOS
+        pauseIOS();
     };
 
     const safeSetVolume = (t: any, v: number, n = 5) => {
