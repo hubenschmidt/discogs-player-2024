@@ -5,7 +5,6 @@ import {
     Stack,
     Group,
     Text,
-    Badge,
     Button,
     Divider,
     Modal,
@@ -43,6 +42,7 @@ const Account: React.FC = () => {
                 .then(res => {
                     if (res) {
                         window.location.href = '/auth/logout'; // Hard-logout after deletion
+                        return;
                     }
                     // else deletion did not happen
                     setError(
@@ -65,9 +65,6 @@ const Account: React.FC = () => {
     return (
         <Box>
             <Stack gap="xs">
-                <Text fw={700} fz="lg">
-                    Profile
-                </Text>
                 <Group>
                     <Text c="dimmed" w={120}>
                         Username
@@ -81,7 +78,7 @@ const Account: React.FC = () => {
                     <Text>{userState?.email || '—'}</Text>
                 </Group>
 
-                <Divider my="sm" />
+                <Divider my="sm" color="rgba(255,255,255,0.12)" />
 
                 <Stack gap="xs">
                     <Text fw={700} fz="lg">
@@ -138,10 +135,6 @@ const Account: React.FC = () => {
                                 title="Warning"
                                 variant="light"
                                 styles={{
-                                    root: {
-                                        backgroundColor: '#2a1b1b',
-                                        borderColor: 'rgba(255,255,255,0.2)',
-                                    },
                                     message: { color: '#fff' },
                                 }}
                             >
@@ -171,7 +164,13 @@ const Account: React.FC = () => {
                             />
 
                             {error && (
-                                <Alert color="red" variant="light">
+                                <Alert
+                                    color="yellow"
+                                    variant="light"
+                                    styles={{
+                                        message: { color: '#fff' },
+                                    }}
+                                >
                                     {error}
                                 </Alert>
                             )}
