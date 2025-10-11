@@ -53,7 +53,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
 
         const next = shelfItems[(i + 1) % shelfItems.length];
 
-        // one shot: clear previews, select next release, and on iOS stop autoplay
+        // clear previews, select next release, and on iOS stop autoplay
         dispatchDiscogsRelease({
             type: 'MERGE_STATE',
             payload: {
