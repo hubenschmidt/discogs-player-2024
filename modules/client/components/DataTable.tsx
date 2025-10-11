@@ -275,7 +275,15 @@ export const DataTable = <T,>({
 
                         {items.length === 0 && (
                             <Table.Tr>
-                                <Table.Td colSpan={columns.length}>
+                                <Table.Td
+                                    colSpan={columns.length}
+                                    style={{
+                                        border: cellBorder, // ← match other cells
+                                        background:
+                                            tableStyle?.backgroundColor ??
+                                            '#0e0e0f', // optional
+                                    }}
+                                >
                                     <Text c="dimmed" ta="center">
                                         {emptyText}
                                     </Text>

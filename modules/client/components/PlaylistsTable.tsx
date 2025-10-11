@@ -179,10 +179,9 @@ const PlaylistsTable = () => {
                 width: '100%',
                 backgroundColor: '#0e0e0f',
                 color: 'var(--mantine-color-white)',
-                border: 'transparent',
                 ['--table-hover-color' as any]: 'rgba(73, 80, 87, 0.6)',
             }}
-            cellBorder="4px solid black"
+            cellBorder="4px solid #141414"
         />
     );
 };
