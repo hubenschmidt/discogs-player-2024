@@ -66,14 +66,12 @@ const discogsClient = async (
         Accept: 'application/json',
     };
 
-    if (auth) {
-        headers.Authorization = buildOAuthHeader(
-            CONSUMER_KEY,
-            CONSUMER_SECRET,
-            auth.accessToken,
-            auth.accessTokenSecret,
-        );
-    }
+    headers.Authorization = buildOAuthHeader(
+        CONSUMER_KEY,
+        CONSUMER_SECRET,
+        auth.accessToken,
+        auth.accessTokenSecret,
+    );
 
     return axios
         .request({
