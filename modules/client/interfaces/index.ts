@@ -55,4 +55,5 @@ export interface CollectionResponse {
     currentPage: number;
     totalPages: number;
     releases: Release[];
+    items?: any;
 }

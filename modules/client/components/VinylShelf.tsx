@@ -76,7 +76,7 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch collection when not viewing a playlist ----------
     useEffect(() => {
-        if (shelfShowsPlaylist) return; // <- playlist is showing on shelf, skip
+        if (shelfShowsPlaylist) return; // playlist is showing on shelf, skip
 
         const params: any = {
             username: userState.username,
@@ -91,15 +91,9 @@ const VinylShelf: FC = () => {
             ...(searchSelection?.Release_Id && {
                 releaseId: searchSelection.Release_Id,
             }),
-            ...(genresFilter && {
-                genre: genresFilter,
-            }),
-            ...(stylesFilter && {
-                style: stylesFilter,
-            }),
-            ...(yearsFilter && {
-                year: yearsFilter,
-            }),
+            ...(genresFilter && { genre: genresFilter }),
+            ...(stylesFilter && { style: stylesFilter }),
+            ...(yearsFilter && { year: yearsFilter }),
         };
 
         let aborted = false;
@@ -111,10 +105,36 @@ const VinylShelf: FC = () => {
         getCollection(params, bearerToken)
             .then((collection: CollectionResponse) => {
                 if (aborted) return;
-                dispatchCollection({
-                    type: 'SET_COLLECTION',
-                    payload: collection,
-                });
+
+                let payload = collection;
+
+                // Inject + center ONLY in "open search" (full collection) mode,
+                // when the playing release isn't on the current page.
+                if (shelfCollectionOverride && selectedRelease?.Release_Id) {
+                    const rid = selectedRelease.Release_Id;
+                    const present = payload.items?.some(
+                        r => r.Release_Id === rid,
+                    );
+
+                    if (!present) {
+                        // Try to get a full object from playlist detail; fallback to selectedRelease
+                        const plReleases =
+                            playlistState?.playlistDetail?.releases?.items ??
+                            [];
+                        const fromPlaylist =
+                            plReleases.find(
+                                (r: any) => r?.Release_Id === rid,
+                            ) || selectedRelease;
+
+                        const merged = [
+                            fromPlaylist,
+                            ...payload.items.filter(r => r.Release_Id !== rid),
+                        ];
+                        payload = { ...payload, items: merged };
+                    }
+                }
+
+                dispatchCollection({ type: 'SET_COLLECTION', payload });
             })
             .catch(err =>
                 console.error('fetch collection failed', err?.response || err),
@@ -131,7 +151,7 @@ const VinylShelf: FC = () => {
             if (t) clearTimeout(t);
         };
     }, [
-        shelfShowsPlaylist, // <- key change,
+        shelfShowsPlaylist,
         currentPage,
         itemsPerPage,
         searchSelection,
@@ -141,6 +161,9 @@ const VinylShelf: FC = () => {
         genresFilter,
         stylesFilter,
         yearsFilter,
+        shelfCollectionOverride, // 👈 add
+        selectedRelease?.Release_Id, // 👈 add
+        playlistState?.playlistDetail?.releases?.items, // 👈 add (for injection source)
     ]);
 
     // ---------- fetch playlist whenever the playlist panel is open ----------
@@ -216,6 +239,7 @@ const VinylShelf: FC = () => {
 
     // ---------- always center selected (skip when previewing; avoid churn) ----------
     useEffect(() => {
+        if (showSearchShelf) return; // bail out while search results are showing
         const rid = selectedRelease?.Release_Id;
         if (!rid || !items?.length) return;
 
@@ -236,6 +260,7 @@ const VinylShelf: FC = () => {
         items,
         selectedRelease?.Release_Id,
         previewRelease,
+        showSearchShelf,
         dispatchCollection,
         collectionState,
     ]);
@@ -243,40 +268,29 @@ const VinylShelf: FC = () => {
     // If we're searching and the playing release isn't in current shelf items,
     // inject it (from playlistDetail.releases) and center it.
     useEffect(() => {
+        if (showSearchShelf) return; // skip centering on targeted search results
+
         const rid = selectedRelease?.Release_Id;
-        if (!rid) return;
+        if (!rid || !items?.length) return;
 
-        // Only do this while the user is viewing search results (not the playlist shelf)
-        if (!showSearchShelf) return;
+        const idx = items.findIndex(r => r.Release_Id === rid);
+        if (idx === -1) return;
 
-        // If current items already include the selected release, let the normal center effect handle it
-        const alreadyPresent = items?.some(r => r.Release_Id === rid);
-        if (alreadyPresent || !items?.length) return;
+        const n = items.length;
+        const mid = Math.floor((n - 1) / 2);
+        if (items[mid]?.Release_Id === rid) return;
 
-        // Try to find the full release object from the current playlist detail
-        const playlistReleases =
-            playlistState?.playlistDetail?.releases?.items ?? [];
-        const fromPlaylist = playlistReleases.find(
-            (r: any) => r?.Release_Id === rid,
-        );
-        if (!fromPlaylist) return; // nothing to inject
-
-        // Merge: put the active release first, keep the rest (deduped), then center index 0
-        const merged = [
-            fromPlaylist,
-            ...items.filter(r => r.Release_Id !== rid),
-        ];
-        const centered = reorderReleases(merged, 0);
-
+        setLoadingCenter(true);
+        const centered = reorderReleases(items, idx);
         dispatchCollection({
             type: 'SET_COLLECTION',
             payload: { ...collectionState, items: centered },
         });
     }, [
-        selectedRelease?.Release_Id,
-        showSearchShelf,
         items,
-        playlistState?.playlistDetail?.releases?.items,
+        selectedRelease?.Release_Id,
+        previewRelease,
+        showSearchShelf,
         dispatchCollection,
         collectionState,
     ]);

@@ -205,7 +205,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         defaultOpen
                         rightExtras={
                             <ActionIcon
-                                variant="light"
+                                variant="subtle"
+                                color="white"
                                 radius="md"
                                 size="lg"
                                 aria-label="Close history"
@@ -235,7 +236,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         defaultOpen
                         rightExtras={
                             <ActionIcon
-                                variant="light"
+                                variant="subtle"
+                                color="white"
                                 radius="md"
                                 size="lg"
                                 aria-label="Close playlists"
@@ -266,7 +268,8 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         defaultOpen
                         rightExtras={
                             <ActionIcon
-                                variant="light"
+                                variant="subtle"
+                                color="white"
                                 radius="md"
                                 size="lg"
                                 aria-label="Close explorer"
