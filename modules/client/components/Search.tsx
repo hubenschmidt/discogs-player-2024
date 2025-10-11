@@ -100,7 +100,8 @@ const Search = () => {
                 leftSection={
                     <Tooltip
                         label={aiMode ? 'Search mode' : 'AI mode'}
-                        position="left"
+                        position="bottom"
+                        zIndex="4000"
                     >
                         <Box
                             onClick={() => setAiMode(!aiMode)}
@@ -113,19 +114,32 @@ const Search = () => {
                             }}
                         >
                             {aiMode ? (
-                                <Sparkles size="1rem" color="limegreen" />
+                                <Sparkles
+                                    className="ai-icon"
+                                    size="1rem"
+                                    color="limegreen"
+                                />
                             ) : (
-                                <SearchIcon size="1rem" />
+                                <SearchIcon
+                                    className="search-icon"
+                                    size="1rem"
+                                    color="white"
+                                />
                             )}
                         </Box>
                     </Tooltip>
                 }
                 // mobile-friendly “open search” button
                 rightSection={
-                    <Tooltip label="Show full collection" position="right">
+                    <Tooltip
+                        label="Show full collection"
+                        position="bottom"
+                        zIndex="4000"
+                    >
                         <ActionIcon
+                            className="search-icon"
                             variant="subtle"
-                            aria-label="Show full collection"
+                            aria-label="Refresh collection"
                             onClick={triggerOpenSearch}
                             // prevent the input from losing focus on mobile tap
                             onMouseDown={e => e.preventDefault()}

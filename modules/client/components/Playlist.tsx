@@ -10,7 +10,7 @@ import {
     deleteFromPlaylist as apiDeleteFromPlaylist,
 } from '../api';
 import { ActionIcon } from '@mantine/core';
-import { X, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { NavContext } from '../context/navContext';
 import { SearchContext } from '../context/searchContext';
 
@@ -105,10 +105,6 @@ const Playlist = () => {
             ),
         },
     ];
-
-    const handleClose = () => {
-        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
-    };
 
     const handleDelete = async (row: any) => {
         try {

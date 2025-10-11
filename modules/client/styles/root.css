@@ -28,7 +28,7 @@
     background: rgba(255 255 255 / 0.08);
 }
 .pg-control[data-active] {
-    background: #495057;
+    background: #262728;
     color: var(--mantine-color-white);
 }
 .pg-control[data-disabled] {
@@ -165,4 +165,22 @@ body {
 }
 .player-controls .mantine-ActionIcon-root:hover {
     background-color: rgba(111, 111, 111, 0.9);
+}
+
+.search-icon {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: transform 120ms ease, opacity 120ms ease;
+}
+.search-icon:hover {
+    opacity: 1;
+}
+
+.ai-icon {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: transform 120ms ease, opacity 120ms ease;
+}
+.ai-icon:hover {
+    opacity: 1;
 }

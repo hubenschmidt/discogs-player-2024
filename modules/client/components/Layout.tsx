@@ -35,6 +35,7 @@ import History from './History';
 import Explorer from './Explorer';
 import Account from './Account';
 import TopNav from './TopNav';
+import PlaylistCreateButton from './PlaylistCreateButton';
 
 type Props = {
     children?: ReactNode;
@@ -224,7 +225,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         defaultOpen
                         rightExtras={
                             <ActionIcon
-                                variant="subtle"
+                                variant="light"
                                 color="white"
                                 radius="md"
                                 size="lg"
@@ -256,7 +257,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             defaultOpen
                             rightExtras={
                                 <ActionIcon
-                                    variant="subtle"
+                                    variant="light"
                                     color="white"
                                     radius="md"
                                     size="lg"
@@ -287,20 +288,20 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         <CollapsibleWrapper
                             title="Playlists"
                             defaultOpen
+                            leftExtras={<PlaylistCreateButton />}
                             rightExtras={
                                 <ActionIcon
-                                    variant="subtle"
+                                    variant="light"
                                     color="white"
                                     radius="md"
                                     size="lg"
                                     aria-label="Close playlists"
-                                    onClick={() => {
-                                        // close the panel; add any other cleanup you need here
+                                    onClick={() =>
                                         dispatchNav({
                                             type: 'SET_NAV_KEY',
                                             payload: null,
-                                        });
-                                    }}
+                                        })
+                                    }
                                     title="Close playlists"
                                 >
                                     <X size={16} />
@@ -323,7 +324,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             defaultOpen
                             rightExtras={
                                 <ActionIcon
-                                    variant="subtle"
+                                    variant="light"
                                     color="white"
                                     radius="md"
                                     size="lg"
@@ -356,6 +357,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         rightExtras={
                             <ActionIcon
                                 variant="light"
+                                color="white"
                                 radius="md"
                                 size="lg"
                                 aria-label="Close playlist"
@@ -365,7 +367,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                         payload: false,
                                     })
                                 }
-                                title="Close explorer"
+                                title="Close playlist"
                             >
                                 <X size={16} />
                             </ActionIcon>
@@ -411,9 +413,9 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                 </div>
 
                 <div id="section-video">
-                    {/* YouTube Player Section */}
+                    {/* YouTube Player Section.. explicitly defaultOpen in case we want to change it later */}
                     {selectedVideo && (
-                        <CollapsibleWrapper title="Video" defaultOpen={false}>
+                        <CollapsibleWrapper title="Video" defaultOpen={true}>
                             <Grid mb="sm">
                                 <Grid.Col span={{ base: 12 }}>
                                     <CustomYouTubePlayer

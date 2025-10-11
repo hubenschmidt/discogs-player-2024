@@ -17,6 +17,7 @@ const initialState = {
     activePlaylistId: null,
     version: 0,
     playlistsVersion: 0,
+    createOpen: false,
 };
 
 export const PlaylistContext = createContext(initialState);

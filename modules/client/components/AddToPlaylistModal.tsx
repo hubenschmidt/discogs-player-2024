@@ -113,6 +113,7 @@ const AddToPlaylistModal = () => {
                         <Group ml="auto" gap="xs" align="center">
                             <Button
                                 variant="light"
+                                color="gray"
                                 onClick={() => setOpen(true)}
                             >
                                 Create Playlist
@@ -184,6 +185,7 @@ const AddToPlaylistModal = () => {
                                         <Button
                                             key={p.Playlist_Id}
                                             variant="light"
+                                            color="gray"
                                             onClick={() => onPick(p)}
                                             loading={
                                                 loadingId === p.Playlist_Id

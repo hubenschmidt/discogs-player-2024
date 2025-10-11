@@ -11,6 +11,7 @@ export const SET_PLAYLIST_VIDEOS_LIMIT = 'SET_PLAYLIST_VIDEOS_LIMIT';
 export const SET_ACTIVE_PLAYLIST_ID = 'SET_ACTIVE_PLAYLIST_ID';
 export const SET_PLAYLIST_VERSION = 'SET_PLAYLIST_VERSION';
 export const SET_PLAYLISTS_VERSION = 'SET_PLAYLISTS_VERSION';
+export const SET_PLAYLIST_CREATE_OPEN = 'SET_PLAYLIST_CREATE_OPEN';
 
 export default initialState => {
     return (state, action) => {
@@ -39,6 +40,8 @@ export default initialState => {
                 return setPlaylistVersion(state, action.payload);
             case SET_PLAYLISTS_VERSION:
                 return setPlaylistsVersion(state, action.payload);
+            case SET_PLAYLIST_CREATE_OPEN:
+                return setPlaylistCreateOpen(state, action.payload);
             default:
                 return state;
         }
@@ -127,4 +130,9 @@ const setPlaylistVersion = (state, payload) => {
 const setPlaylistsVersion = (state, payload) => ({
     ...state,
     playlistsVersion: state.playlistsVersion + 1,
+});
+
+const setPlaylistCreateOpen = (state, payload) => ({
+    ...state,
+    createOpen: payload,
 });

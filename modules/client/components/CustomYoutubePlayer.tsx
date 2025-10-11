@@ -40,9 +40,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         selectedRelease,
     } = discogsReleaseState;
 
-    // collapsed by default
-    const [collapsed, setCollapsed] = useState(true);
-
     const handleNextRelease = () => {
         if (!selectedRelease || !releases?.length) return;
         const i = releases.findIndex(

@@ -204,7 +204,7 @@ const ReleaseVideos = () => {
                                 }
                                 key={idx}
                                 variant={isSelected ? 'filled' : 'light'}
-                                color="gray"
+                                color="#535046"
                                 onClick={() => playVideo(video, idx)}
                                 mt="-16px"
                                 styles={{

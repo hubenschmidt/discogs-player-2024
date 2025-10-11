@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import {
     Button,
     Modal,
@@ -7,7 +7,7 @@ import {
     Group,
     Stack,
     Text,
-    Divider,
+    Box,
 } from '@mantine/core';
 import { UserContext } from '../context/userContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
@@ -16,17 +16,15 @@ import { useBearerToken } from '../hooks/useBearerToken';
 import PlaylistsTable from './PlaylistsTable';
 import classes from '../styles/Playlists.module.css';
 import { createPlaylist, getPlaylists } from '../api';
-import { NavContext } from '../context/navContext';
 
 const Playlists = () => {
     const { userState } = useContext(UserContext);
-    const { dispatchNav } = useContext(NavContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { playlists } = playlistState;
+    const { playlists, createOpen } = playlistState;
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { selectedVideo } = discogsReleaseState;
     const bearerToken = useBearerToken();
-    const [open, setOpen] = useState(false);
+
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [creating, setCreating] = useState(false);
@@ -36,7 +34,6 @@ const Playlists = () => {
         const limit = playlistState.limit ?? 10;
         const orderBy = playlistState.orderBy ?? 'updatedAt';
         const order = playlistState.order ?? 'DESC';
-
         if (!page) return;
 
         getPlaylists(userState.username, bearerToken, {
@@ -48,7 +45,7 @@ const Playlists = () => {
             .then(res =>
                 dispatchPlaylist({ type: 'SET_PLAYLISTS', payload: res }),
             )
-            .catch(err => console.log(err));
+            .catch(console.log);
     }, [
         playlistState.page,
         playlistState.limit,
@@ -57,8 +54,12 @@ const Playlists = () => {
         playlistState.playlistsVersion,
         userState.username,
         bearerToken,
-        open,
+        createOpen, // refetch after create/close
     ]);
+
+    const close = () => {
+        dispatchPlaylist({ type: 'SET_PLAYLIST_CREATE_OPEN', payload: false });
+    };
 
     const onSubmit = async () => {
         setCreating(true);
@@ -71,20 +72,20 @@ const Playlists = () => {
                 selectedVideo,
             );
 
-            // close + reset form
-            setOpen(false);
+            // reset form + close
             setName('');
             setDescription('');
+            close();
 
-            // keep current page size, jump to page 1 (optional)
+            // keep page size, jump to page 1 (optional)
             dispatchPlaylist({
                 type: 'SET_PLAYLISTS_LIMIT',
                 payload: { limit: playlistState.limit, page: 1 },
             });
 
-            // trigger refetch via playlistsVersion
+            // trigger refetch
             dispatchPlaylist({ type: 'SET_PLAYLISTS_VERSION' });
-        } catch (error: any) {
+        } catch (error) {
             console.log(error);
         } finally {
             setCreating(false);
@@ -93,36 +94,26 @@ const Playlists = () => {
 
     return (
         <>
-            <Stack gap="xs">
-                <Group justify="center" align="center">
-                    <Button
-                        mb="-10"
-                        variant="light"
-                        onClick={() => setOpen(true)}
-                    >
-                        Create
-                    </Button>
-                </Group>
-            </Stack>
-
-            {playlists?.items?.length > 0 ? (
-                <PlaylistsTable />
-            ) : (
-                <Text c="dimmed">No playlists yet</Text>
-            )}
+            <Box mt="sm">
+                {playlists?.items?.length > 0 ? (
+                    <PlaylistsTable />
+                ) : (
+                    <Text c="dimmed">No playlists yet</Text>
+                )}
+            </Box>
 
             <Modal
-                opened={open}
-                onClose={() => setOpen(false)}
+                opened={!!createOpen}
+                onClose={close}
                 title="Create playlist"
                 centered
                 styles={{
                     content: { backgroundColor: 'var(--mantine-color-dark-7)' },
                     header: { backgroundColor: 'var(--mantine-color-dark-7)' },
                     body: {
-                        backgroundColor: 'var(--mantine-color-dark-`7`)',
+                        backgroundColor: 'var(--mantine-color-dark-7)',
                         color: 'white',
-                    },
+                    }, // fixed var
                     title: { color: 'white' },
                     close: { color: 'white' },
                 }}
@@ -146,7 +137,7 @@ const Playlists = () => {
                     <Group justify="flex-end" mt="xs">
                         <Button
                             variant="light-transparent"
-                            onClick={() => setOpen(false)}
+                            onClick={close}
                             disabled={creating}
                         >
                             Cancel
@@ -169,3 +160,23 @@ const Playlists = () => {
 };
 
 export default Playlists;
+
+// components/Playlists.tsx (exported helper)
+export const PlaylistCreateButton: React.FC = () => {
+    const { dispatchPlaylist } = useContext(PlaylistContext);
+    return (
+        <Button
+            mb="-10"
+            variant="light"
+            color="white"
+            onClick={() =>
+                dispatchPlaylist({
+                    type: 'SET_PLAYLIST_CREATE_OPEN',
+                    payload: true,
+                })
+            }
+        >
+            Create
+        </Button>
+    );
+};

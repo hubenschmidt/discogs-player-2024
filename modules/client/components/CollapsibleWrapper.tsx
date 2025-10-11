@@ -1,3 +1,4 @@
+// CollapsibleWrapper.tsx
 import React from 'react';
 import { Box, Group, Text, ActionIcon, Collapse } from '@mantine/core';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -5,10 +6,11 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 type Props = {
     title?: string;
     defaultOpen?: boolean;
-    isOpen?: boolean; // controlled
-    onOpenChange?: (v: boolean) => void; // controlled
+    isOpen?: boolean;
+    onOpenChange?: (v: boolean) => void;
     children: React.ReactNode;
     rightExtras?: React.ReactNode;
+    leftExtras?: React.ReactNode; // ← create button goes here
 };
 
 const CollapsibleWrapper: React.FC<Props> = ({
@@ -18,16 +20,14 @@ const CollapsibleWrapper: React.FC<Props> = ({
     onOpenChange,
     children,
     rightExtras,
+    leftExtras,
 }) => {
-    // internal state only used when NOT controlled
     const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
-
     const open = isOpen ?? internalOpen;
     const setOpen = (v: boolean) => {
-        if (isOpen === undefined) setInternalOpen(v); // uncontrolled path
-        onOpenChange?.(v); // notify parent if controlled
+        if (isOpen === undefined) setInternalOpen(v);
+        onOpenChange?.(v);
     };
-
     const toggle = () => setOpen(!open);
 
     return (
@@ -37,19 +37,26 @@ const CollapsibleWrapper: React.FC<Props> = ({
                 background: '#0e0e0f',
                 borderRadius: 8,
                 marginTop: '40px',
-                border: '1px solid rgba(255,255,255,0.12)', // <-- subtle border
+                border: '1px solid rgba(255,255,255,0.12)',
             }}
         >
             <Group justify="space-between" align="center">
-                <Text fw={700} c="white" mb="5">
-                    {title}
-                </Text>
+                {/* LEFT SIDE: title + leftExtras inline */}
+                <Group gap="sm" align="center">
+                    <Text fw={700} c="white" mb={2}>
+                        {title}
+                    </Text>
+                    {leftExtras}
+                </Group>
 
-                <Group gap="xs">
+                {/* RIGHT SIDE: rightExtras + toggle */}
+                <Group gap="xs" align="center">
                     {rightExtras}
                     <ActionIcon
-                        variant="subtle"
+                        variant="light"
                         color="white"
+                        radius="md"
+                        size="lg"
                         aria-label={
                             open ? 'Collapse section' : 'Expand section'
                         }
