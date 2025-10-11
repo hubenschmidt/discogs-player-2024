@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext, useState, FC } from 'react';
+import React, { useEffect, useRef, useContext, FC } from 'react';
 import { Group } from '@mantine/core';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
@@ -7,7 +7,7 @@ import { extractYouTubeVideoId } from '../lib/extract-youtube-video-id';
 
 interface YouTubePlayerProps {
     width?: string;
-    height?: string; // e.g. "430px"
+    height?: string;
 }
 
 declare global {
@@ -16,6 +16,8 @@ declare global {
         onYouTubeIframeAPIReady: () => void;
     }
 }
+
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent); // 🔧
 
 const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
     width = '100%',
@@ -80,8 +82,30 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         }
     };
 
+    const ensureIframeAttributes = async (target: any) => {
+        // 🔧 add allow + playsinline on the real iframe
+        try {
+            const iframe: HTMLIFrameElement = await target.getIframe();
+            if (iframe) {
+                iframe.setAttribute('playsinline', '1');
+                iframe.setAttribute('webkit-playsinline', '1');
+
+                const allow = new Set(
+                    (iframe.getAttribute('allow') || '')
+                        .split(';')
+                        .map(s => s.trim())
+                        .filter(Boolean),
+                );
+                allow.add('autoplay');
+                allow.add('encrypted-media');
+                iframe.setAttribute('allow', Array.from(allow).join('; '));
+            }
+        } catch {}
+    };
+
     const createPlayer = () => {
         if (!playerRef.current || !selectedVideo?.uri) return;
+
         playerInstance.current = new window.YT.Player(playerRef.current, {
             height,
             width,
@@ -96,7 +120,11 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                 playsinline: 1,
             },
             events: {
-                onReady: (e: any) => {
+                onReady: async (e: any) => {
+                    // 🔧 make sure iframe allows autoplay + inline
+                    await ensureIframeAttributes(e.target);
+
+                    // expose controls
                     dispatchPlayer({
                         type: 'SET_CONTROLS',
                         payload: {
@@ -116,6 +144,35 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                         },
                     });
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
+
+                    if (isIOS()) {
+                        // 🔧 iOS: start muted so autoplay is allowed, then unmute on first tap
+                        try {
+                            e.target.mute();
+                            e.target.playVideo();
+                        } catch {}
+
+                        const unlock = () => {
+                            try {
+                                e.target.unMute();
+                                e.target.playVideo();
+                            } catch {}
+                            window.removeEventListener('touchend', unlock);
+                            window.removeEventListener('click', unlock);
+                        };
+                        window.addEventListener('touchend', unlock, {
+                            once: true,
+                            passive: true,
+                        });
+                        window.addEventListener('click', unlock, {
+                            once: true,
+                        });
+                    } else {
+                        // non-iOS: normal autoplay
+                        try {
+                            e.target.playVideo();
+                        } catch {}
+                    }
                 },
                 onStateChange: (e: any) => {
                     if (e.data === window.YT.PlayerState.ENDED)
@@ -149,18 +206,19 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
         return () => playerInstance.current?.destroy?.();
     }, [selectedVideo, width, height]);
 
+    const iosShieldStyle: React.CSSProperties = isIOS()
+        ? { pointerEvents: 'none' } // 🔧 let first tap reach page/iframe on iOS
+        : { pointerEvents: 'auto' };
+
     return (
         <div style={{ width }}>
-            {/* Header bar with chevron (always visible) */}
             <Group
                 justify="space-between"
                 align="center"
                 px="xs"
                 py={4}
-                style={{
-                    background: 'transparent',
-                }}
-            ></Group>
+                style={{ background: 'transparent' }}
+            />
             <div
                 style={{
                     width: '100%',
@@ -170,13 +228,12 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     position: 'relative',
                 }}
             >
-                {/* The YouTube player */}
                 <div
                     ref={playerRef}
                     style={{ width: '100%', height: '100%' }}
                 />
 
-                {/* Click-blocking shield  */}
+                {/* Click-blocking shield (disable on iOS so the first gesture works) */}
                 <div
                     aria-hidden="true"
                     tabIndex={-1}
@@ -188,8 +245,8 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                         inset: 0,
                         zIndex: 2,
                         background: 'transparent',
-                        pointerEvents: 'auto',
                         cursor: 'default',
+                        ...iosShieldStyle, // 🔧
                     }}
                 />
             </div>
