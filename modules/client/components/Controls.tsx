@@ -33,6 +33,14 @@ const Controls = () => {
 
     const handlePlay = () => {
         controls?.play();
+        // remember user's intent permanently (preference)
+        try {
+            localStorage.setItem('autoplayPref', '1');
+        } catch {}
+        // remember gesture for this page/session only
+        try {
+            sessionStorage.setItem('autoplayUnlocked', '1');
+        } catch {}
         dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
     };
 

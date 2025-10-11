@@ -145,9 +145,40 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     });
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
 
-                    // Belt & suspenders: kick playback only on desktop if the browser allowed it
-                    if (!isIOS()) e.target.playVideo();
-                    // On iOS we intentionally do nothing here (user must tap Play in your UI)
+                    const isiOS = isIOS();
+                    const unlocked = (() => {
+                        try {
+                            return (
+                                sessionStorage.getItem('autoplayUnlocked') ===
+                                '1'
+                            );
+                        } catch {
+                            return false;
+                        }
+                    })();
+                    const wantsAutoplay = (() => {
+                        try {
+                            return localStorage.getItem('autoplayPref') === '1';
+                        } catch {
+                            return false;
+                        }
+                    })();
+
+                    if (!isiOS) {
+                        // Desktop: go ahead and autoplay
+                        try {
+                            e.target.playVideo();
+                        } catch {}
+                        return;
+                    }
+
+                    // iOS: only autoplay if we already have a gesture this session
+                    if (unlocked && wantsAutoplay) {
+                        try {
+                            e.target.playVideo();
+                        } catch {}
+                        return;
+                    }
                 },
                 onStateChange: (e: any) => {
                     if (e.data === window.YT.PlayerState.ENDED) {
