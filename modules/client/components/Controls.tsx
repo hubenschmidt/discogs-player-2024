@@ -118,46 +118,49 @@ const Controls = () => {
                 <FastForward />
             </ActionIcon>
 
-            <Tooltip
-                label={
-                    isPlaylist
-                        ? 'Disabled while playlist is playing'
-                        : 'Loop release videos'
-                }
-            >
-                <span>
-                    {' '}
-                    {/* wrap to make disabled Switch still show tooltip */}
-                    <Switch
-                        checked={continuousPlay && !isPlaylist}
-                        disabled={isPlaylist}
-                        styles={{
-                            track: {
-                                backgroundColor: isPlaylist
-                                    ? '#222' // muted when disabled
-                                    : continuousPlay
-                                    ? 'gray'
-                                    : 'black',
-                                border: isPlaylist
-                                    ? '1px solid #333'
-                                    : continuousPlay
-                                    ? 'none'
-                                    : '1px solid white',
-                                cursor: isPlaylist ? 'not-allowed' : 'pointer',
-                                opacity: isPlaylist ? 0.6 : 1,
-                            },
-                            thumb: { backgroundColor: 'white' },
-                        }}
-                        onChange={e => {
-                            if (isPlaylist) return; // guard when disabled
-                            dispatchDiscogsRelease({
-                                type: 'SET_CONTINUOUS_PLAY',
-                                payload: e.currentTarget.checked,
-                            });
-                        }}
-                    />
-                </span>
-            </Tooltip>
+            {!isIOS() && (
+                <Tooltip
+                    label={
+                        isPlaylist
+                            ? 'Disabled while playlist is playing'
+                            : 'Loop release videos'
+                    }
+                >
+                    <span>
+                        {/* wrap to make disabled Switch still show tooltip */}
+                        <Switch
+                            checked={continuousPlay && !isPlaylist}
+                            disabled={isPlaylist}
+                            styles={{
+                                track: {
+                                    backgroundColor: isPlaylist
+                                        ? '#222' // muted when disabled
+                                        : continuousPlay
+                                        ? 'gray'
+                                        : 'black',
+                                    border: isPlaylist
+                                        ? '1px solid #333'
+                                        : continuousPlay
+                                        ? 'none'
+                                        : '1px solid white',
+                                    cursor: isPlaylist
+                                        ? 'not-allowed'
+                                        : 'pointer',
+                                    opacity: isPlaylist ? 0.6 : 1,
+                                },
+                                thumb: { backgroundColor: 'white' },
+                            }}
+                            onChange={e => {
+                                if (isPlaylist) return; // guard when disabled
+                                dispatchDiscogsRelease({
+                                    type: 'SET_CONTINUOUS_PLAY',
+                                    payload: e.currentTarget.checked,
+                                });
+                            }}
+                        />
+                    </span>
+                </Tooltip>
+            )}
         </Group>
     );
 };
