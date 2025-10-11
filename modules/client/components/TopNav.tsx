@@ -47,41 +47,16 @@ const TopNav: React.FC<Props> = ({ compact = false }) => {
 
     const tabs = [
         {
-            key: 'collection',
-            label: 'Collection',
-            icon: <Library size={18} />,
+            key: 'explorer',
+            label: 'Explorer',
+            icon: <Compass size={18} />,
             disabled: false,
-            active: true,
-            onClick: () => scrollToWithOffset('section-collection'),
-        },
-        {
-            key: 'release',
-            label: 'Release',
-            icon: <Disc3 size={18} />,
-            disabled: !selectedRelease,
-            active: !!selectedRelease,
-            onClick: () => scrollToWithOffset('section-release'),
-        },
-        {
-            key: 'video',
-            label: 'Video',
-            icon: <PlayCircle size={18} />,
-            disabled: !selectedVideo,
-            active: !!selectedVideo,
-            onClick: () => scrollToWithOffset('section-video'),
-        },
-        {
-            key: 'history',
-            label: 'History',
-            icon: <History size={18} />,
-            disabled: false,
-            active: navKey === 'history',
+            active: navKey === 'explorer',
             onClick: () => {
-                togglePanel('history');
-                // ensure the panel mounts before measuring/scrolling
+                togglePanel('explorer');
                 requestAnimationFrame(() =>
                     requestAnimationFrame(() => {
-                        scrollToWithOffset('section-history');
+                        scrollToWithOffset('section-explorer');
                     }),
                 );
             },
@@ -102,19 +77,44 @@ const TopNav: React.FC<Props> = ({ compact = false }) => {
             },
         },
         {
-            key: 'explorer',
-            label: 'Explorer',
-            icon: <Compass size={18} />,
+            key: 'history',
+            label: 'History',
+            icon: <History size={18} />,
             disabled: false,
-            active: navKey === 'explorer',
+            active: navKey === 'history',
             onClick: () => {
-                togglePanel('explorer');
+                togglePanel('history');
+                // ensure the panel mounts before measuring/scrolling
                 requestAnimationFrame(() =>
                     requestAnimationFrame(() => {
-                        scrollToWithOffset('section-explorer');
+                        scrollToWithOffset('section-history');
                     }),
                 );
             },
+        },
+        {
+            key: 'release',
+            label: 'Release',
+            icon: <Disc3 size={18} />,
+            disabled: !selectedRelease,
+            active: !!selectedRelease,
+            onClick: () => scrollToWithOffset('section-release'),
+        },
+        {
+            key: 'collection',
+            label: 'Collection',
+            icon: <Library size={18} />,
+            disabled: false,
+            active: true,
+            onClick: () => scrollToWithOffset('section-collection'),
+        },
+        {
+            key: 'video',
+            label: 'Video',
+            icon: <PlayCircle size={18} />,
+            disabled: !selectedVideo,
+            active: !!selectedVideo,
+            onClick: () => scrollToWithOffset('section-video'),
         },
     ] as const;
 

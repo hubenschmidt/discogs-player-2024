@@ -56,9 +56,9 @@ type NavBarProps = {
 const NavBar: React.FC<NavBarProps> = ({ isCollapsed, setIsCollapsed }) => {
     const { dispatchNav } = useContext(NavContext);
     const navLinks = [
-        { key: 'history', label: 'History' },
-        { key: 'playlists', label: 'Playlists' },
         { key: 'explorer', label: 'Explorer' },
+        { key: 'playlists', label: 'Playlists' },
+        { key: 'history', label: 'History' },
         { key: 'account', label: 'Account' },
         { key: 'logout', label: 'Logout', href: '/auth/logout' },
     ];
