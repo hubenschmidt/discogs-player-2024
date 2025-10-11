@@ -44,8 +44,18 @@ const Account: React.FC = () => {
                     if (res) {
                         window.location.href = '/auth/logout'; // Hard-logout after deletion
                     }
+                    // else deletion did not happen
+                    setError(
+                        'User was not deleted. Please contact support or try again.',
+                    );
                 })
-                .catch(err => console.log(err));
+                .catch(err => {
+                    setError(
+                        'User was not deleted. Please contact support or try again.',
+                    );
+                    console.log(err);
+                })
+                .finally(() => setSubmitting(false));
         } catch (e: any) {
             setError(e?.message || 'Failed to delete account.');
             setSubmitting(false);
@@ -69,12 +79,6 @@ const Account: React.FC = () => {
                         Email
                     </Text>
                     <Text>{userState?.email || '—'}</Text>
-                </Group>
-                <Group>
-                    <Text c="dimmed" w={120}>
-                        Auth
-                    </Text>
-                    <Badge variant="light">Discogs + Auth0</Badge>
                 </Group>
 
                 <Divider my="sm" />
@@ -103,59 +107,96 @@ const Account: React.FC = () => {
                 </Stack>
             </Stack>
 
-            <Modal
+            {/* Dark-styled modal to match AddToPlaylistModal */}
+            <Modal.Root
                 opened={confirmOpen}
                 onClose={() => !submitting && setConfirmOpen(false)}
                 centered
-                title="Confirm account deletion"
+                size="lg"
             >
-                <Stack gap="sm">
-                    <Alert
-                        color="red"
-                        icon={<AlertTriangle size={16} />}
-                        title="Warning"
-                        variant="light"
+                <Modal.Overlay backgroundOpacity={0.5} />
+                <Modal.Content
+                    style={{
+                        border: '1px solid #fff',
+                        borderRadius: 12,
+                    }}
+                >
+                    <Modal.Header
+                        style={{ backgroundColor: '#141516', color: 'white' }}
                     >
-                        This is a dangerous action that <b>cannot be undone</b>.
-                    </Alert>
+                        <Modal.Title>Confirm account deletion</Modal.Title>
+                        <Modal.CloseButton disabled={submitting} />
+                    </Modal.Header>
 
-                    <Text size="sm">
-                        Please type your email{' '}
-                        <b>{userState?.email || '(no email)'}</b> to confirm:
-                    </Text>
+                    <Modal.Body
+                        style={{ backgroundColor: '#141516', color: 'white' }}
+                    >
+                        <Stack gap="sm">
+                            <Alert
+                                color="red"
+                                icon={<AlertTriangle size={16} />}
+                                title="Warning"
+                                variant="light"
+                                styles={{
+                                    root: {
+                                        backgroundColor: '#2a1b1b',
+                                        borderColor: 'rgba(255,255,255,0.2)',
+                                    },
+                                    message: { color: '#fff' },
+                                }}
+                            >
+                                This action <b>cannot be undone</b>.
+                            </Alert>
 
-                    <TextInput
-                        placeholder="your@email.com"
-                        value={confirmEmail}
-                        onChange={e => setConfirmEmail(e.currentTarget.value)}
-                        disabled={submitting}
-                    />
+                            <Text size="sm">
+                                Please type your email{' '}
+                                <b>{userState?.email || '(no email)'}</b> to
+                                confirm:
+                            </Text>
 
-                    {error && (
-                        <Alert color="red" variant="light">
-                            {error}
-                        </Alert>
-                    )}
+                            <TextInput
+                                placeholder="your@email.com"
+                                value={confirmEmail}
+                                onChange={e =>
+                                    setConfirmEmail(e.currentTarget.value)
+                                }
+                                disabled={submitting}
+                                styles={{
+                                    input: {
+                                        backgroundColor: 'transparent',
+                                        color: 'white',
+                                        borderColor: 'rgba(255,255,255,0.35)',
+                                    },
+                                }}
+                            />
 
-                    <Group justify="flex-end" mt="xs">
-                        <Button
-                            variant="default"
-                            onClick={() => setConfirmOpen(false)}
-                            disabled={submitting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            color="red"
-                            onClick={handleDelete}
-                            disabled={!canConfirm || submitting}
-                            loading={submitting}
-                        >
-                            Permanently delete
-                        </Button>
-                    </Group>
-                </Stack>
-            </Modal>
+                            {error && (
+                                <Alert color="red" variant="light">
+                                    {error}
+                                </Alert>
+                            )}
+
+                            <Group justify="flex-end" mt="xs">
+                                <Button
+                                    variant="light-transparent"
+                                    onClick={() => setConfirmOpen(false)}
+                                    disabled={submitting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    color="red"
+                                    onClick={handleDelete}
+                                    disabled={!canConfirm || submitting}
+                                    loading={submitting}
+                                >
+                                    Permanently delete
+                                </Button>
+                            </Group>
+                        </Stack>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal.Root>
         </Box>
     );
 };
