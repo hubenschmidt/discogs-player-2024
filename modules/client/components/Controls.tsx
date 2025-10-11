@@ -55,8 +55,6 @@ const Controls = () => {
     };
 
     const handleNextVideo = () => {
-        const wasPlaying = discogsReleaseState.isPlaying;
-
         // clear previews in one shot
         dispatchDiscogsRelease({
             type: 'MERGE_STATE',
@@ -70,13 +68,10 @@ const Controls = () => {
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
 
         // iOS: because this was a user gesture, nudge the player to keep playing
-        if (isIOS() && wasPlaying) controls?.play?.();
-        // if (isIOS())
-        //     dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
+        if (isIOS())
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
     const handlePrevVideo = () => {
-        const wasPlaying = discogsReleaseState.isPlaying;
-
         // clear both previews in one dispatch
         dispatchDiscogsRelease({
             type: 'MERGE_STATE',
@@ -89,12 +84,8 @@ const Controls = () => {
         // step to previous item in the queue
         dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
 
-        // iOS: since this is a user gesture, keep playback going
-        if (isIOS() && wasPlaying) {
-            controls?.play?.();
-        }
-        // if (isIOS())
-        //     dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
+        if (isIOS())
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
 
     if (!selectedVideo) return null;
