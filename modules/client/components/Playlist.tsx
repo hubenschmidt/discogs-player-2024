@@ -12,6 +12,7 @@ import {
 import { ActionIcon } from '@mantine/core';
 import { Trash2 } from 'lucide-react';
 import { SearchContext } from '../context/searchContext';
+import { isIOS } from './CustomYoutubePlayer';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -346,17 +347,15 @@ const Playlist = () => {
                     });
 
                     // One shot: clear previews and start playing
-                    // (Optionally also assert selectedRelease if your queue items don't always include .release)
-                    const mergePayload: any = {
-                        previewRelease: null,
-                        previewDiscogsRelease: null,
-                        isPlaying: true,
-                        selectedRelease: row.release,
-                    };
-
                     dispatchDiscogsRelease({
                         type: 'MERGE_STATE',
-                        payload: mergePayload,
+                        payload: {
+                            previewRelease: null,
+                            previewDiscogsRelease: null,
+                            isPlaying: true,
+                            selectedRelease: row.release,
+                            ...(isIOS() ? { isPlaying: false } : {}),
+                        },
                     });
 
                     // Ensure the shelf shows the playlist (no collection injection)
