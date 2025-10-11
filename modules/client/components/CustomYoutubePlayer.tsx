@@ -72,7 +72,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
             return;
         }
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
-        if (!isIOS())
+        if (isIOS())
             dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false }); // reset playing if iOS
     };
 
