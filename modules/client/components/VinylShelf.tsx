@@ -195,19 +195,6 @@ const VinylShelf: FC = () => {
                     payload: res.playlist.Playlist_Id,
                 });
                 dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: res });
-
-                // Only push releases to the vinyl shelf when the shelf is meant to show the playlist
-                const shouldShowOnShelf =
-                    playlistOpen &&
-                    !showSearchShelf &&
-                    !shelfCollectionOverride;
-
-                if (shouldShowOnShelf && res.releases.items.length > 0) {
-                    dispatchCollection({
-                        type: 'SET_COLLECTION',
-                        payload: res.releases,
-                    });
-                }
             })
             .catch(console.error)
             .finally(() => {
@@ -234,6 +221,25 @@ const VinylShelf: FC = () => {
         showSearchShelf,
         shelfCollectionOverride,
         dispatchPlaylist,
+        dispatchCollection,
+    ]);
+
+    // B) Mirror playlist releases onto the shelf only when allowed
+    useEffect(() => {
+        const shouldShowOnShelf =
+            playlistOpen && !showSearchShelf && !shelfCollectionOverride;
+
+        const releases = playlistState?.playlistDetail?.releases;
+        if (!shouldShowOnShelf || !releases?.items?.length) return;
+
+        dispatchCollection({ type: 'SET_COLLECTION', payload: releases });
+    }, [
+        // conditions that decide mirroring
+        playlistOpen,
+        showSearchShelf,
+        shelfCollectionOverride,
+        // new data to mirror
+        playlistState?.playlistDetail?.releases,
         dispatchCollection,
     ]);
 

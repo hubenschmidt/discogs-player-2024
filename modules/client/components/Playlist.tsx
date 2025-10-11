@@ -195,26 +195,57 @@ const Playlist = () => {
         dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
     };
 
-    // Auto-start first entry when videosPage loads (if nothing playing from this page)
+    // ----- helpers (inline-safe) -----
+    const pageUrisSig = (videosPage?.items ?? [])
+        .map((v: any) => v?.uri)
+        .join('|');
+
+    const queueItems = discogsReleaseState.playbackQueue?.items ?? [];
+    const queueUrisSig = (queueItems as any[]).map(v => v?.uri).join('|');
+
+    const currentUri = discogsReleaseState.selectedVideo?.uri ?? null;
+    const mode = discogsReleaseState.playbackMode;
+    const currentIndex = discogsReleaseState.playbackQueue?.startIndex ?? 0;
+
+    // A) Seed/refresh the playback queue ONLY when it actually changed
     useEffect(() => {
+        // Only care while in playlist mode and when we have page items
+        if (mode !== 'playlist') return;
         const items = videosPage?.items ?? [];
         if (!items.length) return;
 
-        const currentUri = discogsReleaseState.selectedVideo?.uri;
+        // If URIs/order are identical to what's already in the queue, bail
+        if (pageUrisSig === queueUrisSig) return;
+
+        // Pick index so we keep current track if it's still present
         const idx = currentUri
-            ? items.findIndex(v => v.uri === currentUri)
+            ? items.findIndex(v => v?.uri === currentUri)
             : -1;
         const startIndex = idx >= 0 ? idx : 0;
 
-        // seed/refresh the queue with the correct starting index
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
             payload: { items, startIndex, mode: 'playlist' },
         });
+        // IMPORTANT: do NOT toggle SET_IS_PLAYING here
+        // deps: only when the page items/order change, or mode/currentUri change
+    }, [pageUrisSig, mode, currentUri]);
 
-        // keep selected video/release aligned with the queue
+    // B) Keep selected video/release aligned WITHOUT restarting playback
+    useEffect(() => {
+        if (mode !== 'playlist') return;
+        const items = videosPage?.items ?? [];
+        if (!items.length) return;
+
+        // Figure out what should be selected (same as queue startIndex logic)
+        const idx = currentUri
+            ? items.findIndex(v => v?.uri === currentUri)
+            : -1;
+        const startIndex = idx >= 0 ? idx : 0;
         const target = items[startIndex];
+        if (!target) return;
 
+        // Only dispatch when actually different
         if (
             !discogsReleaseState.selectedVideo ||
             discogsReleaseState.selectedVideo.uri !== target.uri
@@ -224,18 +255,24 @@ const Playlist = () => {
                 payload: target,
             });
         }
+        const targetReleaseId = target.release?.Release_Id;
         if (
             !discogsReleaseState.selectedRelease ||
-            discogsReleaseState.selectedRelease.Release_Id !==
-                target.release?.Release_Id
+            discogsReleaseState.selectedRelease.Release_Id !== targetReleaseId
         ) {
             dispatchDiscogsRelease({
                 type: 'SET_SELECTED_RELEASE',
                 payload: target.release,
             });
         }
-        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
-    }, [videosPage?.items]);
+        // deps: page order, currentUri, the currently selected ids, and mode
+    }, [
+        pageUrisSig,
+        currentUri,
+        discogsReleaseState.selectedVideo?.uri,
+        discogsReleaseState.selectedRelease?.Release_Id,
+        mode,
+    ]);
 
     // Count plays once per (releaseId|videoUri) while in playlist mode
     useEffect(() => {
