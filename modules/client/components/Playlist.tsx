@@ -11,8 +11,8 @@ import {
 } from '../api';
 import { ActionIcon } from '@mantine/core';
 import { Trash2 } from 'lucide-react';
-import { NavContext } from '../context/navContext';
 import { SearchContext } from '../context/searchContext';
+import { isIOS } from './CustomYoutubePlayer';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
@@ -20,7 +20,6 @@ const Playlist = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
     );
-    const { dispatchNav } = useContext(NavContext);
     const { dispatchSearch } = useContext(SearchContext);
     const bearerToken = useBearerToken();
 
@@ -201,7 +200,6 @@ const Playlist = () => {
 
     const currentUri = discogsReleaseState.selectedVideo?.uri ?? null;
     const mode = discogsReleaseState.playbackMode;
-    const currentIndex = discogsReleaseState.playbackQueue?.startIndex ?? 0;
 
     // A) Seed/refresh the playback queue ONLY when it actually changed
     useEffect(() => {

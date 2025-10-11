@@ -17,7 +17,7 @@ declare global {
     }
 }
 
-const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent); // 🔧
+export const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
     width = '100%',
@@ -111,7 +111,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
             width,
             videoId: extractYouTubeVideoId(selectedVideo.uri),
             playerVars: {
-                autoplay: 1,
+                autoplay: isIOS() ? 0 : 1, // ✅ desktop autoplays, iOS does not
                 controls: 0,
                 rel: 0,
                 iv_load_policy: 3,
@@ -121,10 +121,10 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
             },
             events: {
                 onReady: async (e: any) => {
-                    // 🔧 make sure iframe allows autoplay + inline
+                    // make sure iframe allows autoplay + inline
                     await ensureIframeAttributes(e.target);
 
-                    // expose controls
+                    // expose player controls to your PlayerContext
                     dispatchPlayer({
                         type: 'SET_CONTROLS',
                         payload: {
@@ -145,38 +145,14 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     });
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
 
-                    if (isIOS()) {
-                        // 🔧 iOS: start muted so autoplay is allowed, then unmute on first tap
-                        try {
-                            e.target.mute();
-                            e.target.playVideo();
-                        } catch {}
-
-                        const unlock = () => {
-                            try {
-                                e.target.unMute();
-                                e.target.playVideo();
-                            } catch {}
-                            window.removeEventListener('touchend', unlock);
-                            window.removeEventListener('click', unlock);
-                        };
-                        window.addEventListener('touchend', unlock, {
-                            once: true,
-                            passive: true,
-                        });
-                        window.addEventListener('click', unlock, {
-                            once: true,
-                        });
-                    } else {
-                        // non-iOS: normal autoplay
-                        try {
-                            e.target.playVideo();
-                        } catch {}
-                    }
+                    // Belt & suspenders: kick playback only on desktop if the browser allowed it
+                    if (!isIOS()) e.target.playVideo();
+                    // On iOS we intentionally do nothing here (user must tap Play in your UI)
                 },
                 onStateChange: (e: any) => {
-                    if (e.data === window.YT.PlayerState.ENDED)
+                    if (e.data === window.YT.PlayerState.ENDED) {
                         handleVideoEnd();
+                    }
                 },
             },
         });

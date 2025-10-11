@@ -8,6 +8,7 @@ import { getDiscogsRelease, updateVideoPlayCount } from '../api';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getPlaylists } from '../api';
 import AddToPlaylistModal from './AddToPlaylistModal';
+import { isIOS } from './CustomYoutubePlayer';
 
 const ReleaseVideos = () => {
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
@@ -142,7 +143,7 @@ const ReleaseVideos = () => {
             });
         }
 
-        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
+        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: !isIOS() });
     }, [
         // trigger when the actually-selected release changes (not preview)
         selectedDiscogsRelease?.id,
