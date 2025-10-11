@@ -77,7 +77,7 @@ const VinylShelf: FC = () => {
 
     // ---------- fetch collection when not viewing a playlist ----------
     useEffect(() => {
-        if (shelfShowsPlaylist) return; // playlist is showing on shelf, skip
+        if (shelfShowsPlaylist) return; // guard: skip when playlist panel mirrors onto shelf
 
         const params: any = {
             username: userState.username,
@@ -98,44 +98,40 @@ const VinylShelf: FC = () => {
         };
 
         let aborted = false;
-        let t: ReturnType<typeof setTimeout> | null = null;
+        let timer: ReturnType<typeof setTimeout> | null = null;
         const started = Date.now();
 
         setLoadingFetch(true);
 
+        const injectSelectedIfMissing = (
+            payload: CollectionResponse,
+        ): CollectionResponse => {
+            if (!shelfCollectionOverride) return payload;
+            const rid = selectedRelease?.Release_Id;
+            if (!rid) return payload;
+
+            const present = payload.items?.some(r => r.Release_Id === rid);
+            if (present) return payload;
+
+            const plReleases =
+                playlistState?.playlistDetail?.releases?.items ?? [];
+            const fromPlaylist =
+                plReleases.find((r: any) => r?.Release_Id === rid) ||
+                selectedRelease;
+
+            const mergedItems = [
+                fromPlaylist,
+                ...(payload.items ?? []).filter(r => r.Release_Id !== rid),
+            ];
+
+            return { ...payload, items: mergedItems };
+        };
+
         getCollection(params, bearerToken)
             .then((collection: CollectionResponse) => {
                 if (aborted) return;
-
-                let payload = collection;
-
-                // Inject + center ONLY in "open search" (full collection) mode,
-                // when the playing release isn't on the current page.
-                if (shelfCollectionOverride && selectedRelease?.Release_Id) {
-                    const rid = selectedRelease.Release_Id;
-                    const present = payload.items?.some(
-                        r => r.Release_Id === rid,
-                    );
-
-                    if (!present) {
-                        // Try to get a full object from playlist detail; fallback to selectedRelease
-                        const plReleases =
-                            playlistState?.playlistDetail?.releases?.items ??
-                            [];
-                        const fromPlaylist =
-                            plReleases.find(
-                                (r: any) => r?.Release_Id === rid,
-                            ) || selectedRelease;
-
-                        const merged = [
-                            fromPlaylist,
-                            ...payload.items.filter(r => r.Release_Id !== rid),
-                        ];
-                        payload = { ...payload, items: merged };
-                    }
-                }
-
-                dispatchCollection({ type: 'SET_COLLECTION', payload });
+                const next = injectSelectedIfMissing(collection);
+                dispatchCollection({ type: 'SET_COLLECTION', payload: next });
             })
             .catch(err =>
                 console.error('fetch collection failed', err?.response || err),
@@ -144,12 +140,12 @@ const VinylShelf: FC = () => {
                 if (aborted) return;
                 const elapsed = Date.now() - started;
                 const remain = Math.max(0, MIN_SPINNER_MS - elapsed);
-                t = setTimeout(() => setLoadingFetch(false), remain);
+                timer = setTimeout(() => setLoadingFetch(false), remain);
             });
 
         return () => {
             aborted = true;
-            if (t) clearTimeout(t);
+            if (timer) clearTimeout(timer);
         };
     }, [
         shelfShowsPlaylist,
@@ -162,9 +158,9 @@ const VinylShelf: FC = () => {
         genresFilter,
         stylesFilter,
         yearsFilter,
-        shelfCollectionOverride, // 👈 add
-        selectedRelease?.Release_Id, // 👈 add
-        playlistState?.playlistDetail?.releases?.items, // 👈 add (for injection source)
+        shelfCollectionOverride,
+        selectedRelease?.Release_Id,
+        playlistState?.playlistDetail?.releases?.items,
     ]);
 
     // ---------- fetch playlist whenever the playlist panel is open ----------
