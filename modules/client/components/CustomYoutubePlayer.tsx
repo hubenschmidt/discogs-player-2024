@@ -72,6 +72,8 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
             return;
         }
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
+        if (!isIOS())
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false }); // reset playing if iOS
     };
 
     const safeSetVolume = (t: any, v: number, n = 5) => {
@@ -146,16 +148,6 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
 
                     const isiOS = isIOS();
-
-                    // iOS: only autoplay if we already have a gesture this session
-                    if (
-                        isiOS &&
-                        localStorage.getItem('autoplayPref') &&
-                        sessionStorage.getItem('autoplayUnlocked')
-                    ) {
-                        e.target.playVideo();
-                        return;
-                    }
 
                     if (!isiOS) {
                         // Desktop: go ahead and autoplay
