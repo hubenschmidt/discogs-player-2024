@@ -34,6 +34,7 @@ import CollapsibleWrapper from './CollapsibleWrapper';
 import History from './History';
 import Explorer from './Explorer';
 import Account from './Account';
+import TopNav from './TopNav';
 
 type Props = {
     children?: ReactNode;
@@ -71,7 +72,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
     }, [userState.username]);
 
     // whenever selectedRelease changes (or becomes truthy), force it open
-    React.useEffect(() => {
+    useEffect(() => {
         if (selectedRelease) setTracksOpen(true);
     }, [selectedRelease?.Release_Id, previewRelease?.Release_Id]); // include preview if you want: , previewRelease?.Release_Id
 
@@ -108,44 +109,59 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
             </Head>
 
             <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-            <Box component="header"></Box>
+
             <Container fluid className="layout-container" ml="5px" mr="5px">
                 <Box
                     pos="sticky"
                     top={0}
                     style={{
                         position: 'sticky',
-                        top: 8, // a little gap from the top
-                        zIndex: 900, // below your NavBar's 1000, above content
+                        top: 8,
+                        zIndex: 900,
                         background: 'rgba(0,0,0,0.9)',
                         backdropFilter: 'blur(2px)',
                         boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
                         borderRadius: 6,
                     }}
+                    data-app-header
                 >
-                    {/* Header Section */}
-                    <Grid mt="sm" mb="sm">
+                    <Grid mt="sm" mb="sm" align="center">
                         <Grid.Col
-                            span={{ base: 11, md: 6, lg: 1.5 }}
-                            style={{
-                                position: 'relative',
-                                zIndex: 1000,
-                            }}
+                            span={{ base: 1, sm: 0.5, md: 0.5, lg: 0.5 }}
+                        ></Grid.Col>
+
+                        {/* Row 1: icons (left) + logo (right) */}
+                        <Grid.Col
+                            span={{ base: 6, sm: 3, md: 3, lg: 2 }}
+                            style={{ position: 'relative', zIndex: 1001 }}
                         >
-                            {/* Right-anchored container */}
+                            <Box
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-start',
+                                    overflow: 'visible',
+                                }}
+                            >
+                                <TopNav compact />
+                            </Box>
+                        </Grid.Col>
+
+                        <Grid.Col
+                            span={{ base: 5, sm: 8, md: 1.5, lg: 1.5 }}
+                            style={{ position: 'relative', zIndex: 1000 }}
+                        >
                             <Box
                                 style={{
                                     display: 'flex',
                                     justifyContent: 'flex-end',
-                                    marginTop: '0px',
+                                    marginTop: 0,
                                 }}
                             >
-                                {/* Fixed-width inner box so first letters align */}
                                 <Box
                                     style={{
                                         width: '5.5ch',
                                         textAlign: 'left',
-                                        marginRight: '12px',
+                                        marginRight: 10,
                                     }}
                                 >
                                     <Text
@@ -178,11 +194,13 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                             </Box>
                         </Grid.Col>
 
-                        <Grid.Col span={{ base: 12, md: 6, lg: 10 }}>
+                        {/* Row 2: search full width on mobile */}
+                        <Grid.Col span={{ base: 12, md: 7, lg: 7 }}>
                             <Search />
                         </Grid.Col>
 
-                        <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                        {/* Track detail below the row but inside header */}
+                        <Grid.Col span={12} mt="xs">
                             <TrackDetail
                                 selectedDiscogsRelease={selectedDiscogsRelease}
                             />
@@ -231,99 +249,105 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </CollapsibleWrapper>
                 )}
 
-                {navKey === 'history' && (
-                    <CollapsibleWrapper
-                        title="History"
-                        defaultOpen
-                        rightExtras={
-                            <ActionIcon
-                                variant="subtle"
-                                color="white"
-                                radius="md"
-                                size="lg"
-                                aria-label="Close history"
-                                onClick={() =>
-                                    dispatchNav({
-                                        type: 'SET_NAV_KEY',
-                                        payload: null,
-                                    })
-                                }
-                                title="Close history"
-                            >
-                                <X size={16} />
-                            </ActionIcon>
-                        }
-                    >
-                        <Grid mb="sm">
-                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                                <History />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
-                )}
+                <div id="section-history">
+                    {navKey === 'history' && (
+                        <CollapsibleWrapper
+                            title="History"
+                            defaultOpen
+                            rightExtras={
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="white"
+                                    radius="md"
+                                    size="lg"
+                                    aria-label="Close history"
+                                    onClick={() =>
+                                        dispatchNav({
+                                            type: 'SET_NAV_KEY',
+                                            payload: null,
+                                        })
+                                    }
+                                    title="Close history"
+                                >
+                                    <X size={16} />
+                                </ActionIcon>
+                            }
+                        >
+                            <Grid mb="sm">
+                                <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                    <History />
+                                </Grid.Col>
+                            </Grid>
+                        </CollapsibleWrapper>
+                    )}
+                </div>
 
-                {navKey === 'playlists' && (
-                    <CollapsibleWrapper
-                        title="Playlists"
-                        defaultOpen
-                        rightExtras={
-                            <ActionIcon
-                                variant="subtle"
-                                color="white"
-                                radius="md"
-                                size="lg"
-                                aria-label="Close playlists"
-                                onClick={() => {
-                                    // close the panel; add any other cleanup you need here
-                                    dispatchNav({
-                                        type: 'SET_NAV_KEY',
-                                        payload: null,
-                                    });
-                                }}
-                                title="Close playlists"
-                            >
-                                <X size={16} />
-                            </ActionIcon>
-                        }
-                    >
-                        <Grid mb="sm">
-                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                                <Playlists />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
-                )}
+                <div id="section-playlists">
+                    {navKey === 'playlists' && (
+                        <CollapsibleWrapper
+                            title="Playlists"
+                            defaultOpen
+                            rightExtras={
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="white"
+                                    radius="md"
+                                    size="lg"
+                                    aria-label="Close playlists"
+                                    onClick={() => {
+                                        // close the panel; add any other cleanup you need here
+                                        dispatchNav({
+                                            type: 'SET_NAV_KEY',
+                                            payload: null,
+                                        });
+                                    }}
+                                    title="Close playlists"
+                                >
+                                    <X size={16} />
+                                </ActionIcon>
+                            }
+                        >
+                            <Grid mb="sm">
+                                <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                    <Playlists />
+                                </Grid.Col>
+                            </Grid>
+                        </CollapsibleWrapper>
+                    )}
+                </div>
 
-                {navKey === 'explorer' && (
-                    <CollapsibleWrapper
-                        title="Explorer"
-                        defaultOpen
-                        rightExtras={
-                            <ActionIcon
-                                variant="subtle"
-                                color="white"
-                                radius="md"
-                                size="lg"
-                                aria-label="Close explorer"
-                                onClick={() =>
-                                    dispatchNav({
-                                        type: 'SET_NAV_KEY',
-                                        payload: null,
-                                    })
-                                }
-                                title="Close explorer"
-                            >
-                                <X size={16} />
-                            </ActionIcon>
-                        }
-                    >
-                        <Grid mb="sm">
-                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
-                                <Explorer />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
-                )}
+                <div id="section-explorer">
+                    {navKey === 'explorer' && (
+                        <CollapsibleWrapper
+                            title="Explorer"
+                            defaultOpen
+                            rightExtras={
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="white"
+                                    radius="md"
+                                    size="lg"
+                                    aria-label="Close explorer"
+                                    onClick={() =>
+                                        dispatchNav({
+                                            type: 'SET_NAV_KEY',
+                                            payload: null,
+                                        })
+                                    }
+                                    title="Close explorer"
+                                >
+                                    <X size={16} />
+                                </ActionIcon>
+                            }
+                        >
+                            <Grid mb="sm">
+                                <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                    <Explorer />
+                                </Grid.Col>
+                            </Grid>
+                        </CollapsibleWrapper>
+                    )}
+                </div>
 
                 {playlistOpen && (
                     <CollapsibleWrapper
@@ -355,46 +379,52 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                     </CollapsibleWrapper>
                 )}
 
-                {/* Video Playlist Section */}
-                {selectedRelease && (
-                    <CollapsibleWrapper
-                        title="Release"
-                        defaultOpen
-                        isOpen={tracksOpen}
-                        onOpenChange={setTracksOpen}
-                    >
-                        <Grid mb="sm">
-                            <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-                                <ReleaseVideos />
-                            </Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 6, lg: 8 }}>
-                                <ReleaseDetail />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
-                )}
+                <div id="section-release">
+                    {/* Video Playlist Section */}
+                    {selectedRelease && (
+                        <CollapsibleWrapper
+                            title="Release"
+                            defaultOpen
+                            isOpen={tracksOpen}
+                            onOpenChange={setTracksOpen}
+                        >
+                            <Grid mb="sm">
+                                <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+                                    <ReleaseVideos />
+                                </Grid.Col>
+                                <Grid.Col span={{ base: 12, md: 6, lg: 8 }}>
+                                    <ReleaseDetail />
+                                </Grid.Col>
+                            </Grid>
+                        </CollapsibleWrapper>
+                    )}
+                </div>
 
-                <CollapsibleWrapper title="Collection" defaultOpen>
-                    <Grid mb="sm">
-                        <Grid.Col span={{ base: 12 }}>
-                            <VinylShelf />
-                        </Grid.Col>
-                    </Grid>
-                </CollapsibleWrapper>
-
-                {/* YouTube Player Section */}
-                {selectedVideo && (
-                    <CollapsibleWrapper title="Video" defaultOpen={false}>
+                <div id="section-collection">
+                    <CollapsibleWrapper title="Collection" defaultOpen>
                         <Grid mb="sm">
                             <Grid.Col span={{ base: 12 }}>
-                                <CustomYouTubePlayer
-                                    width="100%"
-                                    height="430px"
-                                />
+                                <VinylShelf />
                             </Grid.Col>
                         </Grid>
                     </CollapsibleWrapper>
-                )}
+                </div>
+
+                <div id="section-video">
+                    {/* YouTube Player Section */}
+                    {selectedVideo && (
+                        <CollapsibleWrapper title="Video" defaultOpen={false}>
+                            <Grid mb="sm">
+                                <Grid.Col span={{ base: 12 }}>
+                                    <CustomYouTubePlayer
+                                        width="100%"
+                                        height="430px"
+                                    />
+                                </Grid.Col>
+                            </Grid>
+                        </CollapsibleWrapper>
+                    )}
+                </div>
 
                 {/* Footer */}
                 <Box pt="lg" style={{ textAlign: 'center' }}>
