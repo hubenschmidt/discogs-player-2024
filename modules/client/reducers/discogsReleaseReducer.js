@@ -25,8 +25,6 @@ export default initialState => {
                 return setPreviewDiscogsRelease(state, action.payload);
             case SET_CONTINUOUS_PLAY:
                 return setContinuousPlay(state, action.payload);
-            // case SET_NEXT_VIDEO:
-            //     return setNextVideo(state);
             case SET_PREV_VIDEO:
                 return setPrevVideo(state);
             case SET_PLAYBACK_QUEUE:

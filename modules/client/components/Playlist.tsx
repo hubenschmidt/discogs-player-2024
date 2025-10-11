@@ -12,7 +12,6 @@ import {
 import { ActionIcon } from '@mantine/core';
 import { Trash2 } from 'lucide-react';
 import { SearchContext } from '../context/searchContext';
-import { isIOS } from './CustomYoutubePlayer';
 
 const Playlist = () => {
     const { userState } = useContext(UserContext);
