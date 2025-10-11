@@ -146,37 +146,20 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                     dispatchPlayer({ type: 'SET_PLAYER_READY', payload: true });
 
                     const isiOS = isIOS();
-                    const unlocked = (() => {
-                        try {
-                            return (
-                                sessionStorage.getItem('autoplayUnlocked') ===
-                                '1'
-                            );
-                        } catch {
-                            return false;
-                        }
-                    })();
-                    const wantsAutoplay = (() => {
-                        try {
-                            return localStorage.getItem('autoplayPref') === '1';
-                        } catch {
-                            return false;
-                        }
-                    })();
 
-                    if (!isiOS) {
-                        // Desktop: go ahead and autoplay
-                        try {
-                            e.target.playVideo();
-                        } catch {}
+                    // iOS: only autoplay if we already have a gesture this session
+                    if (
+                        isiOS &&
+                        localStorage.getItem('autoplayPref') &&
+                        sessionStorage.getItem('autoplayUnlocked')
+                    ) {
+                        e.target.playVideo();
                         return;
                     }
 
-                    // iOS: only autoplay if we already have a gesture this session
-                    if (unlocked && wantsAutoplay) {
-                        try {
-                            e.target.playVideo();
-                        } catch {}
+                    if (!isiOS) {
+                        // Desktop: go ahead and autoplay
+                        e.target.playVideo();
                         return;
                     }
                 },
