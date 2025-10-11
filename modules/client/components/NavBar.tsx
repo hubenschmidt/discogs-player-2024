@@ -59,6 +59,7 @@ const NavBar: React.FC<NavBarProps> = ({ isCollapsed, setIsCollapsed }) => {
         { key: 'history', label: 'History' },
         { key: 'playlists', label: 'Playlists' },
         { key: 'explorer', label: 'Explorer' },
+        { key: 'account', label: 'Account' },
         { key: 'logout', label: 'Logout', href: '/auth/logout' },
     ];
 

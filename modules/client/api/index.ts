@@ -23,6 +23,17 @@ export const getUser = async (email: string, token: BearerToken) => {
     return response.data;
 };
 
+export const deleteUser = async (userId: number, token: BearerToken) => {
+    const uri = `/api/app/user/delete`;
+    const response = await requestHandler(
+        'POST',
+        uri,
+        { userId: userId },
+        token,
+    );
+    return response.data;
+};
+
 export const fetchDiscogsRequestToken = async (token: BearerToken) => {
     const uri = `/api/discogs/fetch-request-token`;
     const response = await requestHandler('GET', uri, null, token);

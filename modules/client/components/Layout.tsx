@@ -33,6 +33,7 @@ import ReleaseDetail from './ReleaseDetail';
 import CollapsibleWrapper from './CollapsibleWrapper';
 import History from './History';
 import Explorer from './Explorer';
+import Account from './Account';
 
 type Props = {
     children?: ReactNode;
@@ -198,6 +199,37 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         <TrackProgress />
                     </Grid.Col>
                 </Grid>
+
+                {navKey === 'account' && (
+                    <CollapsibleWrapper
+                        title="Account"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="subtle"
+                                color="white"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close account"
+                                onClick={() =>
+                                    dispatchNav({
+                                        type: 'SET_NAV_KEY',
+                                        payload: null,
+                                    })
+                                }
+                                title="Close account"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <Account />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
+                )}
 
                 {navKey === 'history' && (
                     <CollapsibleWrapper

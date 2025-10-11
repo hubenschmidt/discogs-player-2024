@@ -19,6 +19,7 @@ const setUser = (state, payload) => {
         ...state,
         username: payload.username,
         email: payload.email,
+        userId: payload.userId,
         notAuthed: payload.notAuthed,
     };
 };

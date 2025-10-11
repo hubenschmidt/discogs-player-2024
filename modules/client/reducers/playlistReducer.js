@@ -103,7 +103,6 @@ const setPlaylistVideosPage = (state, payload) => {
 };
 
 const setPlaylistVideosLimit = (state, payload) => {
-    console.log('setPlaylistVideos called', payload.playlistVideosLimit);
     return {
         ...state,
         playlistVideosLimit: payload.playlistVideosLimit,
