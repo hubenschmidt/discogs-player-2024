@@ -162,14 +162,14 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                     style={{
                                         width: '5.5ch',
                                         textAlign: 'left',
-                                        marginRight: 10,
+                                        marginRight: -4,
                                     }}
                                 >
                                     <Text
                                         style={{
                                             fontFamily:
                                                 '"Orbitron", sans-serif',
-                                            fontSize: '1.2rem',
+                                            fontSize: '1rem',
                                             letterSpacing: '1px',
                                             color: 'yellow',
                                             lineHeight: 1.2,
@@ -182,7 +182,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                                         style={{
                                             fontFamily:
                                                 '"Orbitron", sans-serif',
-                                            fontSize: '1.2rem',
+                                            fontSize: '1rem',
                                             letterSpacing: '1px',
                                             color: 'yellow',
                                             lineHeight: 1.2,
@@ -196,7 +196,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Grid.Col>
 
                         {/* Row 2: search full width on mobile */}
-                        <Grid.Col span={{ base: 12, md: 7, lg: 7 }}>
+                        <Grid.Col span={{ base: 12, md: 7, lg: 7 }} ml="4">
                             <Search />
                         </Grid.Col>
 
