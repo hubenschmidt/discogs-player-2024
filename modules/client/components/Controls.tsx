@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { PlayerContext } from '../context/playerContext';
 import { ActionIcon, Group, Switch, Tooltip } from '@mantine/core';
 import {

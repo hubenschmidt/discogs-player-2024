@@ -28,7 +28,7 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
 
     const { dispatchPlayer } = useContext(PlayerContext);
     const { collectionState } = useContext(CollectionContext);
-    const { releases } = collectionState;
+    const shelfItems = collectionState?.items ?? []; // <- use shelf items
 
     const { discogsReleaseState, dispatchDiscogsRelease } = useContext(
         DiscogsReleaseContext,
@@ -43,12 +43,31 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
     } = discogsReleaseState;
 
     const handleNextRelease = () => {
-        if (!selectedRelease || !releases?.length) return;
-        const i = releases.findIndex(
-            r => r.Release_Id === selectedRelease.Release_Id,
-        );
-        const next = releases[(i + 1) % releases.length];
+        if (
+            !selectedRelease ||
+            !Array.isArray(shelfItems) ||
+            !shelfItems.length
+        )
+            return;
+
+        const curId = selectedRelease.Release_Id;
+        let i = shelfItems.findIndex(r => r?.Release_Id === curId);
+        if (i === -1) i = 0; // fallback if current isn't found in this page
+
+        const next = shelfItems[(i + 1) % shelfItems.length];
+
+        // clear any preview and select the next release
+        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        dispatchDiscogsRelease({
+            type: 'SET_PREVIEW_DISCOGS_RELEASE',
+            payload: null,
+        });
         dispatchDiscogsRelease({ type: 'SET_SELECTED_RELEASE', payload: next });
+
+        // iOS cannot autoplay the next release's first track
+        if (isIOS()) {
+            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
+        }
     };
 
     const handleVideoEnd = () => {
@@ -61,6 +80,11 @@ const CustomYouTubePlayer: FC<YouTubePlayerProps> = ({
                 type: 'SET_PLAYBACK_QUEUE',
                 payload: { items: queue, startIndex: 0, mode: 'playlist' },
             });
+            if (isIOS())
+                dispatchDiscogsRelease({
+                    type: 'SET_IS_PLAYING',
+                    payload: false,
+                });
             return;
         }
         if (inPlaylist) {
