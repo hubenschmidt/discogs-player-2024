@@ -201,23 +201,29 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
                         </Grid.Col>
 
                         {/* Track detail below the row but inside header */}
-                        <Grid.Col span={12} mt="xs">
+                        <Grid.Col span={12} mt="-10">
                             <TrackDetail
                                 selectedDiscogsRelease={selectedDiscogsRelease}
                             />
                         </Grid.Col>
                     </Grid>
-                </Box>
 
-                <Grid align="center" mb="sm" gutter="sm">
-                    <Grid.Col span={{ base: 12, sm: 4, md: 3, lg: 3 }}>
-                        <Volume />
-                        <Controls />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, sm: 8, md: 9, lg: 9 }}>
-                        <TrackProgress />
-                    </Grid.Col>
-                </Grid>
+                    <Grid align="center" mb="sm" gutter="sm">
+                        <Grid.Col
+                            span={{ base: 12, sm: 4, md: 3, lg: 3 }}
+                            mt="-8"
+                        >
+                            <Volume />
+                            <Controls />
+                        </Grid.Col>
+                        <Grid.Col
+                            span={{ base: 12, sm: 8, md: 9, lg: 9 }}
+                            mt="-10"
+                        >
+                            <TrackProgress />
+                        </Grid.Col>
+                    </Grid>
+                </Box>
 
                 {navKey === 'account' && (
                     <CollapsibleWrapper

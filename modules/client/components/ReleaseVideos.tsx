@@ -68,7 +68,7 @@ const ReleaseVideos = () => {
                 queueIndex: startIndex,
                 playbackMode: 'release',
                 selectedVideo: video,
-                isPlaying: true,
+                isPlaying: !isIOS(),
             },
         });
 

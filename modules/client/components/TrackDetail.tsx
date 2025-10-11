@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Box, Text, Group, Paper } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
+import { isIOS } from './CustomYoutubePlayer';
 
 interface TrackDetailProps {
     selectedDiscogsRelease: any;
@@ -8,10 +9,10 @@ interface TrackDetailProps {
 
 const scrubTitle = (s?: string) =>
     (s ?? '')
-        .normalize('NFKD') // turn 𝐀 → A, 𝟗 → 9, etc.
-        .replace(/[\u0300-\u036f]/g, '') // remove combining marks
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width chars
-        .replace(/<[^>]*>/g, '') // strip HTML tags just in case
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/<[^>]*>/g, '')
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -23,52 +24,48 @@ const TrackDetail: React.FC<TrackDetailProps> = ({
 
     if (!selectedDiscogsRelease) return null;
 
+    const isiOS = isIOS();
+
     return (
         <Box>
-            <Paper
-                radius="md" // lg/xl if you want more roundness
-                p="xs"
-                style={{ background: '#0e0e0f' }}
-            >
-                <Box className={'track-detail-box'}>
+            <Paper radius="md" p="xs" style={{ background: '#0e0e0f' }}>
+                <Box className="track-detail-box">
                     <Box className="track-detail-content">
+                        {/* Always show video title */}
                         <Text className="track-detail-text" lh={1}>
                             ♪{' '}
                             {scrubTitle(controls?.videoTitle) ||
                                 'No title available'}
                         </Text>
 
-                        {/* Artist */}
-                        <Group>
-                            <Text className="track-detail-text" lh={1}>
-                                a: {selectedDiscogsRelease?.artists_sort}
-                            </Text>
-                        </Group>
-
-                        {/* Release */}
-                        <Group>
-                            <Text className="track-detail-text" lh={1}>
-                                r: {selectedDiscogsRelease?.title} (
-                                {selectedDiscogsRelease?.year})
-                            </Text>
-                        </Group>
-
-                        {/* Label + Catalog number */}
-                        <Group>
-                            <Text
-                                className="track-detail-text"
-                                lh={1}
-                                style={{}}
-                            >
-                                #:{' '}
-                                {selectedDiscogsRelease?.labels?.[0]?.catno ||
-                                    ''}{' '}
-                                (
-                                {selectedDiscogsRelease?.labels?.[0]?.name ||
-                                    ''}
-                                )
-                            </Text>
-                        </Group>
+                        {/* Hide the rest on iOS */}
+                        {!isiOS && (
+                            <>
+                                <Group>
+                                    <Text className="track-detail-text" lh={1}>
+                                        a:{' '}
+                                        {selectedDiscogsRelease?.artists_sort}
+                                    </Text>
+                                </Group>
+                                <Group>
+                                    <Text className="track-detail-text" lh={1}>
+                                        r: {selectedDiscogsRelease?.title} (
+                                        {selectedDiscogsRelease?.year})
+                                    </Text>
+                                </Group>
+                                <Group>
+                                    <Text className="track-detail-text" lh={1}>
+                                        #:{' '}
+                                        {selectedDiscogsRelease?.labels?.[0]
+                                            ?.catno || ''}{' '}
+                                        (
+                                        {selectedDiscogsRelease?.labels?.[0]
+                                            ?.name || ''}
+                                        )
+                                    </Text>
+                                </Group>
+                            </>
+                        )}
                     </Box>
                 </Box>
             </Paper>
