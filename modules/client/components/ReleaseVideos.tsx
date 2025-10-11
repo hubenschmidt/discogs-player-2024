@@ -191,6 +191,7 @@ const ReleaseVideos = () => {
                                     >
                                         <ActionIcon
                                             variant="light-transparent"
+                                            color="gray"
                                             onClick={e => {
                                                 e.stopPropagation();
                                                 playVideo(video, idx, {
