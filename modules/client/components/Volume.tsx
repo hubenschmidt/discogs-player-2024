@@ -3,12 +3,14 @@ import { Slider } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import classes from '../styles/Slider.module.css';
+import { isIOS } from './CustomYoutubePlayer';
 
 const Volume = () => {
     const { playerState, dispatchPlayer } = useContext(PlayerContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
     const { controls, volume } = playerState;
     const { selectedVideo } = discogsReleaseState;
+    const isiOS = isIOS();
 
     useEffect(() => {
         if (controls) {
@@ -21,7 +23,7 @@ const Volume = () => {
         controls?.setVolume(value);
     };
 
-    return selectedVideo ? (
+    return selectedVideo && !isiOS ? (
         <Slider
             value={volume}
             min={0}

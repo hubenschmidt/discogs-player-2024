@@ -21,6 +21,7 @@ const Controls = () => {
     const { selectedVideo, continuousPlay, isPlaying, playbackMode } =
         discogsReleaseState;
     const isPlaylist = playbackMode === 'playlist';
+    const isiOS = isIOS();
 
     // (optional) ensure loop is OFF in playlist mode to avoid confusion
     useEffect(() => {
@@ -67,8 +68,7 @@ const Controls = () => {
         // advance queue
         dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
 
-        // iOS: because this was a user gesture, nudge the player to keep playing
-        if (isIOS())
+        if (isiOS)
             dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
     const handlePrevVideo = () => {
@@ -84,7 +84,7 @@ const Controls = () => {
         // step to previous item in the queue
         dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
 
-        if (isIOS())
+        if (isiOS)
             dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
 
