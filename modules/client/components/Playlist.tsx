@@ -318,40 +318,41 @@ const Playlist = () => {
                 selectedRowKey={discogsReleaseState.selectedVideo?.uri}
                 selectedRowClassName="playlist-row-selected"
                 onRowClick={row => {
+                    // Clear any search selection
                     dispatchSearch({
                         type: 'SET_SEARCH_SELECTION',
                         payload: null,
                     });
+
+                    // Build queue + startIndex
                     const queue = videosPage?.items ?? [];
                     const startIndex = Math.max(
                         0,
                         queue.findIndex(v => v?.uri === row?.uri),
                     );
-                    dispatchDiscogsRelease({
-                        type: 'SET_PREVIEW_RELEASE',
-                        payload: null,
-                    });
-                    dispatchDiscogsRelease({
-                        type: 'SET_PREVIEW_DISCOGS_RELEASE',
-                        payload: null,
-                    });
+
+                    // Seed playback queue in playlist mode (also sets selectedVideo and,
+                    // if present on the item, selectedRelease)
                     dispatchDiscogsRelease({
                         type: 'SET_PLAYBACK_QUEUE',
                         payload: { items: queue, startIndex, mode: 'playlist' },
                     });
-                    // select the video; if you also want to sync a release selection:
+
+                    // One shot: clear previews and start playing
+                    // (Optionally also assert selectedRelease if your queue items don't always include .release)
+                    const mergePayload: any = {
+                        previewRelease: null,
+                        previewDiscogsRelease: null,
+                        isPlaying: true,
+                        selectedRelease: row.release,
+                    };
+
                     dispatchDiscogsRelease({
-                        type: 'SET_SELECTED_VIDEO',
-                        payload: queue[startIndex],
+                        type: 'MERGE_STATE',
+                        payload: mergePayload,
                     });
-                    dispatchDiscogsRelease({
-                        type: 'SET_SELECTED_RELEASE',
-                        payload: row?.release,
-                    });
-                    dispatchDiscogsRelease({
-                        type: 'SET_IS_PLAYING',
-                        payload: true,
-                    });
+
+                    // Ensure the shelf shows the playlist (no collection injection)
                     dispatchSearch({
                         type: 'SET_SHELF_COLLECTION_OVERRIDE',
                         payload: false,
