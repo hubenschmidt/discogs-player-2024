@@ -118,31 +118,33 @@ const Playlist = () => {
             return;
         }
 
-        // Optimistic UI update
+        // --- Optimistic UI update for playlist detail -----------------------------
         const oldItems = videosPage?.items ?? [];
         const newItems = oldItems.filter((v: any) => v?.uri !== row.uri);
 
-        const newDetail = {
-            ...pl,
-            playlist: {
-                ...pl?.playlist,
-                Tracks_Count: Math.max(
-                    0,
-                    (pl?.playlist?.Tracks_Count ?? newItems.length + 1) - 1,
-                ),
+        dispatchPlaylist({
+            type: 'SET_PLAYLIST_DETAIL',
+            payload: {
+                ...pl,
+                playlist: {
+                    ...pl?.playlist,
+                    Tracks_Count: Math.max(
+                        0,
+                        (pl?.playlist?.Tracks_Count ?? newItems.length + 1) - 1,
+                    ),
+                },
+                videos: { ...pl?.videos, items: newItems },
             },
-            videos: { ...pl?.videos, items: newItems },
-        };
-        dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: newDetail });
+        });
 
-        // Playback handling (no "source" logic):
+        // --- Playback handling (only in playlist mode) ----------------------------
         if (discogsReleaseState.playbackMode !== 'playlist') return;
 
-        const currentUri = discogsReleaseState.selectedVideo?.uri;
+        const currentUri = discogsReleaseState.selectedVideo?.uri ?? null;
         const deletedWasCurrent = currentUri && currentUri === row.uri;
 
+        // Case A: we did NOT delete the current track -> keep playing
         if (!deletedWasCurrent) {
-            // Keep playing the same track (reseed with same index if present)
             const idx = currentUri
                 ? newItems.findIndex((v: any) => v?.uri === currentUri)
                 : 0;
@@ -152,32 +154,36 @@ const Playlist = () => {
                 type: 'SET_PLAYBACK_QUEUE',
                 payload: { items: newItems, startIndex, mode: 'playlist' },
             });
-            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
+            dispatchDiscogsRelease({
+                type: 'MERGE_STATE',
+                payload: { isPlaying: true },
+            });
             return;
         }
 
-        // Deleted the currently playing track — pick a neighbor
-        const oldIndex = oldItems.findIndex((v: any) => v?.uri === row.uri);
-        const next = newItems[oldIndex] ?? newItems[oldIndex - 1] ?? null;
-
-        if (!next) {
-            // Playlist became empty
+        // Case B: we DID delete the current track
+        if (newItems.length === 0) {
+            // playlist became empty
             dispatchDiscogsRelease({
                 type: 'SET_PLAYBACK_QUEUE',
                 payload: { items: [], startIndex: 0, mode: 'playlist' },
             });
             dispatchDiscogsRelease({
-                type: 'SET_SELECTED_VIDEO',
-                payload: null,
+                type: 'MERGE_STATE',
+                payload: { selectedVideo: null, isPlaying: false },
             });
-            dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
             return;
         }
 
+        // Pick a neighbor: prefer the item that slid into the same index, else previous
+        const oldIndex = oldItems.findIndex((v: any) => v?.uri === row.uri);
+        const candidate =
+            newItems[oldIndex] ?? newItems[oldIndex - 1] ?? newItems[0];
         const nextIndex = Math.max(
             0,
-            newItems.findIndex((v: any) => v?.uri === next.uri),
+            newItems.findIndex((v: any) => v?.uri === candidate?.uri),
         );
+
         dispatchDiscogsRelease({
             type: 'SET_PLAYBACK_QUEUE',
             payload: {
@@ -186,8 +192,10 @@ const Playlist = () => {
                 mode: 'playlist',
             },
         });
-        dispatchDiscogsRelease({ type: 'SET_SELECTED_VIDEO', payload: next });
-        dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: true });
+        dispatchDiscogsRelease({
+            type: 'MERGE_STATE',
+            payload: { isPlaying: true },
+        });
     };
 
     // ----- helpers (inline-safe) -----
