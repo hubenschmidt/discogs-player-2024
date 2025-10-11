@@ -4,6 +4,7 @@ import userReducer from '../reducers/userReducer';
 const initialState = {
     username: '',
     email: '',
+    userId: null,
     notAuthed: false, // explicitly check if not authed is true
     bearerToken: null,
 };

@@ -11,6 +11,10 @@ export const getUser = async (req: Request) => {
     return await repos.getUser(req);
 };
 
+export const deleteUser = async (req: Request) => {
+    return await repos.deleteUser(req);
+};
+
 export const getCollection = async (req: Request) => {
     return await repos.getCollection(req);
 };

@@ -82,7 +82,7 @@ const Layout = ({ title = 'TuneCrook' }: Props) => {
         return (
             <Center style={{ height: '100vh' }}>
                 <Stack align="center">
-                    <Loader size="xl" color="white" />
+                    <Loader size="xl" color="rgb(255,255,0)" />
                     <Text>Loading your collection…</Text>
                 </Stack>
             </Center>

@@ -3,7 +3,7 @@ import { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../../../context/userContext';
 import { useUser } from '@auth0/nextjs-auth0';
 import { fetchDiscogsAccessToken } from '../../../api';
-import { Loader, Center, Notification, Text } from '@mantine/core';
+import { Loader, Center, Notification, Text, Stack } from '@mantine/core';
 import { fetchBearerToken } from '../../../lib/fetch-bearer-token';
 import { useBearerToken } from '../../../hooks/useBearerToken';
 
@@ -60,8 +60,10 @@ const DiscogsCallbackPage = () => {
 
     return (
         <Center style={{ height: '100vh' }}>
-            <Loader size="lg" color="white" />
-            <Text ml="md">Finishing authentication…</Text>
+            <Stack align="center">
+                <Loader size="xl" color="rgb(255,255,0)" />
+                <Text ml="md">Finishing authentication…</Text>
+            </Stack>
         </Center>
     );
 };

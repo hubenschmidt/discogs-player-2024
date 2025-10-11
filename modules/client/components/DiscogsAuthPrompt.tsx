@@ -42,7 +42,7 @@ const DiscogsAuthPrompt = () => {
         return (
             <Center style={{ height: '100vh' }}>
                 <Stack align="center">
-                    <Loader size="xl" variant="bars" color="white" />
+                    <Loader size="xl" color="rgb(255,255,0)" />
                     <Text>Redirecting to Discogs…</Text>
                 </Stack>
             </Center>
@@ -53,7 +53,13 @@ const DiscogsAuthPrompt = () => {
         <Center style={{ height: '100vh' }}>
             <Stack align="center">
                 <Title order={2}>Connect your Discogs account</Title>
-                <Button size="lg" radius="xl" onClick={handleConnect}>
+                <Button
+                    color="rgb(255,255,0)"
+                    c="black"
+                    size="lg"
+                    radius="xl"
+                    onClick={handleConnect}
+                >
                     Authorize with Discogs
                 </Button>
 

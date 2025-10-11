@@ -47,6 +47,7 @@ const IndexPage = () => {
                     payload: {
                         username: res?.Username ?? '',
                         email: res?.Email ?? '',
+                        userId: res?.User_Id ?? null,
                         notAuthed: !res?.Email && !res?.Username ? true : false,
                     },
                 });
@@ -62,7 +63,7 @@ const IndexPage = () => {
     if (isLoading) {
         return (
             <Flex style={{ height: '100vh' }} justify="center" align="center">
-                <Loader />
+                <Loader size="xl" color="rgb(255,255,0)" />
             </Flex>
         );
     }

@@ -29,6 +29,21 @@ export const getUser = async (
     }
 };
 
+export const deleteUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    console.trace(req.body, 'req.body');
+    try {
+        const deleteCount = await appService.deleteUser(req);
+        res.status(200).json(deleteCount);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 export const getCollection = async (
     req: Request,
     res: Response,

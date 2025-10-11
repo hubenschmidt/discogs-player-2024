@@ -13,6 +13,7 @@ import {
     getHistory,
     getExplorer,
     deleteFromPlaylist,
+    deleteUser,
 } from '../../controllers/appController';
 
 export const router: Router = Router();
@@ -30,5 +31,6 @@ router.get('/:username/playlist/all', getPlaylists);
 router.get('/:username/playlist/:playlistId', getPlaylist);
 router.get('/:username/history', getHistory);
 router.get('/:username/explorer', getExplorer);
+router.post('/user/delete', deleteUser);
 
 export default router;
