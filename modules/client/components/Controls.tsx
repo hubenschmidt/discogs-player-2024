@@ -10,6 +10,7 @@ import {
     FastForward,
 } from 'lucide-react';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
+import { isIOS } from './CustomYoutubePlayer';
 
 const Controls = () => {
     const { playerState } = useContext(PlayerContext);
@@ -54,21 +55,46 @@ const Controls = () => {
     };
 
     const handleNextVideo = () => {
-        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
-        dispatchDiscogsRelease({
-            type: 'SET_PREVIEW_DISCOGS_RELEASE',
-            payload: null,
-        });
-        dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
-    };
+        const wasPlaying = discogsReleaseState.isPlaying;
 
-    const handlePrevVideo = () => {
-        dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+        // clear previews in one shot
         dispatchDiscogsRelease({
-            type: 'SET_PREVIEW_DISCOGS_RELEASE',
-            payload: null,
+            type: 'MERGE_STATE',
+            payload: {
+                previewRelease: null,
+                previewDiscogsRelease: null,
+            },
         });
+
+        // advance queue
+        dispatchDiscogsRelease({ type: 'SET_NEXT_IN_QUEUE' });
+
+        // iOS: because this was a user gesture, nudge the player to keep playing
+        if (isIOS() && wasPlaying) controls?.play?.();
+        // if (isIOS())
+        //     dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
+    };
+    const handlePrevVideo = () => {
+        const wasPlaying = discogsReleaseState.isPlaying;
+
+        // clear both previews in one dispatch
+        dispatchDiscogsRelease({
+            type: 'MERGE_STATE',
+            payload: {
+                previewRelease: null,
+                previewDiscogsRelease: null,
+            },
+        });
+
+        // step to previous item in the queue
         dispatchDiscogsRelease({ type: 'SET_PREV_IN_QUEUE' });
+
+        // iOS: since this is a user gesture, keep playback going
+        if (isIOS() && wasPlaying) {
+            controls?.play?.();
+        }
+        // if (isIOS())
+        //     dispatchDiscogsRelease({ type: 'SET_IS_PLAYING', payload: false });
     };
 
     if (!selectedVideo) return null;
