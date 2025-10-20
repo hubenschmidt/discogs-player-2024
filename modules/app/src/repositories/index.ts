@@ -730,7 +730,7 @@ export const getPlaylists = async (req: Request, user: any) => {
         where: { User_Id: user.User_Id },
         order: [
             [orderBy, order],
-            ['updatedAt', 'DESC'], // stable tie-breaker
+            ['updatedAt', 'DESC'],
         ],
         limit,
         offset,
