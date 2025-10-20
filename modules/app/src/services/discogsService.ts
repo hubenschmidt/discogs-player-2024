@@ -66,7 +66,7 @@ export const syncCollection = async (req: Request) => {
         user.User_Id,
     );
 
-    const releasesPromise = syncData(
+    const releasesPromise = await syncData(
         'Release',
         discogsCol.map((el: any) => ({
             Release_Id: el.id,
@@ -79,7 +79,7 @@ export const syncCollection = async (req: Request) => {
         'Release_Id',
     );
 
-    const artistsPromise = syncData(
+    const artistsPromise = await syncData(
         'Artist',
         discogsCol.flatMap((el: any) =>
             el.basic_information.artists.map((artist: any) => ({
@@ -90,7 +90,7 @@ export const syncCollection = async (req: Request) => {
         'Artist_Id',
     );
 
-    const labelsPromise = syncData(
+    const labelsPromise = await syncData(
         'Label',
         discogsCol.flatMap((el: any) =>
             el.basic_information.labels.map((label: any) => ({
@@ -102,7 +102,7 @@ export const syncCollection = async (req: Request) => {
         'Label_Id',
     );
 
-    const genresPromise = syncData(
+    const genresPromise = await syncData(
         'Genre',
         discogsCol.flatMap((el: any) =>
             el.basic_information.genres.map((genre: any) => ({
@@ -112,7 +112,7 @@ export const syncCollection = async (req: Request) => {
         'Name',
     );
 
-    const stylesPromise = syncData(
+    const stylesPromise = await syncData(
         'Style',
         discogsCol.flatMap((el: any) =>
             el.basic_information.styles.map((style: any) => ({
@@ -144,7 +144,7 @@ export const syncCollection = async (req: Request) => {
         })),
     );
 
-    const releaseArtistsPromise = syncData(
+    const releaseArtistsPromise = await syncData(
         'ReleaseArtist',
         discogsCol.flatMap((el: any) =>
             el.basic_information.artists.map((artist: any) => ({
@@ -154,7 +154,7 @@ export const syncCollection = async (req: Request) => {
         ),
     );
 
-    const releaselabelsPromise = syncData(
+    const releaselabelsPromise = await syncData(
         'ReleaseLabel',
         discogsCol.flatMap((el: any) =>
             el.basic_information.labels.map((label: any) => ({
@@ -164,7 +164,7 @@ export const syncCollection = async (req: Request) => {
         ),
     );
 
-    const releaseGenresPromise = syncData(
+    const releaseGenresPromise = await syncData(
         'ReleaseGenre',
         discogsCol.flatMap((el: any) =>
             el.basic_information.genres.map((genre: any) => ({
@@ -174,7 +174,7 @@ export const syncCollection = async (req: Request) => {
         ),
     );
 
-    const releaseStylesPromise = syncData(
+    const releaseStylesPromise = await syncData(
         'ReleaseStyle',
         discogsCol.flatMap((el: any) =>
             el.basic_information.styles.map((style: any) => ({
