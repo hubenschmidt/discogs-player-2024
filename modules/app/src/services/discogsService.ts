@@ -272,13 +272,13 @@ export const fetchCollection = async (req: Request, user?: any) => {
 
 export const scrubTitle = (input?: string) => {
     if (!input) return input;
-    // 1) strip tags (just in case)
+    // strip tags (just in case)
     const noTags = input.replace(/<[^>]*>/g, '');
-    // 2) normalize compatibility forms (turns math-bold chars into plain ASCII)
+    // normalize compatibility forms (turns math-bold chars into plain ASCII)
     const normalized = noTags.normalize('NFKD');
-    // 3) remove zero-width chars
+    // remove zero-width chars
     const noZW = normalized.replace(/[\u200B-\u200D\uFEFF]/g, '');
-    // 4) collapse whitespace
+    // collapse whitespace
     return noZW.replace(/\s+/g, ' ').trim();
 };
 
