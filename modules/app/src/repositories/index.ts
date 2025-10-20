@@ -609,6 +609,12 @@ export const getCollection = async (req: Request) => {
             defaultOrder: 'DESC',
         });
 
+        // NEW: support ?randomize=true
+        const randomize =
+            typeof req.query.randomize === 'string'
+                ? req.query.randomize.toLowerCase() === 'true'
+                : !!req.query.randomize;
+
         const { username } = req.params;
         const genresQ = parseStringList(req.query.genre);
         const stylesQ = parseStringList(req.query.style);
@@ -626,6 +632,11 @@ export const getCollection = async (req: Request) => {
         const releaseWhere: any = {};
         if (req.query.releaseId) releaseWhere.Release_Id = req.query.releaseId;
         if (yearsFilter.length) releaseWhere.Year = { [Op.in]: yearsFilter };
+
+        // Decide ordering: either random or the parsed orderBy/order
+        const orderClause: any = randomize
+            ? db.sequelize.random()
+            : [[orderBy, order]];
 
         // Fetch releases with pagination and optional genre and style filtering
         const { count, rows } = await db.Release.findAndCountAll({
@@ -651,9 +662,7 @@ export const getCollection = async (req: Request) => {
                 {
                     model: db.Genre,
                     ...(genresQ?.length && {
-                        where: {
-                            Name: { [Op.in]: genresQ }, // Filter by an array of genres
-                        },
+                        where: { Name: { [Op.in]: genresQ } },
                         required: true,
                     }),
                     attributes: ['Name'],
@@ -662,9 +671,7 @@ export const getCollection = async (req: Request) => {
                 {
                     model: db.Style,
                     ...(stylesQ?.length && {
-                        where: {
-                            Name: { [Op.in]: stylesQ }, // Filter by an array of styles
-                        },
+                        where: { Name: { [Op.in]: stylesQ } },
                         required: true,
                     }),
                     attributes: ['Name'],
@@ -673,9 +680,7 @@ export const getCollection = async (req: Request) => {
                 {
                     model: db.Artist,
                     ...(req.query.artistId && {
-                        where: {
-                            Artist_Id: { [Op.in]: [req.query.artistId] },
-                        },
+                        where: { Artist_Id: { [Op.in]: [req.query.artistId] } },
                     }),
                     attributes: ['Artist_Id', 'Name'],
                     through: { attributes: [] },
@@ -683,17 +688,15 @@ export const getCollection = async (req: Request) => {
                 {
                     model: db.Label,
                     ...(req.query.labelId && {
-                        where: {
-                            Label_Id: { [Op.in]: [req.query.labelId] },
-                        },
+                        where: { Label_Id: { [Op.in]: [req.query.labelId] } },
                     }),
                     attributes: ['Label_Id', 'Name', 'Cat_No'],
                     through: { attributes: [] },
                 },
             ],
-            offset: offset,
-            limit: limit,
-            order: [[orderBy, order]],
+            offset,
+            limit,
+            order: orderClause,
         });
 
         return toPagedResponse(

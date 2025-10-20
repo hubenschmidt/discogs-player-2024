@@ -21,8 +21,7 @@ const VinylShelf: FC = () => {
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
-    const { selectedRelease, previewRelease, selectedVideo } =
-        discogsReleaseState;
+    const { selectedRelease, previewRelease } = discogsReleaseState;
     const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
     const { navState } = useContext(NavContext);
@@ -95,6 +94,7 @@ const VinylShelf: FC = () => {
             ...(genresFilter && { genre: genresFilter }),
             ...(stylesFilter && { style: stylesFilter }),
             ...(yearsFilter && { year: yearsFilter }),
+            ...(collectionState.shouldRandomize && { randomize: true }), // typically on first call
         };
 
         let aborted = false;
@@ -132,6 +132,13 @@ const VinylShelf: FC = () => {
                 if (aborted) return;
                 const next = injectSelectedIfMissing(collection);
                 dispatchCollection({ type: 'SET_COLLECTION', payload: next });
+
+                if (collectionState.randomized) {
+                    dispatchCollection({
+                        type: 'SET_RANDOMIZED',
+                        payload: false,
+                    });
+                }
             })
             .catch(err =>
                 console.error('fetch collection failed', err?.response || err),
@@ -161,6 +168,7 @@ const VinylShelf: FC = () => {
         shelfCollectionOverride,
         selectedRelease?.Release_Id,
         playlistState?.playlistDetail?.releases?.items,
+        collectionState.shouldRandomize,
     ]);
 
     // ---------- fetch playlist whenever the playlist panel is open ----------

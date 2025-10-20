@@ -3,6 +3,7 @@ import collectionReducer from '../reducers/collectionReducer';
 
 const initialState = {
     synced: false,
+    shouldRandomize: true,
 };
 
 export const CollectionContext = createContext(initialState);

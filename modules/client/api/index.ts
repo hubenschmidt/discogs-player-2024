@@ -15,6 +15,7 @@ interface CollectionParams {
     releaseId?: string;
     artistId?: string;
     labelId?: string;
+    randomize?: boolean;
 }
 
 export const getUser = async (email: string, token: BearerToken) => {
@@ -99,6 +100,7 @@ export const getCollection = async (
         releaseId,
         artistId,
         labelId,
+        randomize,
     } = params;
 
     let uri = `/api/app/collection/${username}`;
@@ -117,6 +119,8 @@ export const getCollection = async (
     if (genre !== undefined) queryParams.append('genre', genre.toString());
     if (style !== undefined) queryParams.append('style', style.toString());
     if (year !== undefined) queryParams.append('year', year.toString());
+    if (randomize !== undefined)
+        queryParams.append('randomize', randomize.toString());
 
     const queryString = queryParams.toString();
     if (queryString) {
