@@ -300,7 +300,7 @@ module.exports = {
             },
             Release_Id: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
                 references: { model: 'Release', key: 'Release_Id' },
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',
