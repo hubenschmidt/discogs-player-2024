@@ -3,7 +3,15 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# Ignore all env files
 .env
+**/.env
+.env.*
+**/.env.*
+
+# But DO track template env files
+!.env.example
+!**/.env.example
 
 # docker-compose local settings
 docker-compose.override.yml
