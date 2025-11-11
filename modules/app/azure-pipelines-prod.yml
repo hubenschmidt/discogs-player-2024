@@ -18,7 +18,7 @@ pr:
 resources:
     - repo: self
 
-# ---------------- Vars ----------------
+# ---------------- Variables ----------------
 variables:
   - group: "discogs-player-digital-ocean"
   - name: dockerRegistryServiceConnection
