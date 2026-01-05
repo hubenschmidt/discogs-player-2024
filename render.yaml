@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: discogs-player-client
+    runtime: image
+    image:
+      url: ghcr.io/hubenschmidt/discogs-player-client:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+
+  - type: web
+    name: discogs-player-app
+    runtime: image
+    image:
+      url: ghcr.io/hubenschmidt/discogs-player-app:latest
+      creds:
+        fromRegistryCreds:
+          name: ghcr
+    envVars:
+      - key: PORT
+        value: "8080"
+    healthCheckPath: /
