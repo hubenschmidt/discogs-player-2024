@@ -273,7 +273,7 @@ const Explorer = () => {
         );
 
         return (
-            <ScrollArea.Autosize mah={380} type="auto">
+            <ScrollArea.Autosize mah={200} type="auto">
                 <Group gap="xs" p="xs" wrap="wrap">
                     {items.map(name => {
                         const isActive = selected.has(name);
@@ -328,11 +328,11 @@ const Explorer = () => {
                         </Tabs.Tab>
                     </Tabs.List>
 
-                    <Tabs.Panel value="genres" pt="sm">
-                        <Box mt="xs">{renderChips(genres, 'genresFilter')}</Box>
+                    <Tabs.Panel value="genres" pt="xs">
+                        {renderChips(genres, 'genresFilter')}
                     </Tabs.Panel>
 
-                    <Tabs.Panel value="styles" pt="sm">
+                    <Tabs.Panel value="styles" pt="xs">
                         <TextInput
                             placeholder="Search styles"
                             value={styleQ}
@@ -353,7 +353,7 @@ const Explorer = () => {
                         </Box>
                     </Tabs.Panel>
 
-                    <Tabs.Panel value="years" pt="sm">
+                    <Tabs.Panel value="years" pt="xs">
                         <TextInput
                             placeholder="Search years"
                             value={yearQ}

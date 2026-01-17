@@ -240,7 +240,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                             </ActionIcon>
                         }
                     >
-                        <Grid mb="sm">
+                        <Grid>
                             <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                 <Account />
                             </Grid.Col>
@@ -272,7 +272,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                                 </ActionIcon>
                             }
                         >
-                            <Grid mb="sm">
+                            <Grid>
                                 <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                     <History />
                                 </Grid.Col>
@@ -306,7 +306,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                                 </ActionIcon>
                             }
                         >
-                            <Grid mb="sm">
+                            <Grid>
                                 <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                     <Playlists />
                                 </Grid.Col>
@@ -339,7 +339,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                                 </ActionIcon>
                             }
                         >
-                            <Grid mb="sm">
+                            <Grid>
                                 <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                     <Explorer />
                                 </Grid.Col>
@@ -371,7 +371,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                             </ActionIcon>
                         }
                     >
-                        <Grid mb="sm">
+                        <Grid>
                             <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
                                 <Playlist />
                             </Grid.Col>
@@ -381,7 +381,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
 
                 <div id="section-collection">
                     <CollapsibleWrapper title="Collection" defaultOpen>
-                        <Grid mb="sm">
+                        <Grid>
                             <Grid.Col span={{ base: 12 }}>
                                 <VinylShelf />
                             </Grid.Col>
@@ -398,7 +398,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                             isOpen={tracksOpen}
                             onOpenChange={setTracksOpen}
                         >
-                            <Grid mb="sm">
+                            <Grid>
                                 <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
                                     <ReleaseVideos />
                                 </Grid.Col>
@@ -414,7 +414,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                     {/* YouTube Player Section.. explicitly defaultOpen in case we want to change it later */}
                     {selectedVideo && (
                         <CollapsibleWrapper title="Video" defaultOpen={true}>
-                            <Grid mb="sm">
+                            <Grid>
                                 <Grid.Col span={{ base: 12 }}>
                                     <CustomYouTubePlayer
                                         width="100%"

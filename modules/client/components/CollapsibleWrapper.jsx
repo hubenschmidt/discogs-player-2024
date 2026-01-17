@@ -26,7 +26,7 @@ const CollapsibleWrapper = ({
             style={{
                 background: '#0e0e0f',
                 borderRadius: 8,
-                marginTop: '40px',
+                marginTop: '16px',
                 border: '1px solid rgba(255,255,255,0.12)',
             }}
         >

@@ -5,11 +5,11 @@
 /* Vinyl shelf container with a neon border and subtle chrome feel */
 .vinyl-shelf {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     overflow-x: auto;
     justify-content: center;
     perspective: 800px;
-    padding: 20px;
+    padding: 12px;
     background: var(--surface-base);
     background-image: var(--surface-grad-radial), var(--surface-grad-linear);
     border-radius: 4px;
