@@ -10,9 +10,14 @@ services:
             - DB_HOST=db
             - DB_PORT=5432
         volumes:
-            - db_data:/var/lib/postgresql/data
+            - db_data:/var/lib/postgresql
         ports:
             - '5432:5432'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
+            interval: 2s
+            timeout: 5s
+            retries: 10
 
     app:
         build:
@@ -31,7 +36,9 @@ services:
             - ./modules/app:/app
             - /app/node_modules
         ports: ['5000:5000']
-        depends_on: [db]
+        depends_on:
+            db:
+                condition: service_healthy
 
     client:
         build:
