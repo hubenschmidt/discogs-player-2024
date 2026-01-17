@@ -1,0 +1,144 @@
+import React, { useContext, useEffect, useRef } from 'react';
+import { Stack, Group, ActionIcon, Tooltip } from '@mantine/core';
+import { Menu, ChevronLeft } from 'lucide-react';
+import { NavContext } from '../context/navContext';
+
+const SidebarLink = ({
+    label,
+    active,
+    collapsed,
+    onClick,
+    href,
+}) => {
+    const content = (
+        <span className="sidebar-link__label">{!collapsed && label}</span>
+    );
+
+    return (
+        <Tooltip
+            label={label}
+            position="right"
+            withArrow
+            disabled={!collapsed}
+            transitionProps={{ duration: 0 }}
+        >
+            {href ? (
+                <a href={href} className="sidebar-link">
+                    {content}
+                </a>
+            ) : (
+                <button
+                    type="button"
+                    className="sidebar-link"
+                    data-active={active || undefined}
+                    onClick={onClick}
+                >
+                    {content}
+                </button>
+            )}
+        </Tooltip>
+    );
+};
+
+const NavBar = ({ isCollapsed, setIsCollapsed }) => {
+    const { dispatchNav } = useContext(NavContext);
+    const navLinks = [
+        { key: 'explorer', label: 'Explorer' },
+        { key: 'playlists', label: 'Playlists' },
+        { key: 'history', label: 'History' },
+        { key: 'account', label: 'Account' },
+        { key: 'logout', label: 'Logout', href: '/auth/logout' },
+    ];
+
+    // ref + outside click / Esc handlers
+    const rootRef = useRef(null);
+
+    useEffect(() => {
+        if (isCollapsed) return;
+
+        const handlePointerDown = (e) => {
+            const el = rootRef.current;
+            if (!el) return;
+            if (!el.contains(e.target)) {
+                setIsCollapsed(true);
+            }
+        };
+
+        const handleKey = (e) => {
+            if (e.key === 'Escape') setIsCollapsed(true);
+        };
+
+        // use capture so it fires even if something stops propagation
+        document.addEventListener('mousedown', handlePointerDown, true);
+        document.addEventListener('touchstart', handlePointerDown, true);
+        window.addEventListener('keydown', handleKey);
+
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown, true);
+            document.removeEventListener('touchstart', handlePointerDown, true);
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, [isCollapsed, setIsCollapsed]);
+
+    return (
+        <Stack
+            ref={rootRef}
+            pos="fixed"
+            top={8}
+            left={8}
+            w={isCollapsed ? 40 : 120}
+            h={isCollapsed ? 40 : '100vh'}
+            align="flex-start"
+            justify={isCollapsed ? 'center' : 'flex-start'}
+            style={{
+                background: 'black',
+                zIndex: 950,
+                overflow: 'hidden',
+                borderRadius: 8,
+            }}
+        >
+            <Group justify="space-between" w="100%" align="center">
+                <ActionIcon
+                    variant="subtle"
+                    size="lg"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    aria-label="Toggle sidebar"
+                    aria-expanded={!isCollapsed} // a11y hint
+                    color="white"
+                >
+                    {isCollapsed ? (
+                        <Menu size={30} />
+                    ) : (
+                        <ChevronLeft size={30} />
+                    )}
+                </ActionIcon>
+            </Group>
+
+            {!isCollapsed && (
+                <Stack align="flex-start">
+                    <Stack gap={4} px={6}>
+                        {navLinks.map(l => (
+                            <SidebarLink
+                                key={l.key}
+                                label={l.label}
+                                collapsed={isCollapsed}
+                                href={l.href}
+                                onClick={() => {
+                                    if (!l.href) {
+                                        dispatchNav({
+                                            type: 'SET_NAV_KEY',
+                                            payload: l.key,
+                                        });
+                                        setIsCollapsed(true);
+                                    }
+                                }}
+                            />
+                        ))}
+                    </Stack>
+                </Stack>
+            )}
+        </Stack>
+    );
+};
+
+export default NavBar;
