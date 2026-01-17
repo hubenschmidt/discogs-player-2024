@@ -16,8 +16,9 @@ import {
     Loader,
     Stack,
     ActionIcon,
+    Group,
 } from '@mantine/core';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import CustomYouTubePlayer from './CustomYoutubePlayer';
 import TrackDetail from './TrackDetail';
 import { syncCollection } from '../api';
@@ -52,6 +53,14 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [tracksOpen, setTracksOpen] = React.useState(true);
+    const [mobileShelfOpen, setMobileShelfOpen] = useState(true);
+
+    // Collapse mobile shelf when a release is selected
+    useEffect(() => {
+        if (selectedRelease) {
+            setMobileShelfOpen(false);
+        }
+    }, [selectedRelease?.Release_Id]);
 
     useEffect(() => {
         if (userState.username && !collectionState.synced) {
@@ -105,7 +114,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
 
             <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-            <Container fluid className="layout-container" ml="5px" mr="5px">
+            <Container fluid className="layout-container" ml="5px" mr="5px" pb={280}>
                 <Box
                     pos="sticky"
                     top={0}
@@ -195,7 +204,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                         </Grid.Col>
 
                         {/* Track detail below the row but inside header */}
-                        <Grid.Col span={12} mt="-10">
+                        <Grid.Col span={12} mt="-10" className="hide-on-mobile">
                             <TrackDetail />
                         </Grid.Col>
                     </Grid>
@@ -379,16 +388,6 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                     </CollapsibleWrapper>
                 )}
 
-                <div id="section-collection">
-                    <CollapsibleWrapper title="Collection" defaultOpen>
-                        <Grid>
-                            <Grid.Col span={{ base: 12 }}>
-                                <VinylShelf />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
-                </div>
-
                 <div id="section-release">
                     {/* Video Playlist Section */}
                     {selectedRelease && (
@@ -426,11 +425,95 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                     )}
                 </div>
 
-                {/* Footer */}
-                <Box pt="lg" style={{ textAlign: 'center' }}>
-                    <Text c="whitesmoke">Copyright PinaColada.co</Text>
-                </Box>
             </Container>
+
+            {/* Fixed footer shelf */}
+            <Box
+                id="section-collection"
+                className={`vinyl-shelf-footer ${mobileShelfOpen ? 'mobile-expanded' : ''}`}
+                style={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 800,
+                    background: 'rgba(0,0,0,0.95)',
+                    borderTop: '1px solid rgba(255,255,255,0.12)',
+                }}
+            >
+                {/* Desktop: full shelf with CollapsibleWrapper */}
+                <Box className="desktop-shelf">
+                    <CollapsibleWrapper title="Collection" defaultOpen>
+                        <VinylShelf />
+                    </CollapsibleWrapper>
+                </Box>
+
+                {/* Mobile: expanded shelf */}
+                <Box className="mobile-shelf-expanded">
+                    <Group justify="space-between" align="center" p="xs">
+                        <Text fw={700} c="white">Collection</Text>
+                        <ActionIcon
+                            variant="light"
+                            color="white"
+                            radius="md"
+                            size="lg"
+                            onClick={() => setMobileShelfOpen(false)}
+                            aria-label="Collapse shelf"
+                        >
+                            <ChevronDown size={18} />
+                        </ActionIcon>
+                    </Group>
+                    <Box style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                        <VinylShelf />
+                    </Box>
+                </Box>
+
+                {/* Mobile: mini-bar (tap to expand) */}
+                <Box
+                    className="mobile-mini-bar"
+                    p="sm"
+                    onClick={() => setMobileShelfOpen(true)}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <Group gap="sm" align="center" style={{ width: '100%' }}>
+                        {selectedRelease?.Thumb ? (
+                            <Box
+                                style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: '50%',
+                                    backgroundImage: `url(${selectedRelease.Thumb})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    border: '3px solid #333',
+                                    flexShrink: 0,
+                                }}
+                            />
+                        ) : (
+                            <Box
+                                style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: '50%',
+                                    background: '#333',
+                                    flexShrink: 0,
+                                }}
+                            />
+                        )}
+                        <Box style={{ flex: 1, minWidth: 0 }}>
+                            <Text size="sm" c="white" truncate>
+                                {selectedRelease?.Title || 'Select a record'}
+                            </Text>
+                            <Text size="xs" c="dimmed" truncate>
+                                {selectedRelease?.Artist || 'from your collection'}
+                            </Text>
+                        </Box>
+                        <Text size="xs" c="dimmed">
+                            {collectionState?.count || 0}
+                        </Text>
+                    </Group>
+                </Box>
+            </Box>
         </Box>
     ) : null;
 };
