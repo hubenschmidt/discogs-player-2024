@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { getCollection, getPlaylist } from '../api';
-import { ChevronLeft, ChevronRight, SkipBack, SkipForward } from 'lucide-react';
 import { CollectionContext } from '../context/collectionContext';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { Box, Group, ActionIcon, Text, Badge } from '@mantine/core';
+import { Box, Group, Badge } from '@mantine/core';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
 import { SearchContext } from '../context/searchContext';
-import { NavContext } from '../context/navContext';
 import { reorderReleases } from '../lib/reorder-releases';
 import { PlaylistContext } from '../context/playlistContext';
 import { ExplorerContext } from '../context/explorerContext';
+import RecordItem from './RecordItem';
+import ShelfControls from './ShelfControls';
+import ShelfPagination from './ShelfPagination';
 
 const VinylShelf = () => {
     const { userState } = useContext(UserContext);
@@ -23,14 +24,12 @@ const VinylShelf = () => {
     const { selectedRelease, previewRelease } = discogsReleaseState;
     const { searchState } = useContext(SearchContext);
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { navState } = useContext(NavContext);
-    const { playlistOpen } = navState;
+    const { playlistOpen } = playlistState;
     const { searchSelection, shelfCollectionOverride } = searchState;
     const { explorerState } = useContext(ExplorerContext);
     const { genresFilter, stylesFilter, yearsFilter } = explorerState;
 
     const [currentPage, setCurrentPage] = useState(1);
-    const offset = 1; // keeps odd # so center is a single record
     const [itemsPerPage, setItemsPerPage] = useState(25);
     const bearerToken = useBearerToken();
 
@@ -46,23 +45,16 @@ const VinylShelf = () => {
         searchSelection?.Release_Id
     );
 
-    const shelfRef = useRef(null);
+    // Key to force scroll reset when fetch completes
+    const [scrollResetKey, setScrollResetKey] = useState(0);
 
     const shelfShowsPlaylist =
         playlistOpen && !showSearchShelf && !shelfCollectionOverride;
 
-    // after either collection or playlist fetch finishes, reset scroll
+    // Increment key when fetch completes to reset scroll position via CSS
     useEffect(() => {
-        if (!loadingFetch && shelfRef.current) {
-            // make sure DOM has the new items before resetting
-            requestAnimationFrame(() => {
-                if (shelfRef.current)
-                    shelfRef.current.scrollTo({
-                        left: 0,
-                        top: 0,
-                        behavior: 'auto',
-                    });
-            });
+        if (!loadingFetch) {
+            setScrollResetKey(k => k + 1);
         }
     }, [loadingFetch]);
 
@@ -366,115 +358,53 @@ const VinylShelf = () => {
                 </Badge>
             </Group>
 
-            <div className="vinyl-shelf" ref={shelfRef} aria-busy={isLoading}>
-                {items?.map((release, i) => {
-                    const n = items?.length;
-                    let angle = 0;
-                    if (n > 1) angle = -90 + 180 * (i / (n - 1));
-
-                    const isSelected =
-                        selectedRelease?.Release_Id === release.Release_Id;
-                    const isPreview =
-                        previewRelease &&
-                        previewRelease.Release_Id === release.Release_Id &&
-                        previewRelease.Release_Id !==
-                            selectedRelease?.Release_Id;
-
-                    return (
-                        <Box
-                            key={release.Release_Id}
-                            className="vinyl-record"
-                            onClick={() =>
-                                !isLoading && handleRecordClick(release, i)
-                            }
-                            style={{
-                                pointerEvents: isLoading ? 'none' : 'auto',
-                            }}
-                        >
-                            <Box
-                                className={`record-cover ${
-                                    isSelected ? 'selected-record-cover' : ''
-                                } ${isPreview ? 'preview-record-cover' : ''}`}
-                                style={{
-                                    backgroundImage: `url(${release.Thumb})`,
-                                }}
-                            />
-
-                            <Text className="record-title" fw="400">
-                                {release.Title}
-                            </Text>
-                            <Text className="record-title" fw="200">
-                                {release.Artists[0].Name}
-                            </Text>
-                        </Box>
-                    );
-                })}
+            <div
+                key={scrollResetKey}
+                className="vinyl-shelf"
+                aria-busy={isLoading}
+            >
+                {items?.map((release, i) => (
+                    <RecordItem
+                        key={release.Release_Id}
+                        release={release}
+                        index={i}
+                        isSelected={
+                            selectedRelease?.Release_Id === release.Release_Id
+                        }
+                        isPreview={
+                            previewRelease &&
+                            previewRelease.Release_Id === release.Release_Id &&
+                            previewRelease.Release_Id !==
+                                selectedRelease?.Release_Id
+                        }
+                        isLoading={isLoading}
+                        onClick={handleRecordClick}
+                    />
+                ))}
             </div>
 
             {/* Hide shelf controls when playlist is open; also disable during loading */}
             {!shelfShowsPlaylist && (
                 <>
-                    <div className="shelf-controls">
-                        <ActionIcon
-                            onClick={handleShelfPrev}
-                            disabled={isLoading || items?.length < 2}
-                        >
-                            <ChevronLeft />
-                        </ActionIcon>
-                        <ActionIcon
-                            onClick={handleShelfNext}
-                            disabled={isLoading || items?.length < 2}
-                        >
-                            <ChevronRight />
-                        </ActionIcon>
-                    </div>
+                    <ShelfControls
+                        onPrev={handleShelfPrev}
+                        onNext={handleShelfNext}
+                        isLoading={isLoading}
+                        itemCount={items?.length ?? 0}
+                    />
 
                     {items?.length > 1 && (
-                        <Group className="shelf-pagination">
-                            <ActionIcon
-                                onClick={handleFirstPage}
-                                disabled={isLoading || currentPage <= 1}
-                            >
-                                <SkipBack />
-                            </ActionIcon>
-                            <ActionIcon
-                                onClick={handlePrevPage}
-                                disabled={isLoading || currentPage <= 1}
-                            >
-                                <ChevronLeft />
-                            </ActionIcon>
-                            <Text c="white" mt="10">
-                                {currentPage}
-                            </Text>
-                            <ActionIcon
-                                onClick={handleNextPage}
-                                disabled={
-                                    isLoading || currentPage >= totalPages
-                                }
-                            >
-                                <ChevronRight />
-                            </ActionIcon>
-                            <ActionIcon
-                                onClick={handleLastPage}
-                                disabled={
-                                    isLoading || currentPage >= totalPages
-                                }
-                            >
-                                <SkipForward />
-                            </ActionIcon>
-                            <select
-                                value={itemsPerPage}
-                                onChange={handleItemsPerPageChange}
-                                disabled={isLoading}
-                            >
-                                <option value={5}>5</option>
-                                <option value={10 + offset}>10</option>
-                                <option value={25}>25</option>
-                                <option value={50 + offset}>50</option>
-                                <option value={100 + offset}>100</option>
-                                <option value={250 + offset}>250</option>
-                            </select>
-                        </Group>
+                        <ShelfPagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            itemsPerPage={itemsPerPage}
+                            isLoading={isLoading}
+                            onFirstPage={handleFirstPage}
+                            onPrevPage={handlePrevPage}
+                            onNextPage={handleNextPage}
+                            onLastPage={handleLastPage}
+                            onItemsPerPageChange={handleItemsPerPageChange}
+                        />
                     )}
                 </>
             )}

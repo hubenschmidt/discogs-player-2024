@@ -1,19 +1,16 @@
 export const SET_USERNAME = 'SET_USERNAME';
 
-export default initialState => {
-    return (state, action) => {
-        switch (action.type) {
-            case SET_USERNAME:
-                return setUsername(state, action.payload);
-            default:
-                return state;
-        }
-    };
+const setUsername = (state, payload) => ({
+    ...state,
+    username: payload,
+});
+
+const actionHandlers = {
+    [SET_USERNAME]: setUsername,
 };
 
-const setUsername = (state, payload) => {
-    return {
-        ...state,
-        username: payload,
-    };
+export default () => (state, action) => {
+    const handler = actionHandlers[action.type];
+    if (!handler) return state;
+    return handler(state, action.payload);
 };

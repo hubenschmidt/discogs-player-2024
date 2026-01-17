@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Box, Text, Group, Paper } from '@mantine/core';
 import { PlayerContext } from '../context/playerContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import { isIOS } from './CustomYoutubePlayer';
 
 const scrubTitle = (s) =>
@@ -12,9 +13,11 @@ const scrubTitle = (s) =>
         .replace(/\s+/g, ' ')
         .trim();
 
-const TrackDetail = ({ selectedDiscogsRelease }) => {
+const TrackDetail = () => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
+    const { discogsReleaseState } = useContext(DiscogsReleaseContext);
+    const { selectedDiscogsRelease } = discogsReleaseState;
 
     if (!selectedDiscogsRelease) return null;
 

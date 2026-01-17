@@ -2,35 +2,29 @@ export const SET_SYNCED = 'SET_SYNCED';
 export const SET_COLLECTION = 'SET_COLLECTION';
 export const SET_RANDOMIZED = 'SET_RANDOMIZED';
 
-export default initialState => {
-    return (state, action) => {
-        switch (action.type) {
-            case SET_SYNCED:
-                return setSynced(state, action.payload);
-            case SET_RANDOMIZED:
-                return setRandomized(state, action.payload);
-            case SET_COLLECTION:
-                return setCollection(state, action.payload);
-            default:
-                return state;
-        }
-    };
+const setSynced = (state, payload) => ({
+    ...state,
+    synced: payload,
+});
+
+const setRandomized = (state, payload) => ({
+    ...state,
+    shouldRandomize: payload,
+});
+
+const setCollection = (state, payload) => ({
+    ...state,
+    ...payload,
+});
+
+const actionHandlers = {
+    [SET_SYNCED]: setSynced,
+    [SET_RANDOMIZED]: setRandomized,
+    [SET_COLLECTION]: setCollection,
 };
 
-const setSynced = (state, payload) => {
-    return {
-        ...state,
-        synced: payload,
-    };
-};
-
-const setRandomized = (state, payload) => {
-    return { ...state, shouldRandomize: payload };
-};
-
-const setCollection = (state, payload) => {
-    return {
-        ...state,
-        ...payload,
-    };
+export default () => (state, action) => {
+    const handler = actionHandlers[action.type];
+    if (!handler) return state;
+    return handler(state, action.payload);
 };

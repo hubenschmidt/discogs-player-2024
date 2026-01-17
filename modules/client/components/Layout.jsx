@@ -29,6 +29,7 @@ import Playlists from './Playlists';
 import Playlist from './Playlist';
 import TrackProgress from './TrackProgress';
 import { NavContext } from '../context/navContext';
+import { PlaylistContext } from '../context/playlistContext';
 import ReleaseDetail from './ReleaseDetail';
 import CollapsibleWrapper from './CollapsibleWrapper';
 import History from './History';
@@ -40,16 +41,14 @@ import PlaylistCreateButton from './PlaylistCreateButton';
 const Layout = ({ children, title = 'TuneCrook' }) => {
     const { userState } = useContext(UserContext);
     const { navState, dispatchNav } = useContext(NavContext);
-    const { navKey, playlistOpen } = navState;
+    const { navKey } = navState;
+    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
+    const { playlistOpen } = playlistState;
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const {
-        previewRelease,
-        selectedDiscogsRelease,
-        selectedRelease,
-        selectedVideo,
-    } = discogsReleaseState;
+    const { previewRelease, selectedRelease, selectedVideo } =
+        discogsReleaseState;
     const bearerToken = useBearerToken();
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [tracksOpen, setTracksOpen] = React.useState(true);
@@ -197,9 +196,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
 
                         {/* Track detail below the row but inside header */}
                         <Grid.Col span={12} mt="-10">
-                            <TrackDetail
-                                selectedDiscogsRelease={selectedDiscogsRelease}
-                            />
+                            <TrackDetail />
                         </Grid.Col>
                     </Grid>
 
@@ -363,7 +360,7 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                                 size="lg"
                                 aria-label="Close playlist"
                                 onClick={() =>
-                                    dispatchNav({
+                                    dispatchPlaylist({
                                         type: 'SET_PLAYLIST_OPEN',
                                         payload: false,
                                     })
@@ -381,6 +378,16 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                         </Grid>
                     </CollapsibleWrapper>
                 )}
+
+                <div id="section-collection">
+                    <CollapsibleWrapper title="Collection" defaultOpen>
+                        <Grid mb="sm">
+                            <Grid.Col span={{ base: 12 }}>
+                                <VinylShelf />
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
+                </div>
 
                 <div id="section-release">
                     {/* Video Playlist Section */}
@@ -401,16 +408,6 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                             </Grid>
                         </CollapsibleWrapper>
                     )}
-                </div>
-
-                <div id="section-collection">
-                    <CollapsibleWrapper title="Collection" defaultOpen>
-                        <Grid mb="sm">
-                            <Grid.Col span={{ base: 12 }}>
-                                <VinylShelf />
-                            </Grid.Col>
-                        </Grid>
-                    </CollapsibleWrapper>
                 </div>
 
                 <div id="section-video">

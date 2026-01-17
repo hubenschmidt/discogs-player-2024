@@ -17,7 +17,7 @@ import { ExplorerContext } from '../context/explorerContext';
 import { SearchContext } from '../context/searchContext';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { getExplorer } from '../api';
-import { NavContext } from '../context/navContext';
+import { PlaylistContext } from '../context/playlistContext';
 import classes from '../styles/Explorer.module.css';
 
 const filterList = (list, q) => {
@@ -28,8 +28,8 @@ const filterList = (list, q) => {
 const Explorer = () => {
     const { userState } = useContext(UserContext);
     const { explorerState, dispatchExplorer } = useContext(ExplorerContext);
-    const { navState, dispatchNav } = useContext(NavContext);
-    const { playlistOpen } = navState;
+    const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
+    const { playlistOpen } = playlistState;
     const { searchState, dispatchSearch } = useContext(SearchContext);
     const { searchSelection } = searchState;
     const bearerToken = useBearerToken();
@@ -46,7 +46,7 @@ const Explorer = () => {
 
     useEffect(() => {
         if (playlistOpen) {
-            dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+            dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: false });
         }
 
         if (!userState?.username) return;
@@ -74,7 +74,7 @@ const Explorer = () => {
 
     const genres = explorerState?.Genres ?? [];
     const styles = explorerState?.Styles ?? [];
-    const years = (explorerState?.Years ?? []).map(String); // accept 0, keep as string for chips/search
+    const years = (explorerState?.Years ?? []).filter(y => y).map(String);
 
     const filteredStyles = filterList(styles, styleQ);
     const filteredYears = filterList(years, yearQ);

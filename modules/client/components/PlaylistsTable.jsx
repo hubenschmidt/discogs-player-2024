@@ -2,11 +2,10 @@ import React, { useContext } from 'react';
 import { Text, ActionIcon } from '@mantine/core';
 import { Trash2 } from 'lucide-react';
 import { PlaylistContext } from '../context/playlistContext';
-import { NavContext } from '../context/navContext';
 import { DataTable } from './DataTable';
-import { SearchContext } from '../context/searchContext';
 import { UserContext } from '../context/userContext';
 import { useBearerToken } from '../hooks/useBearerToken';
+import { usePlaylistNavigation } from '../hooks/usePlaylistNavigation';
 import { deletePlaylist as apiDeletePlaylist, getPlaylists } from '../api';
 
 const PlaylistsTable = () => {
@@ -14,8 +13,7 @@ const PlaylistsTable = () => {
     const bearerToken = useBearerToken();
 
     const { playlistState, dispatchPlaylist } = useContext(PlaylistContext);
-    const { dispatchNav } = useContext(NavContext);
-    const { dispatchSearch } = useContext(SearchContext);
+    const { openPlaylist, clearActivePlaylist } = usePlaylistNavigation();
 
     const handleDelete = async (row) => {
         const playlistId = row?.Playlist_Id;
@@ -35,10 +33,7 @@ const PlaylistsTable = () => {
 
         // if the deleted playlist is active, clear it
         if (playlistState.activePlaylistId === playlistId) {
-            dispatchPlaylist({ type: 'SET_ACTIVE_PLAYLIST_ID', payload: null });
-            dispatchPlaylist({ type: 'SET_PLAYLIST_DETAIL', payload: null });
-            dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: false });
-            dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: false });
+            clearActivePlaylist();
         }
 
         try {
@@ -116,19 +111,8 @@ const PlaylistsTable = () => {
         },
     ];
 
-    const handleRowClick = async (row) => {
-        dispatchPlaylist({
-            type: 'SET_ACTIVE_PLAYLIST_ID',
-            payload: row.Playlist_Id,
-        });
-        dispatchPlaylist({ type: 'SET_PLAYLIST_OPEN', payload: true });
-        dispatchNav({ type: 'SET_NAV_KEY', payload: null });
-        dispatchNav({ type: 'SET_PLAYLIST_OPEN', payload: true });
-        dispatchSearch({
-            type: 'SET_SHELF_COLLECTION_OVERRIDE',
-            payload: false,
-        });
-        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
+    const handleRowClick = (row) => {
+        openPlaylist(row.Playlist_Id);
     };
 
     return (

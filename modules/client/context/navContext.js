@@ -4,7 +4,6 @@ import { isIOS } from '../components/CustomYoutubePlayer';
 
 const initialState = {
     navKey: !isIOS() ? 'explorer' : null, // default to explorer view on desktop only
-    playlistOpen: false,
 };
 
 export const NavContext = createContext(initialState);
