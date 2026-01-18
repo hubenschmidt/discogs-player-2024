@@ -773,35 +773,30 @@ export const getPlaylists = async (req: Request, user: any) => {
 };
 
 export const getStylesByGenre = async (req: Request) => {
-    try {
-        const { genre } = req.params;
-        // Ensure the genre name is provided
-        if (!genre) {
-            throw new Error('Genre name is required');
-        }
-
-        // Query styles linked to the given genre
-        const styles = await db.Style.findAll({
-            include: [
-                {
-                    model: db.Release, // Link through releases
-                    include: [
-                        {
-                            model: db.Genre,
-                            where: { Name: genre }, // Filter by genre name
-                            through: { attributes: [] }, // Exclude join table attributes
-                        },
-                    ],
-                    through: { attributes: [] }, // Exclude join table attributes
-                },
-            ],
-        });
-
-        return styles;
-    } catch (error) {
-        console.error('Error fetching styles by genre:', error);
-        throw error;
+    const { genre } = req.params;
+    if (!genre) {
+        throw new Error('Genre name is required');
     }
+
+    // Optimized: Use raw SQL subquery to find distinct styles for a genre
+    // instead of triple-nested eager loading
+    const styles = await db.Style.findAll({
+        attributes: ['Name'],
+        where: {
+            Name: {
+                [Op.in]: db.sequelize.literal(`(
+                    SELECT DISTINCT rs."Style_Name"
+                    FROM "ReleaseStyle" rs
+                    INNER JOIN "ReleaseGenre" rg ON rs."Release_Id" = rg."Release_Id"
+                    WHERE rg."Genre_Name" = ${db.sequelize.escape(genre)}
+                )`),
+            },
+        },
+        order: [['Name', 'ASC']],
+        raw: true,
+    });
+
+    return styles;
 };
 
 export const search = async (req: Request) => {

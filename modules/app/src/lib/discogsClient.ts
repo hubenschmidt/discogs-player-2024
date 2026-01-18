@@ -1,9 +1,18 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import crypto from 'crypto';
 import 'dotenv/config';
-import { response } from 'express';
 
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const shouldRetry = (error: AxiosError): boolean => {
+    const status = error.response?.status;
+    return status === 429 || status === 503 || status === 502;
+};
 
 interface OAuthOptions {
     accessToken: string;
@@ -45,6 +54,7 @@ const buildOAuthHeader = (
 
 /**
  * A generic Discogs client that signs requests with OAuth 1.0a (PLAINTEXT).
+ * Includes retry logic with exponential backoff for rate limits (429) and server errors.
  *
  * @param endpoint       – the Discogs endpoint path (e.g. "database/search?q=nirvana")
  * @param requestMethod  – HTTP method ("GET", "POST", etc.)
@@ -73,14 +83,31 @@ const discogsClient = async (
         auth.accessTokenSecret,
     );
 
-    return axios
-        .request({
-            method: requestMethod,
-            url: `${BASE_URL}/${endpoint}`,
-            headers,
-            data: body,
-        })
-        .then(r => r.data);
+    let lastError: AxiosError | null = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const response = await axios.request({
+                method: requestMethod,
+                url: `${BASE_URL}/${endpoint}`,
+                headers,
+                data: body,
+            });
+            return response.data;
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            lastError = axiosError;
+
+            if (attempt >= MAX_RETRIES || !shouldRetry(axiosError)) {
+                throw error;
+            }
+
+            const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+            await sleep(delay);
+        }
+    }
+
+    throw lastError;
 };
 
 export default discogsClient;
