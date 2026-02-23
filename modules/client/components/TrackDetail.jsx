@@ -16,8 +16,8 @@ const scrubTitle = (s) =>
 const TrackDetail = () => {
     const { playerState } = useContext(PlayerContext);
     const { controls } = playerState;
-    const { discogsReleaseState } = useContext(DiscogsReleaseContext);
-    const { selectedDiscogsRelease } = discogsReleaseState;
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
+    const { selectedDiscogsRelease, previewRelease } = discogsReleaseState;
 
     if (!selectedDiscogsRelease) return null;
 
@@ -43,7 +43,14 @@ const TrackDetail = () => {
                                     </Text>
                                 </Group>
                                 <Group>
-                                    <Text className="track-detail-text" lh={1}>
+                                    <Text
+                                        className="track-detail-text track-detail-link"
+                                        lh={1}
+                                        onClick={() => {
+                                            dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+                                            dispatchDiscogsRelease({ type: 'SET_PREVIEW_DISCOGS_RELEASE', payload: null });
+                                        }}
+                                    >
                                         r: {selectedDiscogsRelease?.title} (
                                         {selectedDiscogsRelease?.year})
                                     </Text>

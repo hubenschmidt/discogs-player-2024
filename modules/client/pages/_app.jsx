@@ -10,6 +10,7 @@ import { SearchProvider } from '../context/searchContext';
 import { PlaylistProvider } from '../context/playlistContext';
 import { NavProvider } from '../context/navContext';
 import { ExplorerProvider } from '../context/explorerContext';
+import { CuratorProvider } from '../context/curatorContext';
 import { variantColorResolver } from '../lib/variantColorResolver';
 
 export default ({ Component, pageProps }) => (
@@ -22,7 +23,9 @@ export default ({ Component, pageProps }) => (
                             <PlaylistProvider>
                                 <NavProvider>
                                     <ExplorerProvider>
-                                        <Component {...pageProps} />
+                                        <CuratorProvider>
+                                            <Component {...pageProps} />
+                                        </CuratorProvider>
                                     </ExplorerProvider>
                                 </NavProvider>
                             </PlaylistProvider>

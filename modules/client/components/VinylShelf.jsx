@@ -18,6 +18,7 @@ const VinylShelf = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { items, totalPages, count } = collectionState;
+    console.log('[shelf] render, items:', items?.length, 'curatorActive:', collectionState.curatorActive, 'curatorReleases:', collectionState.curatorReleases?.items?.length);
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );
@@ -66,8 +67,15 @@ const VinylShelf = () => {
     }, [loadingCenter]);
 
     // ---------- fetch collection when not viewing a playlist ----------
+    const hasExplorerFilters = !!(genresFilter?.length || stylesFilter?.length || yearsFilter?.length);
+
     useEffect(() => {
-        if (shelfShowsPlaylist) return; // guard: skip when playlist panel mirrors onto shelf
+        if (shelfShowsPlaylist) return;
+        if (collectionState.curatorActive && hasExplorerFilters) {
+            dispatchCollection({ type: 'SET_CURATOR_ACTIVE', payload: false });
+            return;
+        }
+        if (collectionState.curatorActive) return;
 
         const params = {
             username: userState.username,
@@ -155,9 +163,9 @@ const VinylShelf = () => {
         stylesFilter,
         yearsFilter,
         shelfCollectionOverride,
-        selectedRelease?.Release_Id,
         playlistState?.playlistDetail?.releases?.items,
         collectionState.shouldRandomize,
+        collectionState.curatorActive,
     ]);
 
     // ---------- fetch playlist whenever the playlist panel is open ----------
@@ -272,8 +280,14 @@ const VinylShelf = () => {
 
         const isFirstSelection = !selectedRelease;
 
-        // If you click the already-selected one, do nothing
-        if (selectedRelease?.Release_Id === release.Release_Id) return;
+        // If you click the already-selected one, clear preview and return
+        if (selectedRelease?.Release_Id === release.Release_Id) {
+            if (previewRelease) {
+                dispatchDiscogsRelease({ type: 'SET_PREVIEW_RELEASE', payload: null });
+                dispatchDiscogsRelease({ type: 'SET_PREVIEW_DISCOGS_RELEASE', payload: null });
+            }
+            return;
+        }
 
         if (isFirstSelection) {
             setLoadingCenter(true); // blur ON

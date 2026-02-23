@@ -43,6 +43,7 @@ const SidebarLink = ({
 const NavBar = ({ isCollapsed, setIsCollapsed }) => {
     const { dispatchNav } = useContext(NavContext);
     const navLinks = [
+        { key: 'curator', label: 'Curator' },
         { key: 'explorer', label: 'Explorer' },
         { key: 'playlists', label: 'Playlists' },
         { key: 'history', label: 'History' },

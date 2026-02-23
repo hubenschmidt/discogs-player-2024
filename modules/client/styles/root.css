@@ -117,6 +117,18 @@
     font-weight: 400;
 }
 
+.track-detail-link {
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+.track-detail-link:hover {
+    color: #ffd43b;
+}
+.track-detail-link:active {
+    color: #fab005;
+}
+
 .track-detail-muted {
     color: rgb(0, 0, 0);
 }

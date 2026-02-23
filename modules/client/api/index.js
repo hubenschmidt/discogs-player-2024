@@ -1,4 +1,5 @@
 import { requestHandler } from '../lib/request-handler';
+import { getBaseUrl } from '../lib/get-base-url';
 
 export const getUser = async (email, token) => {
     const uri = `/api/app/user/${email}`;
@@ -75,6 +76,7 @@ export const getCollection = async (params, token) => {
         order,
         orderBy,
         releaseId,
+        releaseIds,
         artistId,
         labelId,
         randomize,
@@ -89,7 +91,9 @@ export const getCollection = async (params, token) => {
     if (orderBy !== undefined) queryParams.append('orderBy', orderBy);
     if (artistId !== undefined)
         queryParams.append('artistId', artistId.toString());
-    if (releaseId !== undefined)
+    if (releaseIds?.length)
+        queryParams.append('releaseIds', releaseIds.join(','));
+    else if (releaseId !== undefined)
         queryParams.append('releaseId', releaseId.toString());
     if (labelId !== undefined)
         queryParams.append('labelId', labelId.toString());
@@ -296,6 +300,88 @@ export const getPlaylist = async (
         null,
         token,
     );
+    return response.data;
+};
+
+// ── Curator ─────────────────────────────────────────────────────────
+
+const parseSSEFrame = (frame) => {
+    let event = '';
+    let data = '';
+    for (const line of frame.split('\n')) {
+        if (line.startsWith('event: ')) { event = line.slice(7); continue; }
+        if (line.startsWith('data: ')) { data = line.slice(6); continue; }
+    }
+    if (!event || !data) return null;
+    return { event, data: JSON.parse(data) };
+};
+
+export const streamCuratorMessage = (username, token, sessionId, message, callbacks, signal) => {
+    const url = `${getBaseUrl()}/api/curator/${encodeURIComponent(username)}/chat`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: { ...token.headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, message }),
+        signal,
+    })
+        .then((res) => {
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            const processChunks = ({ done, value }) => {
+                if (done) return;
+                buffer += decoder.decode(value, { stream: true });
+
+                const parts = buffer.split('\n\n');
+                buffer = parts.pop();
+
+                for (const part of parts) {
+                    const parsed = parseSSEFrame(part);
+                    if (!parsed) continue;
+                    const handler = callbacks[parsed.event];
+                    if (handler) handler(parsed.data);
+                }
+
+                return reader.read().then(processChunks);
+            };
+
+            return reader.read().then(processChunks);
+        })
+        .catch((err) => {
+            if (err.name === 'AbortError') return;
+            if (callbacks.error) callbacks.error(err);
+        });
+};
+
+export const getCuratorSessions = async (username, token) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/sessions`;
+    const response = await requestHandler('GET', uri, null, token);
+    return response.data;
+};
+
+export const getCuratorSession = async (username, token, sessionId) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/session/${sessionId}`;
+    const response = await requestHandler('GET', uri, null, token);
+    return response.data;
+};
+
+export const confirmStagedPlaylist = async (username, token, stagedPlaylistId) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/confirm`;
+    const response = await requestHandler('POST', uri, { stagedPlaylistId }, token);
+    return response.data;
+};
+
+export const discardStagedPlaylist = async (username, token, stagedPlaylistId) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/discard`;
+    const response = await requestHandler('POST', uri, { stagedPlaylistId }, token);
+    return response.data;
+};
+
+export const updateStagedPlaylist = async (username, token, stagedPlaylistId, videoIds) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/stage/update`;
+    const response = await requestHandler('POST', uri, { stagedPlaylistId, videoIds }, token);
     return response.data;
 };
 

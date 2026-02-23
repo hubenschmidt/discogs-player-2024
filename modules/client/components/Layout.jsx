@@ -38,6 +38,7 @@ import Explorer from './Explorer';
 import Account from './Account';
 import TopNav from './TopNav';
 import PlaylistCreateButton from './PlaylistCreateButton';
+import CuratorChat from './CuratorChat';
 
 const Layout = ({ children, title = 'TuneCrook' }) => {
     const { userState } = useContext(UserContext);
@@ -225,6 +226,39 @@ const Layout = ({ children, title = 'TuneCrook' }) => {
                         </Grid.Col>
                     </Grid>
                 </Box>
+
+                {navKey === 'curator' && (
+                    <CollapsibleWrapper
+                        title="Curator"
+                        defaultOpen
+                        rightExtras={
+                            <ActionIcon
+                                variant="light"
+                                color="white"
+                                radius="md"
+                                size="lg"
+                                aria-label="Close curator"
+                                onClick={() =>
+                                    dispatchNav({
+                                        type: 'SET_NAV_KEY',
+                                        payload: null,
+                                    })
+                                }
+                                title="Close curator"
+                            >
+                                <X size={16} />
+                            </ActionIcon>
+                        }
+                    >
+                        <Grid>
+                            <Grid.Col span={{ base: 12, md: 12, lg: 12 }}>
+                                <Box style={{ height: '60vh' }}>
+                                    <CuratorChat />
+                                </Box>
+                            </Grid.Col>
+                        </Grid>
+                    </CollapsibleWrapper>
+                )}
 
                 {navKey === 'account' && (
                     <CollapsibleWrapper

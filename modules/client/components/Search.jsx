@@ -7,14 +7,30 @@ import {
     Box,
     Tooltip,
     ActionIcon,
+    Stack,
+    Text,
+    Loader,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
-import { Search as SearchIcon, Sparkles, RotateCcw } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, RotateCcw, Send } from 'lucide-react';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
-import { searchCollection } from '../api';
+import { searchCollection, streamCuratorMessage } from '../api';
 import { SearchContext } from '../context/searchContext';
 import { ExplorerContext } from '../context/explorerContext';
+import { CuratorContext } from '../context/curatorContext';
+import { CollectionContext } from '../context/collectionContext';
+import {
+    SET_ACTIVE_SESSION,
+    APPEND_CURATOR_MESSAGE,
+    UPDATE_LAST_MESSAGE,
+    SET_STAGED_PLAYLIST,
+    SET_CURATOR_LOADING,
+    SET_CURATOR_MESSAGES,
+} from '../reducers/curatorReducer';
+import { SET_CURATOR_ACTIVE, SET_CURATOR_RELEASES } from '../reducers/collectionReducer';
+import CuratorMessageBubble from './CuratorMessageBubble';
+import StagedPlaylistReview from './StagedPlaylistReview';
 
 const Search = () => {
     const { userState } = useContext(UserContext);
@@ -22,74 +38,194 @@ const Search = () => {
     const { query, results, searchType, open } = searchState;
     const [debouncedQuery] = useDebouncedValue(query, 400);
     const { dispatchExplorer } = useContext(ExplorerContext);
+    const { curatorState, dispatchCurator } = useContext(CuratorContext);
+    const { collectionState, dispatchCollection } = useContext(CollectionContext);
     const bearerToken = useBearerToken();
     const containerRef = useRef(null);
+    const chatScrollRef = useRef(null);
+    const aiAbortRef = useRef(null);
+    const aiFirstChunkRef = useRef(false);
 
-    // todo.. implement AI mode
     const [aiMode, setAiMode] = useState(false);
+    const [aiInput, setAiInput] = useState('');
+    const [aiOpen, setAiOpen] = useState(false);
+
+    const { messages, activeSessionId, stagedPlaylist, isLoading } = curatorState;
+
+    // Auto-scroll chat to bottom
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            const el = chatScrollRef.current;
+            if (!el) return;
+            el.scrollTop = el.scrollHeight;
+        });
+    }, [messages, stagedPlaylist, isLoading]);
+
+    // Open chat panel when there are messages
+    useEffect(() => {
+        if (aiMode && messages.length) setAiOpen(true);
+    }, [messages.length, aiMode]);
+
+    // Restore curator shelf when entering AI mode with stashed releases
+    useEffect(() => {
+        if (!aiMode || !collectionState.curatorReleases) return;
+        dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
+    }, [aiMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Search mode helpers ─────────────────────────────────────────
 
     const triggerOpenSearch = () => {
-        // Reset search + force shelf to show full collection
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
         dispatchSearch({ type: 'SET_OPEN', payload: false });
         dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: null });
         dispatchSearch({ type: 'SET_QUERY', payload: '' });
-        dispatchSearch({
-            type: 'SET_SHELF_COLLECTION_OVERRIDE',
-            payload: true,
-        });
+        dispatchSearch({ type: 'SET_SHELF_COLLECTION_OVERRIDE', payload: true });
         dispatchExplorer({ type: 'CLEAR_FILTER' });
+        dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
     };
+
+    // ── AI mode helpers ─────────────────────────────────────────────
+
+    const handleAiSend = () => {
+        const text = aiInput.trim();
+        if (!text || isLoading) return;
+
+        setAiInput('');
+        setAiOpen(true);
+        dispatchCurator({ type: APPEND_CURATOR_MESSAGE, payload: { Role: 'user', Content: text } });
+        dispatchCurator({ type: SET_CURATOR_LOADING, payload: true });
+
+        aiAbortRef.current?.abort();
+        const controller = new AbortController();
+        aiAbortRef.current = controller;
+        aiFirstChunkRef.current = false;
+
+        streamCuratorMessage(
+            userState.username,
+            bearerToken,
+            activeSessionId,
+            text,
+            {
+                session: ({ sessionId }) => {
+                    dispatchCurator({ type: SET_ACTIVE_SESSION, payload: sessionId });
+                },
+                message: ({ chunk }) => {
+                    if (!aiFirstChunkRef.current) {
+                        aiFirstChunkRef.current = true;
+                        dispatchCurator({ type: APPEND_CURATOR_MESSAGE, payload: { Role: 'assistant', Content: chunk } });
+                        return;
+                    }
+                    dispatchCurator({ type: UPDATE_LAST_MESSAGE, payload: chunk });
+                },
+                releases: (payload) => {
+                    console.log('[curator] releases callback, items:', payload?.items?.length, 'count:', payload?.count);
+                    dispatchCollection({ type: SET_CURATOR_RELEASES, payload });
+                },
+                staged: ({ stagedPlaylist: sp }) => {
+                    dispatchCurator({ type: SET_STAGED_PLAYLIST, payload: sp });
+                },
+                done: () => {
+                    dispatchCurator({ type: SET_CURATOR_LOADING, payload: false });
+                },
+                error: () => {
+                    dispatchCurator({ type: APPEND_CURATOR_MESSAGE, payload: { Role: 'assistant', Content: 'Something went wrong. Please try again.' } });
+                    dispatchCurator({ type: SET_CURATOR_LOADING, payload: false });
+                },
+            },
+            controller.signal,
+        );
+    };
+
+    const handleNewSession = () => {
+        aiAbortRef.current?.abort();
+        dispatchCurator({ type: SET_ACTIVE_SESSION, payload: null });
+        dispatchCurator({ type: SET_CURATOR_MESSAGES, payload: [] });
+        dispatchCurator({ type: SET_STAGED_PLAYLIST, payload: null });
+        dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
+        dispatchCollection({ type: SET_CURATOR_RELEASES, payload: null });
+        setAiInput('');
+    };
+
+    // ── Shared handlers ─────────────────────────────────────────────
 
     const handleKeyDown = (e) => {
         if (e.key !== 'Enter') return;
-        if (query.trim()) return; // non-empty behaves as usual
-        triggerOpenSearch();
+
+        if (aiMode) {
+            handleAiSend();
+            return;
+        }
+
+        if (!query.trim()) triggerOpenSearch();
     };
 
-    // search when query changes
+    // Search debounce effect (only in search mode)
     useEffect(() => {
+        if (aiMode) return;
+
         if (debouncedQuery.trim().length > 0) {
             dispatchSearch({ type: 'SET_OPEN', payload: true });
-
             searchCollection(
                 debouncedQuery,
                 searchType === 'all' ? undefined : searchType,
                 userState?.username,
                 bearerToken,
             )
-                .then(collection => {
-                    dispatchSearch({
-                        type: 'SET_RESULTS',
-                        payload: collection,
-                    });
-                })
+                .then(collection => dispatchSearch({ type: 'SET_RESULTS', payload: collection }))
                 .catch(err => {
                     console.error('Search failed:', err);
                     dispatchSearch({ type: 'SET_RESULTS', payload: [] });
                 });
-
             return;
         }
 
         dispatchSearch({ type: 'SET_OPEN', payload: false });
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
-    }, [debouncedQuery, searchType]);
+    }, [debouncedQuery, searchType, aiMode]);
 
-    // clicks outside: close dropdown
+    // Click outside: close dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(event.target)
-            ) {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
                 dispatchSearch({ type: 'SET_OPEN', payload: false });
+                setAiOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
-        return () =>
-            document.removeEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // ── Right section ───────────────────────────────────────────────
+
+    const rightSection = aiMode ? (
+        <ActionIcon
+            variant="transparent"
+            color="limegreen"
+            onClick={handleAiSend}
+            disabled={!aiInput.trim() || isLoading}
+            onMouseDown={e => e.preventDefault()}
+        >
+            <Send size={16} />
+        </ActionIcon>
+    ) : (
+        <Tooltip label="Show full collection" position="bottom" zIndex="4000">
+            <ActionIcon
+                className="search-icon"
+                variant="subtle"
+                aria-label="Refresh collection"
+                onClick={triggerOpenSearch}
+                onMouseDown={e => e.preventDefault()}
+                color="white"
+            >
+                <RotateCcw size={16} />
+            </ActionIcon>
+        </Tooltip>
+    );
+
+    // ── Dropdown content ────────────────────────────────────────────
+
+    const showSearchDropdown = !aiMode && open;
+    const showAiDropdown = aiMode && aiOpen && (messages.length > 0 || isLoading);
 
     return (
         <Box pos="relative" w="100%" ref={containerRef}>
@@ -104,7 +240,12 @@ const Search = () => {
                         zIndex="4000"
                     >
                         <Box
-                            onClick={() => setAiMode(!aiMode)}
+                            onClick={() => {
+                                if (aiMode) dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
+                                setAiMode(!aiMode);
+                                dispatchSearch({ type: 'SET_OPEN', payload: false });
+                                setAiOpen(false);
+                            }}
                             style={{
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -114,51 +255,32 @@ const Search = () => {
                             }}
                         >
                             {aiMode ? (
-                                <Sparkles
-                                    className="ai-icon"
-                                    size="1rem"
-                                    color="limegreen"
-                                />
+                                <Sparkles className="ai-icon" size="1rem" color="limegreen" />
                             ) : (
-                                <SearchIcon
-                                    className="search-icon"
-                                    size="1rem"
-                                    color="white"
-                                />
+                                <SearchIcon className="search-icon" size="1rem" color="white" />
                             )}
                         </Box>
                     </Tooltip>
                 }
-                // mobile-friendly "open search" button
-                rightSection={
-                    <Tooltip
-                        label="Show full collection"
-                        position="bottom"
-                        zIndex="4000"
-                    >
-                        <ActionIcon
-                            className="search-icon"
-                            variant="subtle"
-                            aria-label="Refresh collection"
-                            onClick={triggerOpenSearch}
-                            // prevent the input from losing focus on mobile tap
-                            onMouseDown={e => e.preventDefault()}
-                            color="white"
-                        >
-                            <RotateCcw size={16} />
-                        </ActionIcon>
-                    </Tooltip>
-                }
+                rightSection={rightSection}
                 rightSectionWidth={40}
-                value={query}
-                onChange={e =>
-                    dispatchSearch({
-                        type: 'SET_QUERY',
-                        payload: e.currentTarget.value,
-                    })
-                }
+                value={aiMode ? aiInput : query}
+                onChange={e => {
+                    if (aiMode) {
+                        setAiInput(e.currentTarget.value);
+                        return;
+                    }
+                    dispatchSearch({ type: 'SET_QUERY', payload: e.currentTarget.value });
+                }}
                 onFocus={() => {
-                    if (query.trim().length > 0) {
+                    if (aiMode && messages.length) {
+                        setAiOpen(true);
+                        if (collectionState.curatorReleases && !collectionState.curatorActive) {
+                            dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
+                        }
+                        return;
+                    }
+                    if (!aiMode && query.trim().length > 0) {
                         dispatchSearch({ type: 'SET_OPEN', payload: true });
                     }
                 }}
@@ -167,12 +289,13 @@ const Search = () => {
                     input: {
                         backgroundColor: 'transparent',
                         color: 'white',
-                        borderColor: 'white',
+                        borderColor: aiMode ? 'limegreen' : 'white',
                     },
                 }}
             />
 
-            {open && (
+            {/* Search results dropdown */}
+            {showSearchDropdown && (
                 <Paper
                     shadow="md"
                     radius="md"
@@ -188,10 +311,7 @@ const Search = () => {
                     <Tabs
                         value={searchType}
                         onChange={tab =>
-                            dispatchSearch({
-                                type: 'SET_SEARCH_TYPE',
-                                payload: tab || 'all',
-                            })
+                            dispatchSearch({ type: 'SET_SEARCH_TYPE', payload: tab || 'all' })
                         }
                     >
                         <Tabs.List grow>
@@ -214,29 +334,16 @@ const Search = () => {
                                           transition: 'background-color 0.2s',
                                       }}
                                       onMouseEnter={e => {
-                                          e.currentTarget.style.backgroundColor =
-                                              '#333';
+                                          e.currentTarget.style.backgroundColor = '#333';
                                       }}
                                       onMouseLeave={e => {
-                                          e.currentTarget.style.backgroundColor =
-                                              'transparent';
+                                          e.currentTarget.style.backgroundColor = 'transparent';
                                       }}
                                       onClick={() => {
-                                          dispatchSearch({
-                                              type: 'SET_SEARCH_SELECTION',
-                                              payload: item,
-                                          });
-                                          dispatchSearch({
-                                              type: 'SET_OPEN',
-                                              payload: false,
-                                          });
-                                          dispatchSearch({
-                                              type: 'SET_SHELF_COLLECTION_OVERRIDE',
-                                              payload: false,
-                                          });
-                                          dispatchExplorer({
-                                              type: 'CLEAR_FILTER',
-                                          });
+                                          dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: item });
+                                          dispatchSearch({ type: 'SET_OPEN', payload: false });
+                                          dispatchSearch({ type: 'SET_SHELF_COLLECTION_OVERRIDE', payload: false });
+                                          dispatchExplorer({ type: 'CLEAR_FILTER' });
                                       }}
                                   >
                                       {item.Release_Id && (
@@ -256,12 +363,7 @@ const Search = () => {
                                       )}
                                       {item.Artist_Id && (
                                           <Box>
-                                              <span
-                                                  style={{
-                                                      color: 'gray',
-                                                      marginRight: 4,
-                                                  }}
-                                              >
+                                              <span style={{ color: 'gray', marginRight: 4 }}>
                                                   artist
                                               </span>
                                               {item.Name}
@@ -269,12 +371,7 @@ const Search = () => {
                                       )}
                                       {item.Label_Id && (
                                           <Box>
-                                              <span
-                                                  style={{
-                                                      color: 'gray',
-                                                      marginRight: 4,
-                                                  }}
-                                              >
+                                              <span style={{ color: 'gray', marginRight: 4 }}>
                                                   {item.Cat_No ?? 'label'}
                                               </span>
                                               {item.Name}
@@ -284,6 +381,62 @@ const Search = () => {
                               ))
                             : null}
                     </ScrollArea.Autosize>
+                </Paper>
+            )}
+
+            {/* AI chat dropdown */}
+            {showAiDropdown && (
+                <Paper
+                    shadow="md"
+                    radius="md"
+                    mt="xs"
+                    withBorder
+                    style={{
+                        position: 'absolute',
+                        width: '100%',
+                        zIndex: 1000,
+                        backgroundColor: '#1a1a1a',
+                    }}
+                >
+                    <Box
+                        px="xs"
+                        py={4}
+                        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                        <Text
+                            size="xs"
+                            c="dimmed"
+                            onClick={handleNewSession}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            + New conversation
+                        </Text>
+                    </Box>
+
+                    <div
+                        ref={chatScrollRef}
+                        style={{ maxHeight: '60vh', overflow: 'auto', overscrollBehavior: 'contain' }}
+                        onWheel={e => e.stopPropagation()}
+                    >
+                        <Stack gap="xs" px="xs" py="xs">
+                            {messages.map((m, i) => (
+                                <CuratorMessageBubble key={i} role={m.Role} content={m.Content} />
+                            ))}
+
+                            {isLoading && (
+                                <Box style={{ alignSelf: 'flex-start' }}>
+                                    <Loader size="xs" color="limegreen" />
+                                </Box>
+                            )}
+
+                            {stagedPlaylist && (
+                                <StagedPlaylistReview
+                                    stagedPlaylist={stagedPlaylist}
+                                    onRefine={() => {}}
+                                />
+                            )}
+                        </Stack>
+                    </div>
                 </Paper>
             )}
         </Box>
