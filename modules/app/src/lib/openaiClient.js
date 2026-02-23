@@ -21,8 +21,41 @@ const chatCompletion = async (messages, tools) => {
     return response.choices[0].message;
 };
 
+const accumulateToolCall = (toolCalls, tc) => {
+    const idx = tc.index;
+    if (!toolCalls[idx]) {
+        toolCalls[idx] = {
+            id: tc.id,
+            type: 'function',
+            function: { name: '', arguments: '' },
+        };
+    }
+    if (tc.id) toolCalls[idx].id = tc.id;
+    if (tc.function?.name) toolCalls[idx].function.name += tc.function.name;
+    if (tc.function?.arguments)
+        toolCalls[idx].function.arguments += tc.function.arguments;
+};
+
+const processDelta = (delta, contentBuffer, onDelta, toolCalls) => {
+    if (!delta) return contentBuffer;
+
+    const updatedContent = delta.content
+        ? (onDelta(delta.content), contentBuffer + delta.content)
+        : contentBuffer;
+
+    if (delta.tool_calls)
+        delta.tool_calls.forEach(tc => accumulateToolCall(toolCalls, tc));
+
+    return updatedContent;
+};
+
 const chatCompletionStream = async (messages, tools, onDelta) => {
-    const params = { model, messages, stream: true };
+    const params = {
+        model,
+        messages,
+        stream: true,
+        stream_options: { include_usage: true },
+    };
 
     if (tools?.length) {
         params.tools = tools;
@@ -33,39 +66,25 @@ const chatCompletionStream = async (messages, tools, onDelta) => {
 
     let contentBuffer = '';
     const toolCalls = {};
+    let usage = null;
 
     for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta;
-        if (!delta) continue;
-
-        if (delta.content) {
-            contentBuffer += delta.content;
-            onDelta(delta.content);
-        }
-
-        if (!delta.tool_calls) continue;
-        for (const tc of delta.tool_calls) {
-            const idx = tc.index;
-            if (!toolCalls[idx]) {
-                toolCalls[idx] = {
-                    id: tc.id,
-                    type: 'function',
-                    function: { name: '', arguments: '' },
-                };
-            }
-            if (tc.id) toolCalls[idx].id = tc.id;
-            if (tc.function?.name)
-                toolCalls[idx].function.name += tc.function.name;
-            if (tc.function?.arguments)
-                toolCalls[idx].function.arguments += tc.function.arguments;
-        }
+        if (chunk.usage) usage = chunk.usage;
+        contentBuffer = processDelta(
+            chunk.choices[0]?.delta,
+            contentBuffer,
+            onDelta,
+            toolCalls,
+        );
     }
+
+    usage = usage ?? stream.usage ?? null;
 
     const assembled = { role: 'assistant', content: contentBuffer || null };
     const calls = Object.values(toolCalls);
     if (calls.length) assembled.tool_calls = calls;
 
-    return assembled;
+    return { ...assembled, usage };
 };
 
 module.exports = { chatCompletion, chatCompletionStream };

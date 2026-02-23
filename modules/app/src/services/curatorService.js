@@ -241,7 +241,10 @@ const extractReleaseIds = text => {
 const dispatchToolCall = async (name, args, username, userId, sessionId) => {
     const handlers = {
         search_collection: async () =>
-            repos.search(username, { searchQuery: args.query, type: args.type }),
+            repos.search(username, {
+                searchQuery: args.query,
+                type: args.type,
+            }),
 
         filter_collection: async () =>
             repos.getCollectionForAI(username, {
@@ -264,8 +267,7 @@ const dispatchToolCall = async (name, args, username, userId, sessionId) => {
                 year: args.year,
             }),
 
-        get_styles_for_genre: async () =>
-            repos.getStylesByGenre(args.genre),
+        get_styles_for_genre: async () => repos.getStylesByGenre(args.genre),
 
         stage_playlist: async () => {
             const staged = await repos.createStagedPlaylist(
@@ -291,7 +293,10 @@ const dispatchToolCall = async (name, args, username, userId, sessionId) => {
 
         get_play_history: async () => {
             const user = await repos.getUser({ username });
-            return repos.getHistory({ limit: String(args.limit ?? 20), page: '1' }, user);
+            return repos.getHistory(
+                { limit: String(args.limit ?? 20), page: '1' },
+                user,
+            );
         },
     };
 
@@ -302,15 +307,58 @@ const dispatchToolCall = async (name, args, username, userId, sessionId) => {
     return JSON.stringify(result);
 };
 
-const emitFinalResponse = async (sessionId, assembled, username, stagedPlaylist, emit) => {
+const emitFinalResponse = async (
+    sessionId,
+    assembled,
+    username,
+    stagedPlaylist,
+    emit,
+) => {
     await repos.createChatMessage(sessionId, 'assistant', assembled.content);
     const releaseIds = extractReleaseIds(assembled.content);
     if (releaseIds.length) {
-        const releases = await repos.getCollection(username, { releaseIds: releaseIds.join(','), limit: '200' });
+        const releases = await repos.getCollection(username, {
+            releaseIds: releaseIds.join(','),
+            limit: '200',
+        });
         emit('releases', { items: releases.items, count: releases.count });
     }
     if (stagedPlaylist) emit('staged', { stagedPlaylist });
     emit('done', {});
+};
+
+// ── Observability ───────────────────────────────────────────────────
+
+const toolResultSummarizers = {
+    search_collection: r => {
+        if (!Array.isArray(r)) return '';
+        const labels = r.slice(0, 5).map(i => i.Title || i.Name || '?');
+        return `${r.length} hits [${labels.join(', ')}]`;
+    },
+    filter_collection: r => {
+        if (!Array.isArray(r)) return '';
+        const labels = r.slice(0, 5).map(i => i.Title || '?');
+        return `${r.length} releases [${labels.join(', ')}]`;
+    },
+    get_release_details: r =>
+        `"${r.Title}" (${r.Year || '?'}) ${r.Videos?.length || 0} videos`,
+    get_available_facets: r =>
+        `${r.Genres?.length || 0} genres, ${r.Styles?.length || 0} styles, ${r.Years?.length || 0} years`,
+    get_styles_for_genre: r =>
+        Array.isArray(r) ? `${r.length} styles` : '',
+    stage_playlist: r =>
+        `"${r.Name || '?'}" ${r.StagedPlaylistVideos?.length || 0} tracks`,
+    get_play_history: r => {
+        const items = r.items || r;
+        return `${Array.isArray(items) ? items.length : '?'} entries`;
+    },
+};
+
+const summarizeToolResult = (name, resultStr) => {
+    const summarizer = toolResultSummarizers[name];
+    if (!summarizer) return `${resultStr.length}b`;
+    const summary = summarizer(JSON.parse(resultStr));
+    return `${summary} (${resultStr.length}b)`;
 };
 
 // ── Main chat orchestration ─────────────────────────────────────────
@@ -325,6 +373,7 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
             .ChatSession_Id;
 
     emit('session', { sessionId: activeSessionId });
+    console.log(`[curator] ── user=${username} session=${activeSessionId} prompt="${userMessage.slice(0, 120)}"`);
 
     await repos.createChatMessage(activeSessionId, 'user', userMessage);
 
@@ -343,6 +392,9 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
 
     let stagedPlaylist = null;
     const MAX_ITERATIONS = 10;
+    const start = Date.now();
+    let totalPromptTokens = 0;
+    let totalCompletionTokens = 0;
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
         const assembled = await chatCompletionStream(
@@ -356,24 +408,66 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
             return;
         }
 
+        if (assembled.usage) {
+            totalPromptTokens += assembled.usage.prompt_tokens || 0;
+            totalCompletionTokens += assembled.usage.completion_tokens || 0;
+        }
+
         // No tool calls — final assistant response
         if (!assembled.tool_calls?.length) {
-            await emitFinalResponse(activeSessionId, assembled, username, stagedPlaylist, emit);
+            const durationMs = Date.now() - start;
+            console.log(`[curator] round ${i + 1} → response (${(assembled.content || '').length} chars)`);
+            console.log(`[curator] ── done rounds=${i + 1} in=${totalPromptTokens} out=${totalCompletionTokens} total=${totalPromptTokens + totalCompletionTokens} ms=${durationMs}`);
+            await emitFinalResponse(
+                activeSessionId,
+                assembled,
+                username,
+                stagedPlaylist,
+                emit,
+            );
             return;
         }
 
         // Tool calls — execute silently, loop back
-        await repos.createChatMessage(activeSessionId, 'assistant', assembled.content, assembled.tool_calls);
-        messages.push({ role: 'assistant', content: assembled.content, tool_calls: assembled.tool_calls });
+        await repos.createChatMessage(
+            activeSessionId,
+            'assistant',
+            assembled.content,
+            assembled.tool_calls,
+        );
+        messages.push({
+            role: 'assistant',
+            content: assembled.content,
+            tool_calls: assembled.tool_calls,
+        });
 
         for (const toolCall of assembled.tool_calls) {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await dispatchToolCall(toolCall.function.name, args, username, userId, activeSessionId);
+            const result = await dispatchToolCall(
+                toolCall.function.name,
+                args,
+                username,
+                userId,
+                activeSessionId,
+            );
 
-            if (toolCall.function.name === 'stage_playlist') stagedPlaylist = JSON.parse(result);
+            console.log(`[curator]   ${toolCall.function.name}(${JSON.stringify(args)}) → ${summarizeToolResult(toolCall.function.name, result)}`);
 
-            await repos.createChatMessage(activeSessionId, 'tool', result, null, toolCall.id);
-            messages.push({ role: 'tool', content: result, tool_call_id: toolCall.id });
+            if (toolCall.function.name === 'stage_playlist')
+                stagedPlaylist = JSON.parse(result);
+
+            await repos.createChatMessage(
+                activeSessionId,
+                'tool',
+                result,
+                null,
+                toolCall.id,
+            );
+            messages.push({
+                role: 'tool',
+                content: result,
+                tool_call_id: toolCall.id,
+            });
         }
     }
 
@@ -384,7 +478,7 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
     emit('done', {});
 };
 
-const getSessions = async (username) => {
+const getSessions = async username => {
     const user = await repos.getUser({ username });
     return repos.getChatSessions(user.User_Id);
 };

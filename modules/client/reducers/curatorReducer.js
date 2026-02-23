@@ -8,6 +8,7 @@ export const SET_CURATOR_LOADING = 'SET_CURATOR_LOADING';
 export const SET_CURATOR_OPEN = 'SET_CURATOR_OPEN';
 export const UPDATE_LAST_MESSAGE = 'UPDATE_LAST_MESSAGE';
 
+
 const setSessions = (state, payload) => ({
     ...state,
     sessions: payload,
