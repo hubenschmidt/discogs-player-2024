@@ -28,7 +28,7 @@ const fetchRequestToken = async () => {
 };
 
 const fetchAccessToken = async (req) => {
-    const requestTokenEntry = await getRequestToken(req);
+    const requestTokenEntry = await getRequestToken(req.body.oauth_token);
     const { OAuth_Request_Token_Secret } = requestTokenEntry;
     const response = await getDiscogsAccessToken(
         req,
@@ -58,7 +58,7 @@ const fetchAccessToken = async (req) => {
 };
 
 const syncCollection = async (req) => {
-    const user = await getUser(req);
+    const user = await getUser({ username: req.params.username });
     const discogsCol = await fetchCollection(req, user);
 
     const [collection, collectionCreated] = await createCollection(
@@ -220,7 +220,7 @@ const syncCollection = async (req) => {
 };
 
 const fetchCollection = async (req, user) => {
-    if (!user) user = await getUser(req);
+    if (!user) user = await getUser({ username: req.params.username });
 
     const folderId = 0;
     const perPage = 150;
@@ -272,7 +272,7 @@ const scrubTitle = (input) => {
 };
 
 const fetchRelease = async (req) => {
-    const user = await getUser(req);
+    const user = await getUser({ username: req.params.username });
     const endpoint = `releases/${req.params.release_id}`;
     const response = await discogsClient(endpoint, 'GET', null, {
         accessToken: user.OAuth_Access_Token,

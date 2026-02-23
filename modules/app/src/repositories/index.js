@@ -13,17 +13,14 @@ const createRequestToken = async (token, secret) => {
     return requestTokenEntry.get();
 };
 
-const getRequestToken = async (req) => {
-    const {
-        body: { oauth_token },
-    } = req;
+const getRequestToken = async oauthToken => {
     const requestTokenEntry = await db.RequestToken.findOne({
-        where: { OAuth_Request_Token: oauth_token },
+        where: { OAuth_Request_Token: oauthToken },
     });
     return requestTokenEntry;
 };
 
-const createUser = async (user) => {
+const createUser = async user => {
     const [userEntry, created] = await db.User.findOrCreate({
         where: { Username: user.username },
         defaults: {
@@ -37,32 +34,30 @@ const createUser = async (user) => {
     return userEntry.get();
 };
 
-const deleteUser = async (req) => {
-    const { userId } = req.body;
+const deleteUser = async userId => {
     return await db.User.destroy({
         where: { User_Id: userId },
     });
 };
 
-const createCollection = async (userId) => {
+const createCollection = async userId => {
     return await db.Collection.findOrCreate({
         where: { User_Id: userId },
         defaults: { User_Id: userId },
     });
 };
 
-const createHistoryEntry = async (req, user, video) => {
-    const { release_id } = req.params;
+const createHistoryEntry = async (releaseId, user, video) => {
     return await db.History.create({
         User_Id: user.User_Id,
         Video_Id: video.Video_Id,
-        Release_Id: release_id,
+        Release_Id: releaseId,
         Played_At: new Date(),
     });
 };
 
-const getHistory = async (req, user) => {
-    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+const getHistory = async (query, user) => {
+    const { page, limit, offset, order, orderBy } = parsePaging(query, {
         defaultLimit: 50,
         maxLimit: 250,
         defaultOrderBy: 'playedAt',
@@ -188,13 +183,11 @@ const getHistory = async (req, user) => {
         count,
         page,
         limit,
-        rows.map((r) => r.get({ plain: true })),
+        rows.map(r => r.get({ plain: true })),
     );
 };
 
-const deletePlaylist = async (req, user) => {
-    const { playlistId } = req.body;
-
+const deletePlaylist = async (playlistId, user) => {
     const deleted = await db.Playlist.destroy({
         where: { Playlist_Id: playlistId },
         User_Id: user?.User_Id,
@@ -206,11 +199,11 @@ const deletePlaylist = async (req, user) => {
     };
 };
 
-const createPlaylist = async (req, user, video) => {
+const createPlaylist = async ({ name, description }, user, video) => {
     const playlist = await db.Playlist.create({
         User_Id: user.User_Id,
-        Name: req.body.name,
-        Description: req.body.description,
+        Name: name,
+        Description: description,
     });
     if (video) {
         await db.PlaylistVideo.create({
@@ -224,19 +217,19 @@ const createPlaylist = async (req, user, video) => {
 
 const updatePlaylistMeta = async () => {};
 
-const toYoutubeUrl = (raw) => {
+const toYoutubeUrl = raw => {
     if (!raw) return raw ?? null;
     return /^[A-Za-z0-9_-]{11}$/.test(raw)
         ? `https://www.youtube.com/watch?v=${raw}`
         : raw;
 };
 
-const getPlaylist = async (req, user) => {
-    const pid = Number(req.params.playlistId);
-    const locale = req.query.locale || 'en-US';
-    const tz = req.query.tz || undefined;
+const getPlaylist = async (playlistId, query, user) => {
+    const pid = Number(playlistId);
+    const locale = query.locale || 'en-US';
+    const tz = query.tz || undefined;
 
-    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+    const { page, limit, offset, order, orderBy } = parsePaging(query, {
         defaultLimit: 25,
         maxLimit: 100,
         defaultOrderBy: 'updatedAt',
@@ -249,16 +242,10 @@ const getPlaylist = async (req, user) => {
         defaultOrder: 'ASC',
     });
 
-    const relPage = Math.max(
-        parseInt(req.query.relPage ?? String(page)) || 1,
-        1,
-    );
+    const relPage = Math.max(parseInt(query.relPage ?? String(page)) || 1, 1);
     const relLimit = Math.max(
         1,
-        Math.min(
-            parseInt(req.query.relLimit ?? String(limit)) || limit,
-            100,
-        ),
+        Math.min(parseInt(query.relLimit ?? String(limit)) || limit, 100),
     );
     const relOffset = (relPage - 1) * relLimit;
 
@@ -281,7 +268,9 @@ const getPlaylist = async (req, user) => {
         updatedAt: [[{ model: db.Video, as: 'Video' }, 'updatedAt', order]],
         createdAt: [[{ model: db.Video, as: 'Video' }, 'createdAt', order]],
     };
-    const videoOrder = videoOrderMap[orderBy] ?? [[{ model: db.Video, as: 'Video' }, 'updatedAt', 'DESC']];
+    const videoOrder = videoOrderMap[orderBy] ?? [
+        [{ model: db.Video, as: 'Video' }, 'updatedAt', 'DESC'],
+    ];
 
     const videosJoin = await db.PlaylistVideo.findAndCountAll({
         where: { Playlist_Id: pid },
@@ -298,13 +287,13 @@ const getPlaylist = async (req, user) => {
     });
 
     const totalVideos = videosJoin.count;
-    const videosRaw = videosJoin.rows.map((pv) =>
+    const videosRaw = videosJoin.rows.map(pv =>
         pv.Video?.get ? pv.Video.get({ plain: true }) : pv.Video,
     );
 
     let videosWithRelease = videosRaw;
 
-    const videoIds = videosRaw.map((v) => v.Video_Id);
+    const videoIds = videosRaw.map(v => v.Video_Id);
 
     const rvLinks = await db.ReleaseVideo.findAll({
         where: { Video_Id: { [Op.in]: videoIds } },
@@ -333,7 +322,7 @@ const getPlaylist = async (req, user) => {
             ],
         });
 
-        releasesAllPlain = releasesAll.map((r) =>
+        releasesAllPlain = releasesAll.map(r =>
             r.get ? r.get({ plain: true }) : r,
         );
     }
@@ -341,9 +330,9 @@ const getPlaylist = async (req, user) => {
     const r2release = new Map();
     for (const r of releasesAllPlain) r2release.set(r.Release_Id, r);
 
-    videosWithRelease = videosRaw.map((v) => {
+    videosWithRelease = videosRaw.map(v => {
         const rid = v2r.get(v.Video_Id) ?? null;
-        const releaseObj = rid ? r2release.get(rid) ?? null : null;
+        const releaseObj = rid ? (r2release.get(rid) ?? null) : null;
 
         return {
             ...v,
@@ -393,7 +382,7 @@ const getPlaylist = async (req, user) => {
                     (rank.get(b.Release_Id) ?? 0),
             );
 
-            releasesPaged = relRows.map((r) =>
+            releasesPaged = relRows.map(r =>
                 r.get ? r.get({ plain: true }) : r,
             );
         }
@@ -408,7 +397,7 @@ const getPlaylist = async (req, user) => {
         updatedAtFormatted: formatDate(playlistPlain.updatedAt, locale, tz),
     };
 
-    const videosEnriched = videosWithRelease.map((v) => ({
+    const videosEnriched = videosWithRelease.map(v => ({
         ...v,
         title: v.Title,
         uri: toYoutubeUrl(v.URI),
@@ -417,7 +406,7 @@ const getPlaylist = async (req, user) => {
         durationFormatted: formatDuration(v.Duration),
     }));
 
-    const releasesEnriched = releasesPaged.map((r) => ({
+    const releasesEnriched = releasesPaged.map(r => ({
         ...r,
         dateAddedFormatted: formatDate(r.Date_Added, locale, tz),
         createdAtFormatted: formatDate(r.createdAt, locale, tz),
@@ -436,19 +425,20 @@ const getPlaylist = async (req, user) => {
     };
 };
 
-const getVideo = async (req) => {
-    const uri = extractYouTubeVideoId(req.body.video.uri);
+const getVideo = async uri => {
+    const extractedUri = extractYouTubeVideoId(uri);
     return await db.Video.findOne({
-        where: { URI: uri },
+        where: { URI: extractedUri },
         raw: true,
     });
 };
 
-const updateVideoPlayCount = async (req, user) => {
-    const { release_id } = req.params;
-    const { uri, title, duration } = req.body;
-
-    return db.sequelize.transaction(async (t) => {
+const updateVideoPlayCount = async (
+    releaseId,
+    { uri, title, duration },
+    user,
+) => {
+    return db.sequelize.transaction(async t => {
         const extractedUri = extractYouTubeVideoId(uri);
 
         const [video] = await db.Video.findOrCreate({
@@ -464,11 +454,11 @@ const updateVideoPlayCount = async (req, user) => {
 
         await db.ReleaseVideo.findOrCreate({
             where: {
-                Release_Id: release_id,
+                Release_Id: releaseId,
                 Video_Id: plainVideo.Video_Id,
             },
             defaults: {
-                Release_Id: release_id,
+                Release_Id: releaseId,
                 Video_Id: plainVideo.Video_Id,
             },
             transaction: t,
@@ -510,10 +500,7 @@ const syncData = async (model, data, primaryKey) => {
     return await db[model].bulkCreate(data, { ignoreDuplicates: true });
 };
 
-const getUser = async (req) => {
-    const email = req.params.email || req.query.email || undefined;
-    const username = req.params.username || req.query.username || undefined;
-
+const getUser = async ({ email, username } = {}) => {
     const orConditions = [];
     if (email) orConditions.push({ Email: email });
     if (username) orConditions.push({ Username: username });
@@ -527,9 +514,9 @@ const getUser = async (req) => {
     return userEntry?.get();
 };
 
-const getCollection = async (req) => {
+const getCollection = async (username, query) => {
     try {
-        const { page, limit, offset, order, orderBy } = parsePaging(req, {
+        const { page, limit, offset, order, orderBy } = parsePaging(query, {
             defaultLimit: 25,
             maxLimit: 100,
             defaultOrderBy: 'Date_Added',
@@ -543,14 +530,13 @@ const getCollection = async (req) => {
         });
 
         const randomize =
-            typeof req.query.randomize === 'string'
-                ? req.query.randomize.toLowerCase() === 'true'
-                : !!req.query.randomize;
+            typeof query.randomize === 'string'
+                ? query.randomize.toLowerCase() === 'true'
+                : !!query.randomize;
 
-        const { username } = req.params;
-        const genresQ = parseStringList(req.query.genre);
-        const stylesQ = parseStringList(req.query.style);
-        const yearsQ = parseStringList(req.query.year);
+        const genresQ = parseStringList(query.genre);
+        const stylesQ = parseStringList(query.style);
+        const yearsQ = parseStringList(query.year);
         const yearsFilter = (yearsQ ?? [])
             .map(y => Number(y))
             .filter(n => Number.isFinite(n));
@@ -561,11 +547,11 @@ const getCollection = async (req) => {
         });
 
         const releaseWhere = {};
-        const releaseIdsList = parseStringList(req.query.releaseIds);
+        const releaseIdsList = parseStringList(query.releaseIds);
         if (releaseIdsList?.length) {
             releaseWhere.Release_Id = { [Op.in]: releaseIdsList.map(Number) };
-        } else if (req.query.releaseId) {
-            releaseWhere.Release_Id = req.query.releaseId;
+        } else if (query.releaseId) {
+            releaseWhere.Release_Id = query.releaseId;
         }
         if (yearsFilter.length) releaseWhere.Year = { [Op.in]: yearsFilter };
 
@@ -613,16 +599,16 @@ const getCollection = async (req) => {
                 },
                 {
                     model: db.Artist,
-                    ...(req.query.artistId && {
-                        where: { Artist_Id: { [Op.in]: [req.query.artistId] } },
+                    ...(query.artistId && {
+                        where: { Artist_Id: { [Op.in]: [query.artistId] } },
                     }),
                     attributes: ['Artist_Id', 'Name'],
                     through: { attributes: [] },
                 },
                 {
                     model: db.Label,
-                    ...(req.query.labelId && {
-                        where: { Label_Id: { [Op.in]: [req.query.labelId] } },
+                    ...(query.labelId && {
+                        where: { Label_Id: { [Op.in]: [query.labelId] } },
                     }),
                     attributes: ['Label_Id', 'Name', 'Cat_No'],
                     through: { attributes: [] },
@@ -637,7 +623,7 @@ const getCollection = async (req) => {
             count,
             page,
             limit,
-            rows.map((r) => r.get({ plain: true })),
+            rows.map(r => r.get({ plain: true })),
         );
     } catch (error) {
         console.error('Error fetching collection:', error);
@@ -645,8 +631,8 @@ const getCollection = async (req) => {
     }
 };
 
-const getPlaylists = async (req, user) => {
-    const { page, limit, offset, order, orderBy } = parsePaging(req, {
+const getPlaylists = async (query, user) => {
+    const { page, limit, offset, order, orderBy } = parsePaging(query, {
         defaultLimit: 25,
         maxLimit: 100,
         defaultOrderBy: 'updatedAt',
@@ -659,8 +645,8 @@ const getPlaylists = async (req, user) => {
         defaultOrder: 'DESC',
     });
 
-    const locale = req.query.locale || 'en-US';
-    const tz = req.query.tz || undefined;
+    const locale = query.locale || 'en-US';
+    const tz = query.tz || undefined;
 
     const { count, rows } = await db.Playlist.findAndCountAll({
         where: { User_Id: user.User_Id },
@@ -687,13 +673,13 @@ const getPlaylists = async (req, user) => {
         },
     });
 
-    const items = rows.map((r) => {
+    const items = rows.map(r => {
         const p = r.get({ plain: true });
         return {
             ...p,
             createdAtFormatted: formatDate(p.createdAt, locale, tz),
             updatedAtFormatted: formatDate(p.updatedAt, locale, tz),
-            Videos: (p.Videos ?? []).map((v) => ({
+            Videos: (p.Videos ?? []).map(v => ({
                 ...v,
                 createdAtFormatted: formatDate(v.createdAt, locale, tz),
                 updatedAtFormatted: formatDate(v.updatedAt, locale, tz),
@@ -705,8 +691,7 @@ const getPlaylists = async (req, user) => {
     return toPagedResponse(count, page, limit, items);
 };
 
-const getStylesByGenre = async (req) => {
-    const { genre } = req.params;
+const getStylesByGenre = async genre => {
     if (!genre) {
         throw new Error('Genre name is required');
     }
@@ -730,9 +715,8 @@ const getStylesByGenre = async (req) => {
     return styles;
 };
 
-const search = async (req) => {
-    const { searchQuery, type } = req.query;
-    const { username } = req.params;
+const search = async (username, query) => {
+    const { searchQuery, type } = query;
 
     const ilikeWildcard = `%${searchQuery}%`;
 
@@ -744,7 +728,13 @@ const search = async (req) => {
                     {
                         model: db.Collection,
                         required: true,
-                        include: [{ model: db.User, required: true, where: { Username: username } }],
+                        include: [
+                            {
+                                model: db.User,
+                                required: true,
+                                where: { Username: username },
+                            },
+                        ],
                     },
                 ],
             }),
@@ -758,7 +748,13 @@ const search = async (req) => {
                             {
                                 model: db.Collection,
                                 required: true,
-                                include: [{ model: db.User, required: true, where: { Username: username } }],
+                                include: [
+                                    {
+                                        model: db.User,
+                                        required: true,
+                                        where: { Username: username },
+                                    },
+                                ],
                             },
                         ],
                     },
@@ -774,7 +770,13 @@ const search = async (req) => {
                             {
                                 model: db.Collection,
                                 required: true,
-                                include: [{ model: db.User, required: true, where: { Username: username } }],
+                                include: [
+                                    {
+                                        model: db.User,
+                                        required: true,
+                                        where: { Username: username },
+                                    },
+                                ],
                             },
                         ],
                     },
@@ -783,9 +785,9 @@ const search = async (req) => {
         ]);
 
         return [
-            ...releases.map((r) => ({ ...r.toJSON(), type: 'release' })),
-            ...artists.map((a) => ({ ...a.toJSON(), type: 'artist' })),
-            ...labels.map((l) => ({ ...l.toJSON(), type: 'label' })),
+            ...releases.map(r => ({ ...r.toJSON(), type: 'release' })),
+            ...artists.map(a => ({ ...a.toJSON(), type: 'artist' })),
+            ...labels.map(l => ({ ...l.toJSON(), type: 'label' })),
         ];
     }
 
@@ -798,9 +800,40 @@ const search = async (req) => {
     const config = searchModels[type];
     if (!config) return [];
 
-    const include = type === 'release'
-        ? [{ model: db.Collection, required: true, include: [{ model: db.User, required: true, where: { Username: username } }] }]
-        : [{ model: db.Release, required: true, include: [{ model: db.Collection, required: true, include: [{ model: db.User, required: true, where: { Username: username } }] }] }];
+    const include =
+        type === 'release'
+            ? [
+                  {
+                      model: db.Collection,
+                      required: true,
+                      include: [
+                          {
+                              model: db.User,
+                              required: true,
+                              where: { Username: username },
+                          },
+                      ],
+                  },
+              ]
+            : [
+                  {
+                      model: db.Release,
+                      required: true,
+                      include: [
+                          {
+                              model: db.Collection,
+                              required: true,
+                              include: [
+                                  {
+                                      model: db.User,
+                                      required: true,
+                                      where: { Username: username },
+                                  },
+                              ],
+                          },
+                      ],
+                  },
+              ];
 
     return config.model.findAll({
         where: { [config.field]: { [Op.iLike]: ilikeWildcard } },
@@ -808,10 +841,8 @@ const search = async (req) => {
     });
 };
 
-const deleteFromPlaylist = async (req) => {
-    const { playlistId, uri } = req.body;
-
-    return db.sequelize.transaction(async (t) => {
+const deleteFromPlaylist = async (playlistId, uri) => {
+    return db.sequelize.transaction(async t => {
         const video = await db.Video.findOne({
             where: { URI: uri },
             transaction: t,
@@ -846,11 +877,10 @@ const deleteFromPlaylist = async (req) => {
     });
 };
 
-const addToPlaylist = async (req) => {
-    const { playlistId, uri } = req.body;
+const addToPlaylist = async (playlistId, uri) => {
     const extractedUri = extractYouTubeVideoId(uri);
 
-    return db.sequelize.transaction(async (t) => {
+    return db.sequelize.transaction(async t => {
         const video = await db.Video.findOne({
             where: { URI: extractedUri },
             transaction: t,
@@ -888,7 +918,7 @@ const createChatSession = async (userId, title) => {
     return session.get({ plain: true });
 };
 
-const getChatSessions = async (userId) => {
+const getChatSessions = async userId => {
     const sessions = await db.ChatSession.findAll({
         where: { User_Id: userId },
         order: [['updatedAt', 'DESC']],
@@ -897,7 +927,7 @@ const getChatSessions = async (userId) => {
     return sessions;
 };
 
-const getChatMessages = async (sessionId) => {
+const getChatMessages = async sessionId => {
     const messages = await db.ChatMessage.findAll({
         where: { ChatSession_Id: sessionId },
         order: [['createdAt', 'ASC']],
@@ -906,7 +936,13 @@ const getChatMessages = async (sessionId) => {
     return messages;
 };
 
-const createChatMessage = async (sessionId, role, content, toolCalls, toolCallId) => {
+const createChatMessage = async (
+    sessionId,
+    role,
+    content,
+    toolCalls,
+    toolCallId,
+) => {
     const msg = await db.ChatMessage.create({
         ChatSession_Id: sessionId,
         Role: role,
@@ -995,18 +1031,38 @@ const getCollectionForAI = async (username, filters) => {
         limit: filters?.limit ?? 50,
     });
 
-    return rows.map((r) => r.get({ plain: true }));
+    return rows.map(r => r.get({ plain: true }));
 };
 
-const getReleaseWithVideos = async (releaseId) => {
+const getReleaseWithVideos = async releaseId => {
     const release = await db.Release.findOne({
         where: { Release_Id: releaseId },
         include: [
-            { model: db.Genre, attributes: ['Name'], through: { attributes: [] } },
-            { model: db.Style, attributes: ['Name'], through: { attributes: [] } },
-            { model: db.Artist, attributes: ['Artist_Id', 'Name'], through: { attributes: [] } },
-            { model: db.Label, attributes: ['Label_Id', 'Name', 'Cat_No'], through: { attributes: [] } },
-            { model: db.Video, attributes: ['Video_Id', 'URI', 'Title', 'Duration'], through: { attributes: [] } },
+            {
+                model: db.Genre,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Style,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Artist,
+                attributes: ['Artist_Id', 'Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Label,
+                attributes: ['Label_Id', 'Name', 'Cat_No'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Video,
+                attributes: ['Video_Id', 'URI', 'Title', 'Duration'],
+                through: { attributes: [] },
+            },
         ],
     });
     return release?.get({ plain: true }) ?? null;
@@ -1023,7 +1079,13 @@ const createStagedPlaylist = async (sessionId, userId, name, description) => {
     return staged.get({ plain: true });
 };
 
-const createStagedPlaylistVideo = async (stagedPlaylistId, videoId, releaseId, position, rationale) => {
+const createStagedPlaylistVideo = async (
+    stagedPlaylistId,
+    videoId,
+    releaseId,
+    position,
+    rationale,
+) => {
     const entry = await db.StagedPlaylistVideo.create({
         StagedPlaylist_Id: stagedPlaylistId,
         Video_Id: videoId,
@@ -1034,7 +1096,7 @@ const createStagedPlaylistVideo = async (stagedPlaylistId, videoId, releaseId, p
     return entry.get({ plain: true });
 };
 
-const getStagedPlaylist = async (stagedPlaylistId) => {
+const getStagedPlaylist = async stagedPlaylistId => {
     const staged = await db.StagedPlaylist.findOne({
         where: { StagedPlaylist_Id: stagedPlaylistId },
         include: [
@@ -1042,11 +1104,20 @@ const getStagedPlaylist = async (stagedPlaylistId) => {
                 model: db.StagedPlaylistVideo,
                 as: 'Videos',
                 include: [
-                    { model: db.Video, attributes: ['Video_Id', 'URI', 'Title', 'Duration'] },
+                    {
+                        model: db.Video,
+                        attributes: ['Video_Id', 'URI', 'Title', 'Duration'],
+                    },
                     {
                         model: db.Release,
                         attributes: ['Release_Id', 'Title', 'Year', 'Thumb'],
-                        include: [{ model: db.Artist, attributes: ['Name'], through: { attributes: [] } }],
+                        include: [
+                            {
+                                model: db.Artist,
+                                attributes: ['Name'],
+                                through: { attributes: [] },
+                            },
+                        ],
                     },
                 ],
                 order: [['Position', 'ASC']],
@@ -1057,24 +1128,38 @@ const getStagedPlaylist = async (stagedPlaylistId) => {
 };
 
 const confirmStagedPlaylist = async (stagedPlaylistId, userId) => {
-    return db.sequelize.transaction(async (t) => {
+    return db.sequelize.transaction(async t => {
         const staged = await db.StagedPlaylist.findOne({
-            where: { StagedPlaylist_Id: stagedPlaylistId, User_Id: userId, Status: 'draft' },
+            where: {
+                StagedPlaylist_Id: stagedPlaylistId,
+                User_Id: userId,
+                Status: 'draft',
+            },
             include: [{ model: db.StagedPlaylistVideo, as: 'Videos' }],
             transaction: t,
         });
         if (!staged) return null;
 
         const playlist = await db.Playlist.create(
-            { User_Id: userId, Name: staged.Name, Description: staged.Description },
+            {
+                User_Id: userId,
+                Name: staged.Name,
+                Description: staged.Description,
+            },
             { transaction: t },
         );
 
         const videos = staged.Videos ?? [];
         for (const sv of videos) {
             await db.PlaylistVideo.findOrCreate({
-                where: { Playlist_Id: playlist.Playlist_Id, Video_Id: sv.Video_Id },
-                defaults: { Playlist_Id: playlist.Playlist_Id, Video_Id: sv.Video_Id },
+                where: {
+                    Playlist_Id: playlist.Playlist_Id,
+                    Video_Id: sv.Video_Id,
+                },
+                defaults: {
+                    Playlist_Id: playlist.Playlist_Id,
+                    Video_Id: sv.Video_Id,
+                },
                 transaction: t,
             });
         }
@@ -1095,7 +1180,7 @@ const discardStagedPlaylist = async (stagedPlaylistId, userId) => {
 };
 
 const updateStagedPlaylistVideos = async (stagedPlaylistId, videoIds) => {
-    return db.sequelize.transaction(async (t) => {
+    return db.sequelize.transaction(async t => {
         await db.StagedPlaylistVideo.destroy({
             where: { StagedPlaylist_Id: stagedPlaylistId },
             transaction: t,
@@ -1103,7 +1188,11 @@ const updateStagedPlaylistVideos = async (stagedPlaylistId, videoIds) => {
 
         for (let i = 0; i < videoIds.length; i++) {
             await db.StagedPlaylistVideo.create(
-                { StagedPlaylist_Id: stagedPlaylistId, Video_Id: videoIds[i], Position: i },
+                {
+                    StagedPlaylist_Id: stagedPlaylistId,
+                    Video_Id: videoIds[i],
+                    Position: i,
+                },
                 { transaction: t },
             );
         }
@@ -1112,7 +1201,7 @@ const updateStagedPlaylistVideos = async (stagedPlaylistId, videoIds) => {
     });
 };
 
-const parseStringList = (input) => {
+const parseStringList = input => {
     if (input == null) return null;
 
     if (typeof input === 'string') {
@@ -1126,12 +1215,10 @@ const parseStringList = (input) => {
     return null;
 };
 
-const getExplorer = async (req) => {
-    const { username } = req.params;
-
-    const genresQ = parseStringList(req.query.genre);
-    const stylesQ = parseStringList(req.query.style);
-    const yearsQ = parseStringList(req.query.year);
+const getExplorer = async (username, query) => {
+    const genresQ = parseStringList(query.genre);
+    const stylesQ = parseStringList(query.style);
+    const yearsQ = parseStringList(query.year);
 
     const yearsFilter = (yearsQ ?? [])
         .map(y => Number(y))

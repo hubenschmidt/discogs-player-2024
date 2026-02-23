@@ -18,7 +18,6 @@ const VinylShelf = () => {
     const { collectionState, dispatchCollection } =
         useContext(CollectionContext);
     const { items, totalPages, count } = collectionState;
-    console.log('[shelf] render, items:', items?.length, 'curatorActive:', collectionState.curatorActive, 'curatorReleases:', collectionState.curatorReleases?.items?.length);
     const { dispatchDiscogsRelease, discogsReleaseState } = useContext(
         DiscogsReleaseContext,
     );

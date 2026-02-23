@@ -1,19 +1,19 @@
-const parsePaging = (req, config) => {
+const parsePaging = (query, config) => {
     const defaultLimit = config.defaultLimit ?? 25;
     const maxLimit = config.maxLimit ?? 100;
     const defaultOrder = config.defaultOrder ?? 'DESC';
 
-    const page = Math.max(parseInt(req.query.page) || 1, 1);
-    const limitRaw = parseInt(req.query.limit);
+    const page = Math.max(parseInt(query.page) || 1, 1);
+    const limitRaw = parseInt(query.limit);
     const limit = Math.max(1, Math.min(limitRaw || defaultLimit, maxLimit));
     const offset = (page - 1) * limit;
 
     const order =
-        req.query.order?.toUpperCase() === 'ASC'
+        query.order?.toUpperCase() === 'ASC'
             ? 'ASC'
             : defaultOrder;
 
-    const orderByParam = req.query.orderBy ?? config.defaultOrderBy;
+    const orderByParam = query.orderBy ?? config.defaultOrderBy;
     const orderBy =
         config.allowedOrderBy[orderByParam] ?? config.defaultOrderBy;
 

@@ -3,12 +3,12 @@ import {
     Box,
     Stack,
     TextInput,
-    ActionIcon,
+
     Text,
     ScrollArea,
     Loader,
 } from '@mantine/core';
-import { Send } from 'lucide-react';
+
 import { UserContext } from '../context/userContext';
 import { CuratorContext } from '../context/curatorContext';
 import { CollectionContext } from '../context/collectionContext';
@@ -180,16 +180,7 @@ const CuratorChat = () => {
                     onChange={e => setInput(e.currentTarget.value)}
                     onKeyDown={handleKeyDown}
                     disabled={isLoading}
-                    rightSection={
-                        <ActionIcon
-                            variant="subtle"
-                            color="yellow"
-                            onClick={handleSend}
-                            disabled={!input.trim() || isLoading}
-                        >
-                            <Send size={16} />
-                        </ActionIcon>
-                    }
+
                     styles={{
                         input: {
                             background: 'rgba(255,255,255,0.05)',

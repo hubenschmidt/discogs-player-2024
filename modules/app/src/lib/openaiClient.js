@@ -4,7 +4,7 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-const model = 'gpt-5.2-2025-12-11';
+const model = 'gpt-5-mini-2025-08-07';
 
 const chatCompletion = async (messages, tools) => {
     const params = {
@@ -21,7 +21,7 @@ const chatCompletion = async (messages, tools) => {
     return response.choices[0].message;
 };
 
-const chatCompletionStream = async function* (messages, tools) {
+const chatCompletionStream = async (messages, tools, onDelta) => {
     const params = { model, messages, stream: true };
 
     if (tools?.length) {
@@ -40,18 +40,24 @@ const chatCompletionStream = async function* (messages, tools) {
 
         if (delta.content) {
             contentBuffer += delta.content;
-            yield { type: 'delta', content: delta.content };
+            onDelta(delta.content);
         }
 
         if (!delta.tool_calls) continue;
         for (const tc of delta.tool_calls) {
             const idx = tc.index;
             if (!toolCalls[idx]) {
-                toolCalls[idx] = { id: tc.id, type: 'function', function: { name: '', arguments: '' } };
+                toolCalls[idx] = {
+                    id: tc.id,
+                    type: 'function',
+                    function: { name: '', arguments: '' },
+                };
             }
             if (tc.id) toolCalls[idx].id = tc.id;
-            if (tc.function?.name) toolCalls[idx].function.name += tc.function.name;
-            if (tc.function?.arguments) toolCalls[idx].function.arguments += tc.function.arguments;
+            if (tc.function?.name)
+                toolCalls[idx].function.name += tc.function.name;
+            if (tc.function?.arguments)
+                toolCalls[idx].function.arguments += tc.function.arguments;
         }
     }
 
@@ -59,7 +65,7 @@ const chatCompletionStream = async function* (messages, tools) {
     const calls = Object.values(toolCalls);
     if (calls.length) assembled.tool_calls = calls;
 
-    yield { type: 'done', message: assembled };
+    return assembled;
 };
 
 module.exports = { chatCompletion, chatCompletionStream };

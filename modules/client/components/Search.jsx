@@ -118,7 +118,6 @@ const Search = () => {
                     dispatchCurator({ type: UPDATE_LAST_MESSAGE, payload: chunk });
                 },
                 releases: (payload) => {
-                    console.log('[curator] releases callback, items:', payload?.items?.length, 'count:', payload?.count);
                     dispatchCollection({ type: SET_CURATOR_RELEASES, payload });
                 },
                 staged: ({ stagedPlaylist: sp }) => {
@@ -204,8 +203,9 @@ const Search = () => {
             onClick={handleAiSend}
             disabled={!aiInput.trim() || isLoading}
             onMouseDown={e => e.preventDefault()}
+            styles={{ root: { backgroundColor: 'transparent', '&[data-disabled]': { backgroundColor: 'transparent' } } }}
         >
-            <Send size={16} />
+            <Send size={16} color="limegreen" />
         </ActionIcon>
     ) : (
         <Tooltip label="Show full collection" position="bottom" zIndex="4000">
@@ -290,6 +290,9 @@ const Search = () => {
                         backgroundColor: 'transparent',
                         color: 'white',
                         borderColor: aiMode ? 'limegreen' : 'white',
+                    },
+                    section: {
+                        backgroundColor: 'transparent',
                     },
                 }}
             />

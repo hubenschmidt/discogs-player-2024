@@ -40,12 +40,5 @@ const actionHandlers = {
 export default () => (state, action) => {
     const handler = actionHandlers[action.type];
     if (!handler) return state;
-    const next = handler(state, action.payload);
-    if (action.type === SET_COLLECTION && state.curatorActive) {
-        console.log('[reducer] SET_COLLECTION blocked by curatorActive');
-    }
-    if (action.type === SET_CURATOR_RELEASES) {
-        console.log('[reducer] SET_CURATOR_RELEASES, items:', action.payload?.items?.length, 'curatorActive:', next.curatorActive);
-    }
-    return next;
+    return handler(state, action.payload);
 };

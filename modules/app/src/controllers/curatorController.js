@@ -1,5 +1,4 @@
 const curatorService = require('../services/curatorService');
-const repos = require('../repositories');
 
 const sendMessage = async (req, res) => {
     res.writeHead(200, {
@@ -15,8 +14,7 @@ const sendMessage = async (req, res) => {
     try {
         const { username } = req.params;
         const { sessionId, message } = req.body;
-        const user = await repos.getUser(req);
-        await curatorService.sendMessage(username, user.User_Id, sessionId ?? null, message, emit);
+        await curatorService.sendMessage(username, sessionId ?? null, message, emit);
     } catch (error) {
         console.error(error);
         emit('error', { message: error.message || 'Internal server error' });
@@ -27,8 +25,8 @@ const sendMessage = async (req, res) => {
 
 const getSessions = async (req, res, next) => {
     try {
-        const user = await repos.getUser(req);
-        const sessions = await curatorService.getSessions(user.User_Id);
+        const { username } = req.params;
+        const sessions = await curatorService.getSessions(username);
         res.status(200).json(sessions);
     } catch (error) {
         console.error(error);
@@ -49,11 +47,11 @@ const getSession = async (req, res, next) => {
 
 const confirmPlaylist = async (req, res, next) => {
     try {
+        const { username } = req.params;
         const { stagedPlaylistId } = req.body;
-        const user = await repos.getUser(req);
         const playlist = await curatorService.confirmStagedPlaylist(
+            username,
             stagedPlaylistId,
-            user.User_Id,
         );
         res.status(200).json(playlist);
     } catch (error) {
@@ -64,11 +62,11 @@ const confirmPlaylist = async (req, res, next) => {
 
 const discardPlaylist = async (req, res, next) => {
     try {
+        const { username } = req.params;
         const { stagedPlaylistId } = req.body;
-        const user = await repos.getUser(req);
         const result = await curatorService.discardStagedPlaylist(
+            username,
             stagedPlaylistId,
-            user.User_Id,
         );
         res.status(200).json(result);
     } catch (error) {

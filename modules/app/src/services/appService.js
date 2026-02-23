@@ -1,78 +1,65 @@
 const repos = require('../repositories');
 
-const search = async (req) => {
-    return await repos.search(req);
-};
+const search = async (username, query) => repos.search(username, query);
 
-const getUser = async (req) => {
-    return await repos.getUser(req);
-};
+const getUser = async (email, username) => repos.getUser({ email, username });
 
-const deleteUser = async (req) => {
-    return await repos.deleteUser(req);
-};
+const deleteUser = async (userId) => repos.deleteUser(userId);
 
-const getCollection = async (req) => {
-    return await repos.getCollection(req);
-};
+const getCollection = async (username, query) => repos.getCollection(username, query);
 
-const getStylesByGenre = async (req) => {
-    return await repos.getStylesByGenre(req);
-};
+const getStylesByGenre = async (genre) => repos.getStylesByGenre(genre);
 
-const updatePlayHistory = async (req) => {
-    const user = await repos.getUser(req);
-    const video = await repos.updateVideoPlayCount(req, user);
-    const historyEntry = await repos.createHistoryEntry(req, user, video);
+const updatePlayHistory = async (username, releaseId, body) => {
+    const user = await repos.getUser({ username });
+    const video = await repos.updateVideoPlayCount(releaseId, body, user);
+    const historyEntry = await repos.createHistoryEntry(releaseId, user, video);
     return { video, historyEntry };
 };
 
-const getHistory = async (req) => {
-    const user = await repos.getUser(req);
-    return await repos.getHistory(req, user);
+const getHistory = async (username, query) => {
+    const user = await repos.getUser({ username });
+    return repos.getHistory(query, user);
 };
 
-const deletePlaylist = async (req) => {
-    const user = await repos.getUser(req);
-    return await repos.deletePlaylist(req, user);
+const deletePlaylist = async (username, playlistId) => {
+    const user = await repos.getUser({ username });
+    return repos.deletePlaylist(playlistId, user);
 };
 
-const createPlaylist = async (req) => {
-    const user = await repos.getUser(req);
+const createPlaylist = async (username, body) => {
+    const user = await repos.getUser({ username });
 
     let video = undefined;
-    if (req.body?.video) video = await repos.getVideo(req);
+    if (body?.video) video = await repos.getVideo(body.video.uri);
 
-    const playlist = await repos.createPlaylist(req, user, video);
+    const playlist = await repos.createPlaylist({ name: body.name, description: body.description }, user, video);
     return playlist;
 };
 
-const getPlaylists = async (req) => {
-    const user = await repos.getUser(req);
-    const playlists = await repos.getPlaylists(req, user);
+const getPlaylists = async (username, query) => {
+    const user = await repos.getUser({ username });
+    const playlists = await repos.getPlaylists(query, user);
     return playlists;
 };
 
-const deleteFromPlaylist = async (req) => {
-    const entry = await repos.deleteFromPlaylist(req);
+const deleteFromPlaylist = async (playlistId, uri) => {
+    const entry = await repos.deleteFromPlaylist(playlistId, uri);
     return entry;
 };
 
-const addToPlaylist = async (req) => {
-    const entry = await repos.addToPlaylist(req);
+const addToPlaylist = async (playlistId, uri) => {
+    const entry = await repos.addToPlaylist(playlistId, uri);
     return entry;
 };
 
-const getPlaylist = async (req) => {
-    const user = await getUser(req);
-    const playlist = await repos.getPlaylist(req, user);
+const getPlaylist = async (username, playlistId, query) => {
+    const user = await repos.getUser({ username });
+    const playlist = await repos.getPlaylist(playlistId, query, user);
     return playlist;
 };
 
-const getExplorer = async (req) => {
-    const explorer = await repos.getExplorer(req);
-    return explorer;
-};
+const getExplorer = async (username, query) => repos.getExplorer(username, query);
 
 module.exports = {
     search,
