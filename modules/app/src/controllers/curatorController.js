@@ -1,5 +1,6 @@
 const curatorService = require('../services/curatorService');
 const embeddingService = require('../services/embeddingService');
+const enrichmentService = require('../services/enrichmentService');
 
 const sendMessage = async (req, res) => {
     res.writeHead(200, {
@@ -113,6 +114,17 @@ const embedCollection = async (req, res, next) => {
     }
 };
 
+const enrichCollection = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const result = await enrichmentService.enrichCollection(username);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 module.exports = {
     sendMessage,
     getSessions,
@@ -122,4 +134,5 @@ module.exports = {
     updateStagedPlaylist,
     embedCollection,
     semanticSearch,
+    enrichCollection,
 };

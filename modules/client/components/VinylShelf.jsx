@@ -135,6 +135,12 @@ const VinylShelf = () => {
                         payload: false,
                     });
                 }
+
+                // Auto-select when search narrows to a single release
+                if (searchSelection?.Release_Id && next.items?.length === 1) {
+                    const action = selectedRelease ? 'SET_PREVIEW_RELEASE' : 'SET_SELECTED_RELEASE';
+                    dispatchDiscogsRelease({ type: action, payload: next.items[0] });
+                }
             })
             .catch(err =>
                 console.error('fetch collection failed', err?.response || err),

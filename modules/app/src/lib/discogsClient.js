@@ -76,7 +76,7 @@ const discogsClient = async (endpoint, requestMethod, body, auth) => {
                 headers,
                 data: body,
             });
-            return response.data;
+            return { data: response.data, headers: response.headers };
         } catch (error) {
             lastError = error;
 

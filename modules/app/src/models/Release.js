@@ -21,6 +21,21 @@ module.exports = (sequelize, DataTypes) => {
             Year: {
                 type: DataTypes.INTEGER,
             },
+            Notes: {
+                type: DataTypes.TEXT,
+            },
+            Country: {
+                type: DataTypes.STRING,
+            },
+            Tracklist: {
+                type: DataTypes.JSONB,
+            },
+            Extraartists: {
+                type: DataTypes.JSONB,
+            },
+            Enriched_At: {
+                type: DataTypes.DATE,
+            },
         },
         {
             tableName: 'Release',

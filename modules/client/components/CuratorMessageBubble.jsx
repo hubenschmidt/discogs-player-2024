@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
 import { Box, Text } from '@mantine/core';
 import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
-import { SearchContext } from '../context/searchContext';
-import { ExplorerContext } from '../context/explorerContext';
+import { CollectionContext } from '../context/collectionContext';
 
 const RELEASE_LINK_RE = /\[([^\]]+)\]\(release:(\d+)\)/g;
 
@@ -49,16 +48,18 @@ const parseContent = (content, onReleaseClick) => {
 };
 
 const CuratorMessageBubble = ({ role, content }) => {
-    const { dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
-    const { dispatchSearch } = useContext(SearchContext);
-    const { dispatchExplorer } = useContext(ExplorerContext);
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
+    const { collectionState } = useContext(CollectionContext);
     const isUser = role === 'user';
 
     const handleReleaseClick = (releaseId) => {
-        // Filter shelf to this release and select it
-        dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: { Release_Id: releaseId } });
-        dispatchSearch({ type: 'SET_SHELF_COLLECTION_OVERRIDE', payload: false });
-        dispatchExplorer({ type: 'CLEAR_FILTER' });
+        // Find the release in the curator shelf items
+        const items = collectionState.items ?? [];
+        const release = items.find(r => r.Release_Id === releaseId);
+        if (!release) return;
+
+        const action = discogsReleaseState.selectedRelease ? 'SET_PREVIEW_RELEASE' : 'SET_SELECTED_RELEASE';
+        dispatchDiscogsRelease({ type: action, payload: release });
     };
 
     return (

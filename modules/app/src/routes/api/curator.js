@@ -8,6 +8,7 @@ const {
     updateStagedPlaylist,
     embedCollection,
     semanticSearch,
+    enrichCollection,
 } = require('../../controllers/curatorController');
 
 const router = Router();
@@ -20,5 +21,6 @@ router.post('/:username/discard', discardPlaylist);
 router.post('/:username/stage/update', updateStagedPlaylist);
 router.post('/:username/embed', embedCollection);
 router.post('/:username/semantic-search', semanticSearch);
+router.post('/:username/enrich-collection', enrichCollection);
 
 module.exports = router;

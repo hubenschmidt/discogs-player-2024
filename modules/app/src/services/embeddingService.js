@@ -15,6 +15,16 @@ const buildEmbeddingText = release => {
     if (genres) parts.push(`Genres: ${genres}.`);
     if (styles) parts.push(`Styles: ${styles}.`);
     if (tracks) parts.push(`Tracks: ${tracks}.`);
+    if (release.Country) parts.push(`Country: ${release.Country}.`);
+    if (release.Notes) parts.push(`Notes: ${release.Notes.slice(0, 500)}.`);
+    if (release.Tracklist?.length) {
+        const trackNames = release.Tracklist.map(t => t.title).filter(Boolean).join(', ');
+        if (trackNames) parts.push(`Tracklist: ${trackNames}.`);
+    }
+    if (release.Extraartists?.length) {
+        const credits = release.Extraartists.map(a => `${a.name} (${a.role})`).join(', ');
+        parts.push(`Credits: ${credits}.`);
+    }
 
     return parts.join(' ');
 };
@@ -47,9 +57,18 @@ const backfillUser = async username => {
     return { embedded, durationMs };
 };
 
+const reembedUser = async username => {
+    const start = Date.now();
+    await repos.deleteStaleEmbeddings(username);
+    const result = await backfillUser(username);
+    const durationMs = Date.now() - start;
+    console.log(`[embedding] re-embed done for ${username} in ${durationMs}ms`);
+    return result;
+};
+
 const vectorSearch = async (queryText, username, limit = 15) => {
     const [queryEmbedding] = await embed([queryText]);
     return repos.searchByVector(queryEmbedding, username, limit);
 };
 
-module.exports = { buildEmbeddingText, backfillUser, vectorSearch };
+module.exports = { buildEmbeddingText, backfillUser, reembedUser, vectorSearch };

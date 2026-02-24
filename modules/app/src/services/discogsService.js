@@ -12,6 +12,7 @@ const {
     syncData,
 } = require('../repositories');
 const { backfillUser } = require('./embeddingService');
+const { enrichCollection } = require('./enrichmentService');
 
 const parseTokenResponse = (response) => {
     const parsed = response.split('&');
@@ -41,7 +42,7 @@ const fetchAccessToken = async (req) => {
 
     // fetch and persist User Identity
     const endpoint = `oauth/identity`;
-    const userIdentity = await discogsClient(endpoint, 'GET', null, {
+    const { data: userIdentity } = await discogsClient(endpoint, 'GET', null, {
         accessToken: parsed[0],
         accessTokenSecret: parsed[1],
     });
@@ -206,6 +207,11 @@ const syncCollection = async (req) => {
         console.error('[sync] embedding failed:', err.message);
     }
 
+    // Fire-and-forget enrichment in background
+    enrichCollection(req.params.username).catch(err =>
+        console.error('[sync] enrichment failed to start:', err.message),
+    );
+
     return {
         user: {
             username: req.params.username,
@@ -236,7 +242,7 @@ const fetchCollection = async (req, user) => {
     const perPage = 150;
     const endpoint = `users/${req.params.username}/collection/folders/${folderId}/releases`;
 
-    const firstResponse = await discogsClient(
+    const { data: firstResponse } = await discogsClient(
         `${endpoint}?page=1&per_page=${perPage}`,
         'GET',
         null,
@@ -266,8 +272,8 @@ const fetchCollection = async (req, user) => {
 
     const responses = await Promise.all(pagePromises);
 
-    responses.forEach(({ releases }) => {
-        collection = collection.concat(releases);
+    responses.forEach(({ data }) => {
+        collection = collection.concat(data.releases);
     });
 
     return collection;
@@ -284,11 +290,10 @@ const scrubTitle = (input) => {
 const fetchRelease = async (req) => {
     const user = await getUser({ username: req.params.username });
     const endpoint = `releases/${req.params.release_id}`;
-    const response = await discogsClient(endpoint, 'GET', null, {
+    const { data: release } = await discogsClient(endpoint, 'GET', null, {
         accessToken: user.OAuth_Access_Token,
         accessTokenSecret: user.OAuth_Access_Token_Secret,
     });
-    const release = response;
 
     if (Array.isArray(release?.videos)) {
         release.videos = release.videos.map((video) => ({
@@ -304,7 +309,7 @@ const fetchRelease = async (req) => {
         return true;
     });
 
-    return response;
+    return release;
 };
 
 module.exports = {

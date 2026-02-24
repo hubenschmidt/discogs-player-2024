@@ -26,7 +26,14 @@ const setCuratorActive = (state, payload) => {
 
 const setCuratorReleases = (state, payload) => {
     if (!payload) return { ...state, curatorReleases: null, curatorActive: false };
-    return { ...state, curatorReleases: payload, curatorActive: true, ...payload };
+
+    const existing = state.curatorReleases?.items ?? [];
+    const incoming = payload.items ?? [];
+    const seen = new Set(existing.map(r => r.Release_Id));
+    const merged = [...existing, ...incoming.filter(r => !seen.has(r.Release_Id))];
+    const next = { ...payload, items: merged };
+
+    return { ...state, curatorReleases: next, curatorActive: true, ...next };
 };
 
 const actionHandlers = {

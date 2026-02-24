@@ -20,6 +20,7 @@ import { SearchContext } from '../context/searchContext';
 import { ExplorerContext } from '../context/explorerContext';
 import { CuratorContext } from '../context/curatorContext';
 import { CollectionContext } from '../context/collectionContext';
+import { DiscogsReleaseContext } from '../context/discogsReleaseContext';
 import {
     SET_ACTIVE_SESSION,
     APPEND_CURATOR_MESSAGE,
@@ -40,6 +41,7 @@ const Search = () => {
     const { dispatchExplorer } = useContext(ExplorerContext);
     const { curatorState, dispatchCurator } = useContext(CuratorContext);
     const { collectionState, dispatchCollection } = useContext(CollectionContext);
+    const { discogsReleaseState, dispatchDiscogsRelease } = useContext(DiscogsReleaseContext);
     const bearerToken = useBearerToken();
     const containerRef = useRef(null);
     const chatScrollRef = useRef(null);
@@ -72,7 +74,7 @@ const Search = () => {
 
     // Restore curator shelf when entering AI mode with stashed releases
     useEffect(() => {
-        if (mode !== 'ai' || !collectionState.curatorReleases) return;
+        if (mode !== 'ai' || !collectionState.curatorReleases || !messages.length) return;
         dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
     }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -158,7 +160,11 @@ const Search = () => {
         setSemanticLoading(true);
         setSemanticOpen(true);
         semanticSearchApi(userState.username, text, bearerToken)
-            .then(results => setSemanticResults(results))
+            .then(results => {
+                setSemanticResults(results);
+                dispatchCollection({ type: SET_CURATOR_RELEASES, payload: null });
+                dispatchCollection({ type: SET_CURATOR_RELEASES, payload: { items: results, count: results.length, totalPages: 1 } });
+            })
             .catch(() => setSemanticResults([]))
             .finally(() => setSemanticLoading(false));
     };
@@ -327,6 +333,9 @@ const Search = () => {
                     }
                     if (mode === 'semantic' && semanticResults.length) {
                         setSemanticOpen(true);
+                        if (collectionState.curatorReleases && !collectionState.curatorActive) {
+                            dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
+                        }
                         return;
                     }
                     if (mode === 'search' && query.trim().length > 0) {
@@ -500,11 +509,13 @@ const Search = () => {
                     mt="xs"
                     withBorder
                     style={{
+                        position: 'absolute',
                         width: '100%',
+                        zIndex: 1000,
                         backgroundColor: '#1a1a1a',
                     }}
                 >
-                    <Box>
+                    <ScrollArea.Autosize mah="60vh">
                         {semanticLoading && (
                             <Box p="sm" style={{ display: 'flex', justifyContent: 'center' }}>
                                 <Loader size="xs" color="gold" />
@@ -522,9 +533,10 @@ const Search = () => {
                                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#333'; }}
                                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                                 onClick={() => {
-                                    dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: { Release_Id: item.Release_Id, Title: item.Title, Thumb: item.Thumb } });
-                                    dispatchSearch({ type: 'SET_SHELF_COLLECTION_OVERRIDE', payload: false });
-                                    dispatchExplorer({ type: 'CLEAR_FILTER' });
+                                    const release = collectionState.items?.find(r => r.Release_Id === item.Release_Id);
+                                    if (!release) return;
+                                    const action = discogsReleaseState.selectedRelease ? 'SET_PREVIEW_RELEASE' : 'SET_SELECTED_RELEASE';
+                                    dispatchDiscogsRelease({ type: action, payload: release });
                                     setSemanticOpen(false);
                                 }}
                             >
@@ -541,7 +553,7 @@ const Search = () => {
                                 </Box>
                             </Box>
                         ))}
-                    </Box>
+                    </ScrollArea.Autosize>
                 </Paper>
             )}
         </Box>

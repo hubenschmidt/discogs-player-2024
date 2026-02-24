@@ -1349,7 +1349,7 @@ const getReleasesForEmbedding = async username => {
     if (!user?.Collection) return [];
 
     const rows = await db.Release.findAll({
-        attributes: ['Release_Id', 'Title', 'Year'],
+        attributes: ['Release_Id', 'Title', 'Year', 'Notes', 'Country', 'Tracklist', 'Extraartists'],
         include: [
             {
                 model: db.Collection,
@@ -1396,12 +1396,10 @@ const getReleasesForEmbedding = async username => {
 
 const searchByVector = async (embedding, username, limit = 15) => {
     const vectorStr = `[${embedding.join(',')}]`;
-    const [results] = await db.sequelize.query(
-        `SELECT re."Release_Id", re."Embedding_Text",
-                r."Title", r."Thumb",
+    const [ranked] = await db.sequelize.query(
+        `SELECT re."Release_Id",
                 1 - (re."Embedding" <=> $1::vector) AS similarity
          FROM "ReleaseEmbedding" re
-         JOIN "Release" r ON r."Release_Id" = re."Release_Id"
          JOIN "ReleaseCollection" rc ON rc."Release_Id" = re."Release_Id"
          JOIN "Collection" c ON c."Collection_Id" = rc."Collection_Id"
          JOIN "User" u ON u."User_Id" = c."User_Id"
@@ -1410,7 +1408,21 @@ const searchByVector = async (embedding, username, limit = 15) => {
          LIMIT $3`,
         { bind: [vectorStr, username, limit] },
     );
-    return results;
+    if (!ranked.length) return [];
+
+    const ids = ranked.map(r => r.Release_Id);
+    const releases = await db.Release.findAll({
+        where: { Release_Id: ids },
+        include: [
+            { model: db.Artist, through: { attributes: [] } },
+            { model: db.Label, through: { attributes: [] } },
+            { model: db.Genre, through: { attributes: [] } },
+            { model: db.Style, through: { attributes: [] } },
+        ],
+    });
+
+    const releaseMap = Object.fromEntries(releases.map(r => [r.Release_Id, r.toJSON()]));
+    return ranked.map(r => ({ ...releaseMap[r.Release_Id], similarity: r.similarity })).filter(r => r.Release_Id);
 };
 
 const upsertReleaseEmbedding = async (releaseId, embeddingText, embedding) => {
@@ -1421,6 +1433,51 @@ const upsertReleaseEmbedding = async (releaseId, embeddingText, embedding) => {
          ON CONFLICT ("Release_Id")
          DO UPDATE SET "Embedding_Text" = $2, "Embedding" = $3::vector, "Embedded_At" = NOW()`,
         { bind: [releaseId, embeddingText, vectorStr] },
+    );
+};
+
+const deleteStaleEmbeddings = async (username) => {
+    const [, meta] = await db.sequelize.query(
+        `DELETE FROM "ReleaseEmbedding" re
+         USING "Release" r, "ReleaseCollection" rc, "Collection" c, "User" u
+         WHERE re."Release_Id" = r."Release_Id"
+           AND rc."Release_Id" = r."Release_Id"
+           AND c."Collection_Id" = rc."Collection_Id"
+           AND u."User_Id" = c."User_Id"
+           AND u."Username" = $1
+           AND r."Enriched_At" IS NOT NULL
+           AND re."Embedded_At" < r."Enriched_At"`,
+        { bind: [username] },
+    );
+    const deleted = meta?.rowCount ?? 0;
+    if (deleted) console.log(`[embedding] deleted ${deleted} stale embeddings for ${username}`);
+    return deleted;
+};
+
+const getUnenrichedReleaseIds = async (username) => {
+    const [results] = await db.sequelize.query(
+        `SELECT r."Release_Id"
+         FROM "Release" r
+         JOIN "ReleaseCollection" rc ON rc."Release_Id" = r."Release_Id"
+         JOIN "Collection" c ON c."Collection_Id" = rc."Collection_Id"
+         JOIN "User" u ON u."User_Id" = c."User_Id"
+         WHERE u."Username" = $1 AND r."Enriched_At" IS NULL
+         ORDER BY r."Release_Id" ASC`,
+        { bind: [username] },
+    );
+    return results.map(r => r.Release_Id);
+};
+
+const updateReleaseEnrichment = async (releaseId, { notes, country, tracklist, extraartists }) => {
+    await db.Release.update(
+        {
+            Notes: notes,
+            Country: country,
+            Tracklist: tracklist,
+            Extraartists: extraartists,
+            Enriched_At: new Date(),
+        },
+        { where: { Release_Id: releaseId } },
     );
 };
 
@@ -1462,4 +1519,7 @@ module.exports = {
     getReleasesForEmbedding,
     searchByVector,
     upsertReleaseEmbedding,
+    deleteStaleEmbeddings,
+    getUnenrichedReleaseIds,
+    updateReleaseEnrichment,
 };
