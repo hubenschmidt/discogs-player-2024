@@ -66,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         Release.hasMany(models.History, { foreignKey: 'Release_Id' });
+        Release.hasOne(models.ReleaseEmbedding, { foreignKey: 'Release_Id' });
     };
 
     return Release;

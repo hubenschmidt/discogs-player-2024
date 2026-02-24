@@ -1,5 +1,6 @@
 const repos = require('../repositories');
 const { chatCompletionStream } = require('../lib/openaiClient');
+const { vectorSearch } = require('./embeddingService');
 
 // ── Tool schemas for OpenAI function calling ────────────────────────
 
@@ -209,18 +210,27 @@ COLLECTION PROFILE:
 - Top styles: ${styles}
 
 RULES:
-1. ALWAYS search or filter the collection before recommending tracks. Never hallucinate or invent releases, artists, or titles that don't exist in the collection.
-2. Use your deep music knowledge to infer BPM, musical key, mood, energy level, and danceability from genre, style, artist, and era. For example:
+1. IMPORTANT: When RELEVANT RELEASES are provided below, use them to answer directly. Do NOT call search_collection, filter_collection, or get_release_details for information already present in the pre-fetched results. Only use tools if the user asks for something the pre-fetched results clearly don't cover.
+2. Never hallucinate or invent releases, artists, or titles that don't exist in the collection.
+3. Use your deep music knowledge to infer BPM, musical key, mood, energy level, and danceability from genre, style, artist, and era. For example:
    - House music: ~120-130 BPM
    - Drum & Bass: ~160-180 BPM
    - Bossa Nova: ~80-120 BPM, often in major keys
    - Disco: ~110-130 BPM
-3. When the user describes a vibe, time of day, or context (e.g. "7am sunrise set"), translate that into appropriate musical qualities and search for matching releases.
-4. Explain your reasoning for each recommendation — why it fits the requested mood, key, tempo, or context.
-5. When you have a curated set of tracks ready, call the stage_playlist tool so the user can review and confirm before the playlist is created.
-6. If a release has multiple videos (tracks), recommend specific videos/tracks, not just the release.
-7. Start by using get_available_facets to understand what the collection contains before filtering.
+4. When the user describes a mood, time of day, or context (e.g. "7am sunrise set"), translate that into appropriate musical qualities and search for matching releases.
+5. Be concise. Give a brief one-sentence rationale per recommendation. Do not write long paragraphs.
+9. NEVER use the word "vibe" or think in terms of "vibe" in your responses.
+6. When you have a curated set of tracks ready, call the stage_playlist tool so the user can review and confirm before the playlist is created.
+7. If a release has multiple videos (tracks), recommend specific videos/tracks, not just the release.
 8. IMPORTANT: When mentioning a release in your text response, ALWAYS format it as a clickable link using this exact syntax: [Artist — Title (Year)](release:RELEASE_ID) where RELEASE_ID is the numeric Release_Id from the database. This allows the user to click and load the release. Example: [Mike Huckaby — Harmonie Park Classics Volume 1 (2013)](release:4567890)`;
+};
+
+const formatRelevantReleases = releases => {
+    const lines = releases.map((r, i) => {
+        const sim = Number(r.similarity).toFixed(2);
+        return `${i + 1}. (release:${r.Release_Id}) ${r.Embedding_Text} — similarity: ${sim}`;
+    });
+    return `RELEVANT RELEASES (pre-fetched from the collection for this query):\n${lines.join('\n')}`;
 };
 
 const extractReleaseIds = text => {
@@ -344,8 +354,7 @@ const toolResultSummarizers = {
         `"${r.Title}" (${r.Year || '?'}) ${r.Videos?.length || 0} videos`,
     get_available_facets: r =>
         `${r.Genres?.length || 0} genres, ${r.Styles?.length || 0} styles, ${r.Years?.length || 0} years`,
-    get_styles_for_genre: r =>
-        Array.isArray(r) ? `${r.length} styles` : '',
+    get_styles_for_genre: r => (Array.isArray(r) ? `${r.length} styles` : ''),
     stage_playlist: r =>
         `"${r.Name || '?'}" ${r.StagedPlaylistVideos?.length || 0} tracks`,
     get_play_history: r => {
@@ -373,33 +382,62 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
             .ChatSession_Id;
 
     emit('session', { sessionId: activeSessionId });
-    console.log(`[curator] ── user=${username} session=${activeSessionId} prompt="${userMessage.slice(0, 120)}"`);
+    console.log(
+        `[curator] ── user=${username} session=${activeSessionId} prompt="${userMessage.slice(0, 120)}"`,
+    );
 
     await repos.createChatMessage(activeSessionId, 'user', userMessage);
+
+    // Vector pre-fetch
+    let relevantReleases = [];
+    const prefetchStart = Date.now();
+    try {
+        relevantReleases = await vectorSearch(userMessage, username, 10);
+        const topTitles = relevantReleases
+            .slice(0, 5)
+            .map(r => r.Embedding_Text.split('"')[1] || '?')
+            .join(', ');
+        console.log(
+            `[curator] prefetch: ${relevantReleases.length} releases (${Date.now() - prefetchStart}ms) top=[${topTitles}]`,
+        );
+    } catch (err) {
+        console.log(`[curator] prefetch skipped: ${err.message}`);
+    }
 
     const history = await repos.getChatMessages(activeSessionId);
     const collectionProfile = await repos.getExplorer(username, {});
 
-    const messages = [
-        { role: 'system', content: buildSystemPrompt(collectionProfile) },
-        ...history.map(m => ({
+    const systemContent =
+        buildSystemPrompt(collectionProfile) +
+        (relevantReleases.length
+            ? '\n\n' + formatRelevantReleases(relevantReleases)
+            : '');
+
+    const messages = [{ role: 'system', content: systemContent }];
+    history.forEach(m =>
+        messages.push({
             role: m.Role,
             content: m.Content,
             ...(m.Tool_Calls && { tool_calls: m.Tool_Calls }),
             ...(m.Tool_Call_Id && { tool_call_id: m.Tool_Call_Id }),
-        })),
-    ];
+        }),
+    );
+    const fallbackOnly = ['stage_playlist', 'get_play_history'];
+    const tools = relevantReleases.length
+        ? toolDefinitions.filter(t => fallbackOnly.includes(t.function.name))
+        : toolDefinitions;
 
     let stagedPlaylist = null;
     const MAX_ITERATIONS = 10;
     const start = Date.now();
     let totalPromptTokens = 0;
     let totalCompletionTokens = 0;
+    let totalToolCalls = 0;
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
         const assembled = await chatCompletionStream(
             messages,
-            toolDefinitions,
+            tools,
             chunk => emit('message', { chunk }),
         );
 
@@ -416,8 +454,12 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
         // No tool calls — final assistant response
         if (!assembled.tool_calls?.length) {
             const durationMs = Date.now() - start;
-            console.log(`[curator] round ${i + 1} → response (${(assembled.content || '').length} chars)`);
-            console.log(`[curator] ── done rounds=${i + 1} in=${totalPromptTokens} out=${totalCompletionTokens} total=${totalPromptTokens + totalCompletionTokens} ms=${durationMs}`);
+            console.log(
+                `[curator] round ${i + 1} → response (${(assembled.content || '').length} chars)`,
+            );
+            console.log(
+                `[curator] ── done rounds=${i + 1} rag=${relevantReleases.length} tools=${totalToolCalls} in=${totalPromptTokens} out=${totalCompletionTokens} total=${totalPromptTokens + totalCompletionTokens} ms=${durationMs}`,
+            );
             await emitFinalResponse(
                 activeSessionId,
                 assembled,
@@ -428,7 +470,8 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
             return;
         }
 
-        // Tool calls — execute silently, loop back
+        // Tool calls — execute, loop back
+        totalToolCalls += assembled.tool_calls.length;
         await repos.createChatMessage(
             activeSessionId,
             'assistant',
@@ -441,18 +484,24 @@ const sendMessage = async (username, sessionId, userMessage, emit) => {
             tool_calls: assembled.tool_calls,
         });
 
-        for (const toolCall of assembled.tool_calls) {
-            const args = JSON.parse(toolCall.function.arguments);
-            const result = await dispatchToolCall(
-                toolCall.function.name,
-                args,
-                username,
-                userId,
-                activeSessionId,
-            );
+        const toolResults = await Promise.all(
+            assembled.tool_calls.map(async toolCall => {
+                const args = JSON.parse(toolCall.function.arguments);
+                const result = await dispatchToolCall(
+                    toolCall.function.name,
+                    args,
+                    username,
+                    userId,
+                    activeSessionId,
+                );
+                console.log(
+                    `[curator]   ${toolCall.function.name}(${JSON.stringify(args)}) → ${summarizeToolResult(toolCall.function.name, result)}`,
+                );
+                return { toolCall, result };
+            }),
+        );
 
-            console.log(`[curator]   ${toolCall.function.name}(${JSON.stringify(args)}) → ${summarizeToolResult(toolCall.function.name, result)}`);
-
+        for (const { toolCall, result } of toolResults) {
             if (toolCall.function.name === 'stage_playlist')
                 stagedPlaylist = JSON.parse(result);
 

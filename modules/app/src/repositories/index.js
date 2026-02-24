@@ -1341,6 +1341,89 @@ const getExplorer = async (username, query) => {
     };
 };
 
+const getReleasesForEmbedding = async username => {
+    const user = await db.User.findOne({
+        where: { Username: username },
+        include: [{ model: db.Collection, attributes: ['Collection_Id'] }],
+    });
+    if (!user?.Collection) return [];
+
+    const rows = await db.Release.findAll({
+        attributes: ['Release_Id', 'Title', 'Year'],
+        include: [
+            {
+                model: db.Collection,
+                where: { Collection_Id: user.Collection.Collection_Id },
+                attributes: [],
+                through: { attributes: [] },
+            },
+            {
+                model: db.ReleaseEmbedding,
+                attributes: [],
+                required: false,
+            },
+            {
+                model: db.Artist,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Label,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Genre,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Style,
+                attributes: ['Name'],
+                through: { attributes: [] },
+            },
+            {
+                model: db.Video,
+                attributes: ['Title'],
+                through: { attributes: [] },
+            },
+        ],
+        where: { '$ReleaseEmbedding.Release_Id$': null },
+    });
+
+    return rows.map(r => r.get({ plain: true }));
+};
+
+const searchByVector = async (embedding, username, limit = 15) => {
+    const vectorStr = `[${embedding.join(',')}]`;
+    const [results] = await db.sequelize.query(
+        `SELECT re."Release_Id", re."Embedding_Text",
+                r."Title", r."Thumb",
+                1 - (re."Embedding" <=> $1::vector) AS similarity
+         FROM "ReleaseEmbedding" re
+         JOIN "Release" r ON r."Release_Id" = re."Release_Id"
+         JOIN "ReleaseCollection" rc ON rc."Release_Id" = re."Release_Id"
+         JOIN "Collection" c ON c."Collection_Id" = rc."Collection_Id"
+         JOIN "User" u ON u."User_Id" = c."User_Id"
+         WHERE u."Username" = $2
+         ORDER BY re."Embedding" <=> $1::vector
+         LIMIT $3`,
+        { bind: [vectorStr, username, limit] },
+    );
+    return results;
+};
+
+const upsertReleaseEmbedding = async (releaseId, embeddingText, embedding) => {
+    const vectorStr = `[${embedding.join(',')}]`;
+    await db.sequelize.query(
+        `INSERT INTO "ReleaseEmbedding" ("Release_Id", "Embedding_Text", "Embedding", "Embedded_At")
+         VALUES ($1, $2, $3::vector, NOW())
+         ON CONFLICT ("Release_Id")
+         DO UPDATE SET "Embedding_Text" = $2, "Embedding" = $3::vector, "Embedded_At" = NOW()`,
+        { bind: [releaseId, embeddingText, vectorStr] },
+    );
+};
+
 module.exports = {
     createRequestToken,
     getRequestToken,
@@ -1376,4 +1459,7 @@ module.exports = {
     discardStagedPlaylist,
     updateStagedPlaylistVideos,
     getExplorer,
+    getReleasesForEmbedding,
+    searchByVector,
+    upsertReleaseEmbedding,
 };

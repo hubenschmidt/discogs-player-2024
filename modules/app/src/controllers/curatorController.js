@@ -1,4 +1,5 @@
 const curatorService = require('../services/curatorService');
+const embeddingService = require('../services/embeddingService');
 
 const sendMessage = async (req, res) => {
     res.writeHead(200, {
@@ -89,6 +90,29 @@ const updateStagedPlaylist = async (req, res, next) => {
     }
 };
 
+const semanticSearch = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const { query } = req.body;
+        const results = await embeddingService.vectorSearch(query, username, 10);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+const embedCollection = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const result = await embeddingService.backfillUser(username);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
 module.exports = {
     sendMessage,
     getSessions,
@@ -96,4 +120,6 @@ module.exports = {
     confirmPlaylist,
     discardPlaylist,
     updateStagedPlaylist,
+    embedCollection,
+    semanticSearch,
 };

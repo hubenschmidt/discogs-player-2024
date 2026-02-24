@@ -6,6 +6,8 @@ const {
     confirmPlaylist,
     discardPlaylist,
     updateStagedPlaylist,
+    embedCollection,
+    semanticSearch,
 } = require('../../controllers/curatorController');
 
 const router = Router();
@@ -16,5 +18,7 @@ router.get('/:username/session/:id', getSession);
 router.post('/:username/confirm', confirmPlaylist);
 router.post('/:username/discard', discardPlaylist);
 router.post('/:username/stage/update', updateStagedPlaylist);
+router.post('/:username/embed', embedCollection);
+router.post('/:username/semantic-search', semanticSearch);
 
 module.exports = router;

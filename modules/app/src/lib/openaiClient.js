@@ -4,7 +4,7 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-const model = 'gpt-5-mini-2025-08-07';
+const model = 'gpt-5.1-2025-11-13';
 
 const chatCompletion = async (messages, tools) => {
     const params = {
@@ -87,4 +87,12 @@ const chatCompletionStream = async (messages, tools, onDelta) => {
     return { ...assembled, usage };
 };
 
-module.exports = { chatCompletion, chatCompletionStream };
+const embed = async texts => {
+    const response = await client.embeddings.create({
+        model: 'text-embedding-3-large',
+        input: texts,
+    });
+    return response.data.map(d => d.embedding);
+};
+
+module.exports = { chatCompletion, chatCompletionStream, embed };

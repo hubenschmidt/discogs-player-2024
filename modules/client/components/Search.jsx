@@ -12,10 +12,10 @@ import {
     Loader,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
-import { Search as SearchIcon, Sparkles, RotateCcw, Send } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, Radar, RotateCcw, Send } from 'lucide-react';
 import { useBearerToken } from '../hooks/useBearerToken';
 import { UserContext } from '../context/userContext';
-import { searchCollection, streamCuratorMessage } from '../api';
+import { searchCollection, streamCuratorMessage, semanticSearch as semanticSearchApi } from '../api';
 import { SearchContext } from '../context/searchContext';
 import { ExplorerContext } from '../context/explorerContext';
 import { CuratorContext } from '../context/curatorContext';
@@ -46,9 +46,13 @@ const Search = () => {
     const aiAbortRef = useRef(null);
     const aiFirstChunkRef = useRef(false);
 
-    const [aiMode, setAiMode] = useState(false);
+    const [mode, setMode] = useState('search');
     const [aiInput, setAiInput] = useState('');
     const [aiOpen, setAiOpen] = useState(false);
+    const [semanticResults, setSemanticResults] = useState([]);
+    const [semanticOpen, setSemanticOpen] = useState(false);
+    const [semanticInput, setSemanticInput] = useState('');
+    const [semanticLoading, setSemanticLoading] = useState(false);
 
     const { messages, activeSessionId, stagedPlaylist, isLoading } = curatorState;
 
@@ -63,14 +67,14 @@ const Search = () => {
 
     // Open chat panel when there are messages
     useEffect(() => {
-        if (aiMode && messages.length) setAiOpen(true);
-    }, [messages.length, aiMode]);
+        if (mode === 'ai' && messages.length) setAiOpen(true);
+    }, [messages.length, mode]);
 
     // Restore curator shelf when entering AI mode with stashed releases
     useEffect(() => {
-        if (!aiMode || !collectionState.curatorReleases) return;
+        if (mode !== 'ai' || !collectionState.curatorReleases) return;
         dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
-    }, [aiMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Search mode helpers ─────────────────────────────────────────
 
@@ -147,20 +151,29 @@ const Search = () => {
 
     // ── Shared handlers ─────────────────────────────────────────────
 
+    const handleSemanticSend = () => {
+        const text = semanticInput.trim();
+        if (!text || semanticLoading) return;
+
+        setSemanticLoading(true);
+        setSemanticOpen(true);
+        semanticSearchApi(userState.username, text, bearerToken)
+            .then(results => setSemanticResults(results))
+            .catch(() => setSemanticResults([]))
+            .finally(() => setSemanticLoading(false));
+    };
+
     const handleKeyDown = (e) => {
         if (e.key !== 'Enter') return;
 
-        if (aiMode) {
-            handleAiSend();
-            return;
-        }
-
+        if (mode === 'ai') { handleAiSend(); return; }
+        if (mode === 'semantic') { handleSemanticSend(); return; }
         if (!query.trim()) triggerOpenSearch();
     };
 
     // Search debounce effect (only in search mode)
     useEffect(() => {
-        if (aiMode) return;
+        if (mode !== 'search') return;
 
         if (debouncedQuery.trim().length > 0) {
             dispatchSearch({ type: 'SET_OPEN', payload: true });
@@ -180,7 +193,7 @@ const Search = () => {
 
         dispatchSearch({ type: 'SET_OPEN', payload: false });
         dispatchSearch({ type: 'SET_RESULTS', payload: [] });
-    }, [debouncedQuery, searchType, aiMode]);
+    }, [debouncedQuery, searchType, mode]);
 
     // Click outside: close dropdown
     useEffect(() => {
@@ -188,6 +201,7 @@ const Search = () => {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
                 dispatchSearch({ type: 'SET_OPEN', payload: false });
                 setAiOpen(false);
+                setSemanticOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -196,91 +210,126 @@ const Search = () => {
 
     // ── Right section ───────────────────────────────────────────────
 
-    const rightSection = aiMode ? (
-        <ActionIcon
-            variant="transparent"
-            color="limegreen"
-            onClick={handleAiSend}
-            disabled={!aiInput.trim() || isLoading}
-            onMouseDown={e => e.preventDefault()}
-            styles={{ root: { backgroundColor: 'transparent', '&[data-disabled]': { backgroundColor: 'transparent' } } }}
-        >
-            <Send size={16} color="limegreen" />
-        </ActionIcon>
-    ) : (
-        <Tooltip label="Show full collection" position="bottom" zIndex="4000">
+    const rightSectionMap = {
+        search: (
+            <Tooltip label="Show full collection" position="bottom" zIndex="4000">
+                <ActionIcon
+                    className="search-icon"
+                    variant="subtle"
+                    aria-label="Refresh collection"
+                    onClick={triggerOpenSearch}
+                    onMouseDown={e => e.preventDefault()}
+                    color="white"
+                >
+                    <RotateCcw size={16} />
+                </ActionIcon>
+            </Tooltip>
+        ),
+        ai: (
             <ActionIcon
-                className="search-icon"
-                variant="subtle"
-                aria-label="Refresh collection"
-                onClick={triggerOpenSearch}
+                variant="transparent"
+                color="limegreen"
+                onClick={handleAiSend}
+                disabled={!aiInput.trim() || isLoading}
                 onMouseDown={e => e.preventDefault()}
-                color="white"
+                styles={{ root: { backgroundColor: 'transparent', '&[data-disabled]': { backgroundColor: 'transparent' } } }}
             >
-                <RotateCcw size={16} />
+                <Send size={16} color="limegreen" />
             </ActionIcon>
-        </Tooltip>
-    );
+        ),
+        semantic: (
+            <ActionIcon
+                variant="transparent"
+                onClick={handleSemanticSend}
+                disabled={!semanticInput.trim() || semanticLoading}
+                onMouseDown={e => e.preventDefault()}
+                styles={{ root: { backgroundColor: 'transparent', '&[data-disabled]': { backgroundColor: 'transparent' } } }}
+            >
+                <Send size={16} color="gold" />
+            </ActionIcon>
+        ),
+    };
+
+    const rightSection = rightSectionMap[mode];
 
     // ── Dropdown content ────────────────────────────────────────────
 
-    const showSearchDropdown = !aiMode && open;
-    const showAiDropdown = aiMode && aiOpen && (messages.length > 0 || isLoading);
+    const showSearchDropdown = mode === 'search' && open;
+    const showAiDropdown = mode === 'ai' && aiOpen && (messages.length > 0 || isLoading);
+    const showSemanticDropdown = mode === 'semantic' && semanticOpen && (semanticResults.length > 0 || semanticLoading);
 
     return (
         <Box pos="relative" w="100%" ref={containerRef}>
             <TextInput
-                placeholder={aiMode ? 'Ask' : 'Search'}
+                placeholder={{ search: 'Search', ai: 'Ask', semantic: 'Semantic search' }[mode]}
                 size="lg"
                 radius="lg"
                 leftSection={
-                    <Tooltip
-                        label={aiMode ? 'Search mode' : 'AI mode'}
-                        position="bottom"
-                        zIndex="4000"
+                    <Box
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: 4,
+                        }}
                     >
-                        <Box
+                        <SearchIcon
+                            size="1rem"
+                            color={mode === 'search' ? 'white' : '#555'}
+                            style={{ cursor: 'pointer' }}
                             onClick={() => {
-                                if (aiMode) dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
-                                setAiMode(!aiMode);
+                                dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
+                                setMode('search');
+                                setAiOpen(false);
+                                setSemanticOpen(false);
+                            }}
+                        />
+                        <Sparkles
+                            size="1rem"
+                            color={mode === 'ai' ? 'limegreen' : '#555'}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                setMode('ai');
+                                dispatchSearch({ type: 'SET_OPEN', payload: false });
+                                setSemanticOpen(false);
+                            }}
+                        />
+                        <Radar
+                            size="1rem"
+                            color={mode === 'semantic' ? 'gold' : '#555'}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: false });
+                                setMode('semantic');
                                 dispatchSearch({ type: 'SET_OPEN', payload: false });
                                 setAiOpen(false);
                             }}
-                            style={{
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 4,
-                            }}
-                        >
-                            {aiMode ? (
-                                <Sparkles className="ai-icon" size="1rem" color="limegreen" />
-                            ) : (
-                                <SearchIcon className="search-icon" size="1rem" color="white" />
-                            )}
-                        </Box>
-                    </Tooltip>
+                        />
+                    </Box>
                 }
+                leftSectionWidth={80}
                 rightSection={rightSection}
                 rightSectionWidth={40}
-                value={aiMode ? aiInput : query}
+                value={{ search: query, ai: aiInput, semantic: semanticInput }[mode]}
                 onChange={e => {
-                    if (aiMode) {
-                        setAiInput(e.currentTarget.value);
-                        return;
-                    }
-                    dispatchSearch({ type: 'SET_QUERY', payload: e.currentTarget.value });
+                    const val = e.currentTarget.value;
+                    if (mode === 'ai') { setAiInput(val); return; }
+                    if (mode === 'semantic') { setSemanticInput(val); return; }
+                    dispatchSearch({ type: 'SET_QUERY', payload: val });
                 }}
                 onFocus={() => {
-                    if (aiMode && messages.length) {
+                    if (mode === 'ai' && messages.length) {
                         setAiOpen(true);
                         if (collectionState.curatorReleases && !collectionState.curatorActive) {
                             dispatchCollection({ type: SET_CURATOR_ACTIVE, payload: true });
                         }
                         return;
                     }
-                    if (!aiMode && query.trim().length > 0) {
+                    if (mode === 'semantic' && semanticResults.length) {
+                        setSemanticOpen(true);
+                        return;
+                    }
+                    if (mode === 'search' && query.trim().length > 0) {
                         dispatchSearch({ type: 'SET_OPEN', payload: true });
                     }
                 }}
@@ -289,7 +338,7 @@ const Search = () => {
                     input: {
                         backgroundColor: 'transparent',
                         color: 'white',
-                        borderColor: aiMode ? 'limegreen' : 'white',
+                        borderColor: { search: 'white', ai: 'limegreen', semantic: 'gold' }[mode],
                     },
                     section: {
                         backgroundColor: 'transparent',
@@ -440,6 +489,59 @@ const Search = () => {
                             )}
                         </Stack>
                     </div>
+                </Paper>
+            )}
+
+            {/* Semantic search results dropdown */}
+            {showSemanticDropdown && (
+                <Paper
+                    shadow="md"
+                    radius="md"
+                    mt="xs"
+                    withBorder
+                    style={{
+                        width: '100%',
+                        backgroundColor: '#1a1a1a',
+                    }}
+                >
+                    <Box>
+                        {semanticLoading && (
+                            <Box p="sm" style={{ display: 'flex', justifyContent: 'center' }}>
+                                <Loader size="xs" color="gold" />
+                            </Box>
+                        )}
+                        {semanticResults.map((item, idx) => (
+                            <Box
+                                key={idx}
+                                px="sm"
+                                py="xs"
+                                style={{
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#333'; }}
+                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                onClick={() => {
+                                    dispatchSearch({ type: 'SET_SEARCH_SELECTION', payload: { Release_Id: item.Release_Id, Title: item.Title, Thumb: item.Thumb } });
+                                    dispatchSearch({ type: 'SET_SHELF_COLLECTION_OVERRIDE', payload: false });
+                                    dispatchExplorer({ type: 'CLEAR_FILTER' });
+                                    setSemanticOpen(false);
+                                }}
+                            >
+                                <Box className="flex items-center gap-2">
+                                    <img
+                                        src={item.Thumb}
+                                        alt={item.Title}
+                                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }}
+                                    />
+                                    <span>{item.Title}</span>
+                                    <Text size="xs" c="gold" ml="auto" style={{ whiteSpace: 'nowrap' }}>
+                                        {(item.similarity * 100).toFixed(0)}%
+                                    </Text>
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
                 </Paper>
             )}
         </Box>

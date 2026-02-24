@@ -11,6 +11,7 @@ const {
     createCollection,
     syncData,
 } = require('../repositories');
+const { backfillUser } = require('./embeddingService');
 
 const parseTokenResponse = (response) => {
     const parsed = response.split('&');
@@ -197,6 +198,14 @@ const syncCollection = async (req) => {
         releaseStylesPromise,
     ]);
 
+    // Embed collection into pgvector
+    let embedding = { embedded: 0, durationMs: 0 };
+    try {
+        embedding = await backfillUser(req.params.username);
+    } catch (err) {
+        console.error('[sync] embedding failed:', err.message);
+    }
+
     return {
         user: {
             username: req.params.username,
@@ -216,6 +225,7 @@ const syncCollection = async (req) => {
             styles: stylesSynced.length,
             releaseStylesSynced: releaseStylesSynced.length,
         },
+        embedding,
     };
 };
 

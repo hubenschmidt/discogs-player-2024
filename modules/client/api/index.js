@@ -385,6 +385,12 @@ export const updateStagedPlaylist = async (username, token, stagedPlaylistId, vi
     return response.data;
 };
 
+export const semanticSearch = async (username, query, token) => {
+    const uri = `/api/curator/${encodeURIComponent(username)}/semantic-search`;
+    const response = await requestHandler('POST', uri, { query }, token);
+    return response.data;
+};
+
 export const getExplorer = async (params, token) => {
     const { username, genre, style, year } = params;
 
